@@ -90,7 +90,14 @@ th.sirali{color:var(--accent)}
 #results{position:absolute;left:0;right:0;top:100%;margin-top:4px;background:var(--surface);border:1px solid var(--line);border-radius:10px;box-shadow:0 10px 30px rgba(0,0,0,.18);z-index:6;max-height:380px;overflow:auto;display:none}
 #results button{display:flex;width:100%;justify-content:space-between;align-items:center;gap:10px;border:0;background:none;color:var(--fg);padding:11px 14px;font:inherit;text-align:left;cursor:pointer;border-bottom:1px solid var(--line)}
 #results button:hover,#results button:focus{background:var(--accent-soft);outline:none}
-#cartBox{margin-top:12px;padding:0;overflow:auto;max-height:calc(100vh - 230px);min-height:200px}
+#cartBox{margin-top:0;padding:0;overflow:auto;max-height:calc(100vh - 290px);min-height:200px;border-top-left-radius:0}
+#sepetSekmeler{display:flex;gap:4px;margin-top:10px;overflow-x:auto;scrollbar-width:thin}
+.sepetSekme{flex:1 0 auto;min-width:120px;border:1px solid var(--line);border-bottom:0;background:var(--surface-2);color:var(--muted);border-radius:10px 10px 0 0;padding:8px 12px;font:inherit;font-weight:600;cursor:pointer;display:flex;flex-direction:column;align-items:flex-start;gap:1px;line-height:1.2}
+.sepetSekme small{font-weight:500;font-size:12px;font-family:var(--font-num)}
+.sepetSekme:hover{color:var(--fg)}
+.sepetSekme.dolu{color:var(--warn);background:var(--warn-soft);border-color:var(--warn)}
+.sepetSekme.aktif{background:var(--surface);color:var(--fg);border-color:var(--line);box-shadow:inset 0 3px 0 var(--accent)}
+.sepetSekme.aktif small{color:var(--accent)}
 #cartBox tr.last td{background:var(--accent-soft)}
 .qty{display:inline-flex;align-items:center;gap:4px}
 .qty input{width:56px;text-align:center;padding:6px;font-family:var(--font-num)}
@@ -103,10 +110,18 @@ th.sirali{color:var(--accent)}
 .fiyatNot{font-size:11px;color:var(--muted);text-align:right}
 @media (max-width:820px){.fiyatKutu{min-width:76px}.fiyatKutu input{width:76px;padding:6px}.kaliciBtn{font-size:12px;padding:6px 4px}.qty input{width:40px}.qty .btn{width:28px}}
 .qty .btn{width:32px;height:34px;padding:0;font-size:17px}
-#payCard .big{font-family:var(--font-num);font-size:40px;font-weight:600;text-align:right;letter-spacing:-1px;line-height:1.1}
+#payCard .big{font-family:var(--font-num);font-size:56px;font-weight:700;text-align:right;letter-spacing:-1px;line-height:1.1}
+/* Ödeme kutusu: müşterinin de rahat okuyabilmesi için büyük yazılar */
+#payCard .sumrow{font-size:18px}
+#payCard .sumrow.muted, #payCard .sumrow .muted{font-size:17px}
+#payCard #subTotal{font-size:20px;font-weight:600;color:var(--fg)}
+#payCard #itemCount{font-size:16px}
+#payCard #discount, #payCard #received{font-size:22px;padding:8px 12px;font-family:var(--font-num)}
+#payCard .bills .btn{font-size:16px;padding:9px 2px}
+#payCard #veresiyeBox, #payCard #vAra{font-size:17px}
 .sumrow{display:flex;justify-content:space-between;align-items:center;gap:8px;margin:6px 0}
 .methods{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;margin:14px 0}
-.methods .btn{padding:12px 4px;font-size:15px}
+.methods .btn{padding:14px 4px;font-size:18px}
 .acilir{position:absolute;left:0;right:0;top:100%;margin-top:4px;background:var(--surface);border:1px solid var(--line);border-radius:10px;box-shadow:0 10px 30px rgba(0,0,0,.18);z-index:6;max-height:300px;overflow:auto;display:none}
 .acilir button{display:flex;width:100%;justify-content:space-between;align-items:center;gap:10px;border:0;background:none;color:var(--fg);padding:10px 12px;font:inherit;text-align:left;cursor:pointer;border-bottom:1px solid var(--line)}
 .acilir button:hover,.acilir button:focus{background:var(--accent-soft);outline:none}
@@ -118,7 +133,7 @@ th.sirali{color:var(--accent)}
 .methods .btn.sel{background:var(--fg);color:var(--bg);border-color:var(--fg)}
 .bills{display:grid;grid-template-columns:repeat(6,1fr);gap:6px;margin:8px 0}
 .bills .btn{padding:7px 2px;font-size:13px}
-#changeBox{font-size:20px;font-weight:700;text-align:right;margin:8px 0;font-family:var(--font-num)}
+#changeBox{font-size:28px;font-weight:700;text-align:right;margin:8px 0;font-family:var(--font-num)}
 #completeBtn{width:100%;padding:16px;font-size:19px;margin-top:6px}
 #lastSale{margin-top:12px;display:none;background:var(--in-soft);color:var(--in);border-radius:10px;padding:12px}
 #lastSale .chg{font-size:26px;font-weight:700;font-family:var(--font-num)}
@@ -152,6 +167,8 @@ th.sirali{color:var(--accent)}
 .psAksiyon{display:flex;gap:4px;flex-wrap:wrap;justify-content:flex-end}
 #pTopluBar{position:sticky;top:0;z-index:3;align-items:center;gap:8px;flex-wrap:wrap;background:var(--accent-soft);border:1px solid var(--accent);border-radius:10px;padding:8px 12px;margin-bottom:8px}
 #pBody tr.secili td{background:var(--accent-soft)}
+.kdvSec{padding:4px 6px;font-size:13px;font-family:var(--font-num);border-color:transparent;background:transparent;cursor:pointer}
+.kdvSec:hover,.kdvSec:focus{border-color:var(--line);background:var(--surface)}
 .tdForm{display:grid;grid-template-columns:1fr 1fr;gap:12px}
 .tdForm .full{grid-column:1/-1}
 .tdForm .row{flex-wrap:wrap}
@@ -199,7 +216,8 @@ tr.cancel td:last-child{text-decoration:none}
   main{padding:12px 10px 90px}
   #salesGrid,.grid2,.form{grid-template-columns:1fr}
   #cartBox{max-height:none}
-  #payCard .big{font-size:34px}
+  #payCard .big{font-size:44px}
+  .methods .btn{font-size:16px}
   #scan{font-size:18px}
   .keys,.hide-m{display:none}
   .card{padding:12px}
@@ -243,8 +261,10 @@ tr.cancel td:last-child{text-decoration:none}
       <div id="scanRow">
         <input id="scan" placeholder="Barkod okutun veya ürün adı yazın…" autocomplete="off" enterkeyhint="go">
         <button class="btn" id="camBtn" title="Kamerayla barkod okut">📷</button>
+        <button class="btn" id="muhtelifBtn" title="Ürünsüz tutar ekle (F8) — barkod kutusuna +25 yazıp Enter da olur" style="white-space:nowrap">＋ Muhtelif</button>
         <div id="results"></div>
       </div>
+      <div id="sepetSekmeler"></div>
       <div class="card" id="cartBox">
         <table>
           <thead><tr><th style="width:30px" class="hide-m">#</th><th>Ürün</th><th class="r">Fiyat</th><th style="text-align:center">Adet</th><th class="r">Tutar</th><th style="width:40px"></th></tr></thead>
@@ -281,7 +301,7 @@ tr.cancel td:last-child{text-decoration:none}
         <button class="btn sm" id="reprintBtn" disabled>Son Fişi Yazdır</button>
       </div>
       <div id="lastSale"></div>
-      <div class="keys"><kbd>Enter</kbd> ekle · <kbd>5*barkod</kbd> 5 adet · <kbd>↓</kbd> arama sonuçları · <kbd>Esc</kbd> temizle</div>
+      <div class="keys"><kbd>Enter</kbd> ekle · <kbd>5*barkod</kbd> 5 adet · <kbd>+25</kbd> muhtelif 25 ₺ · <kbd>F8</kbd> muhtelif · <kbd>Alt+1…4</kbd> müşteri sekmesi · <kbd>↓</kbd> arama sonuçları · <kbd>Esc</kbd> temizle</div>
     </div>
   </div>
   <div class="card" id="hizliBolum">
@@ -318,13 +338,14 @@ tr.cancel td:last-child{text-decoration:none}
           <option value="kategori:1">Kategoriye göre</option>
           <option value="barkod:1">Barkoda göre</option>
           <option value="alis:-1">Alış fiyatı (yüksekten)</option>
+          <option value="kdv:1">KDV oranına göre</option>
         </select>
       </label>
     </div>
     <div id="pTopluBar" style="display:none"></div>
     <div class="tblwrap" style="max-height:calc(100vh - 220px)">
       <table>
-        <thead id="pBaslik"><tr><th id="pSecTh" style="width:34px"><input type="checkbox" id="pSecTum" title="Görünen tüm ürünleri seç" style="width:18px;height:18px"></th><th class="hide-m siralanir" data-sira="barkod">Barkod</th><th class="siralanir" data-sira="ad">Ürün</th><th class="hide-m siralanir" data-sira="kategori">Kategori</th><th class="r hide-m siralanir" data-sira="alis">Alış</th><th class="r siralanir" data-sira="satis">Satış</th><th class="r siralanir" data-sira="stok">Stok</th><th class="r hide-m siralanir" data-sira="satilan" title="Toplam satılan adet">Satılan</th><th></th></tr></thead>
+        <thead id="pBaslik"><tr><th id="pSecTh" style="width:34px"><input type="checkbox" id="pSecTum" title="Görünen tüm ürünleri seç" style="width:18px;height:18px"></th><th class="hide-m siralanir" data-sira="barkod">Barkod</th><th class="siralanir" data-sira="ad">Ürün</th><th class="hide-m siralanir" data-sira="kategori">Kategori</th><th class="r hide-m siralanir" data-sira="alis">Alış</th><th class="r siralanir" data-sira="satis">Satış</th><th class="r hide-m siralanir" data-sira="kdv">KDV</th><th class="r siralanir" data-sira="stok">Stok</th><th class="r hide-m siralanir" data-sira="satilan" title="Toplam satılan adet">Satılan</th><th></th></tr></thead>
         <tbody id="pBody"></tbody>
       </table>
     </div>
@@ -441,8 +462,8 @@ tr.cancel td:last-child{text-decoration:none}
       <div class="row"><button class="btn" id="syncNowBtn">↻ Şimdi eşitle</button><button class="btn" id="backupBtn">⬇ Ek yedek indir (.json)</button><button class="btn" id="restoreBtn" onclick="$('#restoreFile').click()">⬆ Yedekten yükle</button><input type="file" id="restoreFile" accept=".json,application/json" hidden></div>
       <div id="ayarExcel">
       <h2 style="margin-top:24px">Ürün Listesi (Excel)</h2>
-      <p class="muted" style="margin-top:0">CSV sütun sırası: <b>Barkod; Ürün Adı; Kategori; Alış Fiyatı; Satış Fiyatı; Stok; Kritik Stok</b>. Aynı barkodlu ürün varsa güncellenir, yoksa eklenir. Excel'de <i>Farklı Kaydet → CSV (noktalı virgülle ayrılmış)</i> ile oluşturabilirsiniz.</p>
-      <div class="row"><button class="btn" id="exportProdBtn">⬇ Ürünleri dışa aktar</button><button class="btn" onclick="$('#importFile').click()">⬆ Ürünleri içe aktar</button><input type="file" id="importFile" accept=".csv,.txt,text/csv" hidden></div>
+      <p class="muted" style="margin-top:0"><b>1.</b> Boş şablonu indirin, <b>2.</b> Excel'de ürünlerinizi doldurup kaydedin, <b>3.</b> "Ürünleri içe aktar" ile seçin. Excel (.xlsx) ve CSV dosyaları kabul edilir.<br>Sütun sırası: <b>Barkod; Ürün Adı; Kategori; Alış Fiyatı; Satış Fiyatı; Stok; Kritik Stok; KDV %</b>. Aynı barkodlu ürün varsa güncellenir, yoksa eklenir.</p>
+      <div class="row"><button class="btn pri" id="sablonBtn">📄 Boş şablon indir (Excel)</button><button class="btn" onclick="$('#importFile').click()">⬆ Ürünleri içe aktar</button><button class="btn" id="exportProdBtn">⬇ Ürünleri dışa aktar</button><input type="file" id="importFile" accept=".xlsx,.xls,.csv,.txt,text/csv,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,application/vnd.ms-excel" hidden></div>
       </div>
       <div id="ayarFatura">
       <h2 style="margin-top:24px">🧾 Fatura</h2>
@@ -818,6 +839,7 @@ async function uygulamaAc(p){
     for(const r of await idbHepsi('kayit')) uygulaBellek(r.koleksiyon, r.id, r.veri);
     stokKirli = true; cart = [];
   }
+  sepetleriYukle();
   await bekleyenGuncelle();
   showTab(curTab);
   abone(); esitle();
@@ -882,7 +904,47 @@ async function kameraAc(cb, {surekli=false, baslik='Barkod okut'} = {}){
 async function kameraDurdur(){ const k = kamera; kamera = null; if(k){ try{ if(k.isScanning) await k.stop(); k.clear(); }catch(e){} } }
 
 /* ================= SATIŞ ================= */
-let cart = [];          // {pid, qty}
+let cart = [];          // {pid, qty} — etkin müşteri sekmesinin sepeti
+
+/* Müşteri sekmeleri: aynı anda 4 ayrı sepet. Her sekmenin sepeti, indirimi, alınan parası,
+   ödeme şekli ve veresiye müşterisi ayrı tutulur; bu cihazda saklanır (sayfa yenilense de kalır). */
+const SEPET_SAYI = 4;
+let sepetler = [], aktifSepet = 0, sepetHazir = false;
+const bosSepet = () => ({cart: [], indirim: '', alinan: '', odeme: 'nakit', cariId: null});
+function sepetleriYukle(){
+  const k = lsAl('brn-sepetler-' + firmaId, null);
+  sepetler = Array.from({length: SEPET_SAYI}, (_, i) => Object.assign(bosSepet(), k && k.sepetler && k.sepetler[i] || {}));
+  sepetler.forEach(s => s.cart = (s.cart || []).filter(l => l.serbest || urunById(l.pid)));
+  aktifSepet = k && k.aktif >= 0 && k.aktif < SEPET_SAYI ? k.aktif : 0;
+  sepetHazir = true; sepetYukleAktif();
+}
+function sepetYukleAktif(){
+  const s = sepetler[aktifSepet];
+  cart = s.cart; $('#discount').value = s.indirim || ''; $('#received').value = s.alinan || '';
+  seciliCari = s.cariId || null; lastPid = null; $('#lastSale').style.display = 'none';
+  setMethod(s.odeme === 'veresiye' && !yetkili('veresiye') ? 'nakit' : (s.odeme || 'nakit'));
+  hideResults(); renderCart();
+}
+function sepetKaydet(){
+  if(!sepetHazir || !sepetler[aktifSepet]) return;
+  Object.assign(sepetler[aktifSepet], {cart, indirim: $('#discount').value, alinan: $('#received').value, odeme: payMethod, cariId: seciliCari});
+  lsYaz('brn-sepetler-' + firmaId, {aktif: aktifSepet, sepetler});
+}
+function sepetSec(i){
+  if(i === aktifSepet || i < 0 || i >= SEPET_SAYI) return;
+  sepetKaydet(); aktifSepet = i; sepetYukleAktif(); focusScan();
+}
+function sepetSekmeCiz(){
+  const el = $('#sepetSekmeler'); if(!el || !sepetHazir) return;
+  el.innerHTML = sepetler.map((s, i) => {
+    const c = i === aktifSepet ? cart : s.cart || [];
+    const adet = c.reduce((a, l) => a + (+l.qty || 0), 0), top = c.reduce((a, l) => a + satirFiyat(l) * l.qty, 0);
+    return `<button class="sepetSekme ${i === aktifSepet ? 'aktif' : ''} ${adet && i !== aktifSepet ? 'dolu' : ''}" data-sepet="${i}" title="Alt+${i + 1}">🛒 Müşteri ${i + 1}<small>${adet ? `${adet} ürün · ${tl(top)}` : 'boş'}</small></button>`;
+  }).join('');
+}
+document.addEventListener('click', e => { const b = e.target.closest('[data-sepet]'); if(b) sepetSec(+b.dataset.sepet); });
+// İndirim, alınan para ve ödeme şekli değişince de sekmeye kaydet
+['#discount', '#received'].forEach(s => document.querySelector(s).addEventListener('input', () => { sepetKaydet(); }));
 let lastPid = null, payMethod = 'nakit', lastSaleObj = null;
 const scan = $('#scan');
 const dokunmatik = () => !matchMedia('(pointer:fine)').matches;
@@ -916,7 +978,37 @@ scan.addEventListener('keydown', e => {
 document.addEventListener('click', e => { if(!e.target.closest('#scanRow')) hideResults(); });
 $('#camBtn').onclick = () => kameraAc(kod => handleScan(kod, true), {surekli: true, baslik: 'Satış — barkod okut'});
 
+/* Muhtelif (ürünsüz) tutar */
+function muhtelifEkle(ad, tutar, adet = 1, kdv){
+  tutar = r2(tutar); if(!(tutar > 0)) return;
+  const pid = 'm-' + idUret().slice(0, 10);
+  cart.push({pid, serbest: true, ad: ad || 'Muhtelif', fiyat: tutar, qty: Math.max(1, Math.floor(adet) || 1), kdv: kdv != null ? +kdv : faturaAyar().varsayilanKdv});
+  lastPid = pid; beep(true); $('#lastSale').style.display = 'none';
+  renderCart(); focusScan();
+}
+// Sadece tutar sorulur; "Muhtelif" adıyla 1 adet olarak eklenir
+function muhtelifPenceresi(){
+  openModal(`<h2>＋ Muhtelif tutar</h2>
+    <input id="muTutar" inputmode="decimal" placeholder="0,00 ₺" autocomplete="off" style="width:100%;font-size:40px;text-align:right;padding:12px 16px;font-family:var(--font-num);border-width:2px;border-color:var(--accent)">
+    <div class="err" id="muErr" style="margin-top:6px"></div>
+    <div class="mfoot"><button class="btn" id="muVaz">Vazgeç</button><button class="btn pri" id="muEkle">Ekle <kbd>Enter</kbd></button></div>`);
+  $('#modal').style.width = 'min(400px,100%)';
+  setTimeout(() => $('#muTutar') && $('#muTutar').focus(), 30);
+  $('#muVaz').onclick = closeModal;
+  const ekle = () => {
+    const t = parseNum($('#muTutar').value);
+    if(isNaN(t) || t <= 0){ $('#muErr').textContent = 'Tutarı yazın.'; $('#muTutar').focus(); return; }
+    closeModal(); muhtelifEkle('Muhtelif', t);
+  };
+  $('#muEkle').onclick = ekle;
+  $('#muTutar').addEventListener('keydown', e => { if(e.key === 'Enter'){ e.preventDefault(); ekle(); } });
+}
+$('#muhtelifBtn').onclick = muhtelifPenceresi;
+
 function handleScan(raw, kameradan=false){
+  // "+25" veya "+12,50" → muhtelif tutar; "3*+10" → 3 adet × 10 ₺
+  const mm = String(raw).trim().match(/^(?:(\d{1,4})\s*[*xX]\s*)?\+\s*(\d+(?:[.,]\d{1,2})?)$/);
+  if(mm){ scan.value = ''; hideResults(); muhtelifEkle('Muhtelif', parseNum(mm[2]), mm[1] ? +mm[1] : 1); return; }
   const {qty, term} = parseQtyTerm(raw); if(!term) return;
   const p = urunByBarkod(term);
   if(p){ scan.value = ''; hideResults(); addToCart(p.id, qty); return; }
@@ -943,30 +1035,37 @@ function addToCart(pid, qty=1){
 }
 function setQty(pid, q){ q = Math.floor(+q); if(!(q > 0)) cart = cart.filter(l => l.pid !== pid); else { const l = cart.find(l => l.pid === pid); if(l) l.qty = q; } renderCart(); }
 // Sepet satırının fiyatı: kasada değiştirildiyse o, değilse ürünün kayıtlı fiyatı
-function satirFiyat(l){ const p = urunById(l.pid); return l.fiyat != null ? l.fiyat : (+(p && p.satis) || 0); }
+function satirFiyat(l){ if(l.serbest) return +l.fiyat || 0; const p = urunById(l.pid); return l.fiyat != null ? l.fiyat : (+(p && p.satis) || 0); }
+// Sepet satırının ürünü: serbest (muhtelif) satırlarda ürün yerine geçen sanal kayıt
+function satirUrun(l){ return l.serbest ? {id: l.pid, ad: l.ad, barkod: '', satis: l.fiyat, alis: 0, serbest: true} : urunById(l.pid); }
 const fiyatDegistirebilir = () => yetkili('indirim') || yetkili('urunDuzenle');
 function getTotals(){
   let sub = 0, count = 0;
-  cart.forEach(l => { const p = urunById(l.pid); if(p){ sub += satirFiyat(l) * l.qty; count += l.qty; } });
+  cart.forEach(l => { const p = satirUrun(l); if(p){ sub += satirFiyat(l) * l.qty; count += l.qty; } });
   sub = r2(sub); let disc = parseNum($('#discount').value); disc = isNaN(disc) || disc < 0 ? 0 : r2(disc);
   return {sub, disc, total: r2(sub - disc), count};
 }
 function renderCart(){
-  cart = cart.filter(l => urunById(l.pid));
+  cart = cart.filter(l => l.serbest || urunById(l.pid));
   const body = $('#cartBody');
-  if(!cart.length) body.innerHTML = '<tr><td colspan="6" class="empty">Sepet boş — barkod okutarak başlayın</td></tr>';
-  else body.innerHTML = cart.map((l, i) => { const p = urunById(l.pid), s = stok(p.id); return `
+  if(!cart.length) body.innerHTML = `<tr><td colspan="6" class="empty">Müşteri ${aktifSepet + 1} — sepet boş. Barkod okutarak başlayın.</td></tr>`;
+  else body.innerHTML = cart.map((l, i) => { const p = satirUrun(l), s = l.serbest ? Infinity : stok(p.id); return `
     <tr class="${l.pid === lastPid ? 'last' : ''}">
       <td class="muted hide-m">${i + 1}</td>
-      <td><b>${esc(p.ad)}</b><div class="muted mono">${esc(p.barkod || '')} <span class="hide-m">${s < l.qty ? '<span class="tag bad">stok ' + s + '</span>' : ''}</span></div></td>
-      <td class="r" style="white-space:nowrap">${fiyatDegistirebilir()
+      <td><b>${esc(p.ad)}</b><div class="muted mono" style="display:flex;align-items:center;gap:6px;flex-wrap:wrap">${l.serbest ? '<span class="tag" style="font-family:var(--font-body)">muhtelif</span>' : esc(p.barkod || '')}
+        ${(() => { const k = l.serbest ? +l.kdv : urunKdv(p), duz = !l.serbest && !yetkili('urunDuzenle');
+          return duz ? `<span>KDV %${k}</span>` : `<select data-act="kdv" data-pid="${p.id}" class="kdvSec" title="${l.serbest ? 'Bu satırın KDV oranı' : 'Ürünün KDV oranı (kalıcı olarak değişir)'}">${KDV_ORANLARI.concat(KDV_ORANLARI.includes(k) ? [] : [k]).map(o => `<option value="${o}" ${k === o ? 'selected' : ''}>KDV %${o}</option>`).join('')}</select>`; })()}
+        <span class="hide-m">${s < l.qty ? '<span class="tag bad">stok ' + s + '</span>' : ''}</span></div></td>
+      <td class="r" style="white-space:nowrap">${l.serbest
+        ? `<span class="fiyatKutu"><input data-act="fiyat" data-pid="${p.id}" value="${num2(satirFiyat(l))}" inputmode="decimal" class="num" title="Tutarı değiştirin"></span>`
+        : fiyatDegistirebilir()
         ? `<span class="fiyatKutu"><input data-act="fiyat" data-pid="${p.id}" value="${num2(satirFiyat(l))}" inputmode="decimal" class="num ${l.fiyat != null ? 'degisti' : ''}" title="Bu satış için fiyatı değiştirin">${l.fiyat != null ? `<span class="fiyatNot">eski fiyat: ${num2(p.satis)}</span>` : ''}${l.fiyat != null && yetkili('urunDuzenle') ? `<button class="kaliciBtn ${l.kalici ? 'aktif' : ''}" data-act="kalici" data-pid="${p.id}" title="${l.kalici ? 'Satış tamamlanınca bu fiyat ürüne kaydedilecek. Vazgeçmek için tekrar basın.' : 'Basarsanız satış tamamlanınca bu fiyat ürünün yeni fiyatı olur'}">${l.kalici ? '✓ Kalıcı olacak' : '📌 Kalıcı yap'}</button>` : ''}</span>`
         : `<span class="num">${tl(satirFiyat(l))}</span>`}</td>
       <td style="text-align:center"><span class="qty"><button class="btn" data-act="dec" data-pid="${p.id}">−</button><input data-act="qty" data-pid="${p.id}" value="${l.qty}" inputmode="numeric"><button class="btn" data-act="inc" data-pid="${p.id}">+</button></span></td>
       <td class="r num"><b>${tl(satirFiyat(l) * l.qty)}</b></td>
       <td><button class="btn sm bad" data-act="del" data-pid="${p.id}" title="Kaldır">✕</button></td>
     </tr>`; }).join('');
-  updateTotals(); renderHizli();
+  updateTotals(); renderHizli(); sepetKaydet(); sepetSekmeCiz();
   const lr = body.querySelector('tr.last'); if(lr) lr.scrollIntoView({block: 'nearest'});
 }
 function updateTotals(){
@@ -991,8 +1090,20 @@ $('#cartBody').addEventListener('click', e => {
 });
 $('#cartBody').addEventListener('change', e => {
   if(e.target.dataset.act === 'qty'){ setQty(e.target.dataset.pid, e.target.value); focusScan(); }
+  if(e.target.dataset.act === 'kdv'){
+    const l = cart.find(x => x.pid === e.target.dataset.pid); if(!l) return;
+    const kdv = +e.target.value;
+    if(l.serbest){ l.kdv = kdv; renderCart(); focusScan(); return; }
+    const p = urunById(l.pid); if(!p || !yetkili('urunDuzenle')) return;
+    const hedef = p.grupId ? varyantlar(p.grupId) : [p];
+    kaydetCok(hedef.map(u => ['urun', u.id, Object.assign({}, u, {kdv})]))
+      .then(() => { toast(`${p.grupId ? p.grupAd + ' (tüm varyantlar)' : p.ad}: KDV %${kdv}`, 'ok'); renderCart(); focusScan(); })
+      .catch(err => { toast('Kaydedilemedi: ' + err.message, 'bad'); renderCart(); });
+  }
   if(e.target.dataset.act === 'fiyat'){
-    const l = cart.find(x => x.pid === e.target.dataset.pid), p = l && urunById(l.pid); if(!p) return;
+    const l = cart.find(x => x.pid === e.target.dataset.pid);
+    if(l && l.serbest){ const f = parseNum(e.target.value); if(isNaN(f) || f <= 0){ toast('Geçerli bir tutar girin', 'bad'); renderCart(); return; } l.fiyat = r2(f); renderCart(); focusScan(); return; }
+    const p = l && urunById(l.pid); if(!p) return;
     const f = parseNum(e.target.value);
     if(isNaN(f) || f < 0){ toast('Geçerli bir fiyat girin', 'bad'); renderCart(); return; }
     if(r2(f) === r2(p.satis)){ delete l.fiyat; l.kalici = false; } else l.fiyat = r2(f);
@@ -1011,7 +1122,7 @@ function setMethod(m){
   $('#cashBox').style.display = m === 'nakit' ? 'block' : 'none';
   $('#veresiyeBox').style.display = m === 'veresiye' ? 'block' : 'none';
   if(m === 'veresiye') cariSec(seciliCari);
-  updateTotals();
+  updateTotals(); sepetKaydet();
 }
 $$('.methods .btn').forEach(b => b.onclick = () => {
   setMethod(b.dataset.m);
@@ -1026,6 +1137,7 @@ function cariSec(id){
   $('#vAra').value = ''; $('#vSonuc').style.display = 'none';
   $('#vSecili').innerHTML = c ? `<div class="sumrow" style="background:var(--accent-soft);border-radius:8px;padding:8px 10px;margin:0"><span><b style="color:var(--fg)">${esc(c.ad)}</b><br>mevcut borç: <b class="num">${tl(cariBakiye(c.id))}</b></span><button class="btn sm" id="vKaldir" title="Başka müşteri seç">✕</button></div>` : '<span style="color:var(--out)">Müşteri seçin</span>';
   if(c) $('#vKaldir').onclick = () => { cariSec(null); if(!dokunmatik()) $('#vAra').focus(); };
+  sepetKaydet();
 }
 function cariAra(q, limit=20){
   q = low(String(q).trim()); const qt = q.replace(/\s/g, '');
@@ -1075,7 +1187,9 @@ async function completeSale(){
     const id = idUret();
     const satis = {
       no: cihaz.kasa + '-' + String(sayac).padStart(5, '0'), kasa: cihaz.kasa, tarih: new Date().toISOString(),
-      kalemler: cart.map(l => { const p = urunById(l.pid), k = {urunId: p.id, barkod: p.barkod || '', ad: p.ad, adet: l.qty, fiyat: r2(satirFiyat(l)), alis: r2(p.alis || 0)}; if(l.fiyat != null) k.listeFiyati = r2(p.satis); return k; }),
+      kalemler: cart.map(l => {
+        if(l.serbest) return {urunId: null, barkod: '', ad: l.ad, adet: l.qty, fiyat: r2(l.fiyat), alis: 0, kdv: l.kdv, serbest: true};
+        const p = urunById(l.pid), k = {urunId: p.id, barkod: p.barkod || '', ad: p.ad, adet: l.qty, fiyat: r2(satirFiyat(l)), alis: r2(p.alis || 0), kdv: urunKdv(p)}; if(l.fiyat != null) k.listeFiyati = r2(p.satis); return k; }),
       araToplam: t.sub, indirim: t.disc, toplam: t.total, odeme: payMethod, alinan, paraUstu, iptal: false, kullanici: profil.email
     };
     if(cari){ satis.cariId = cari.id; satis.cariAd = cari.ad; }
@@ -1112,6 +1226,8 @@ document.addEventListener('keydown', e => {
   else if(k === 'F6'){ e.preventDefault(); setMethod('veresiye'); if(payMethod === 'veresiye') $('#vAra').focus(); }
   else if(k === 'F7'){ e.preventDefault(); clearCart(); }
   else if(k === 'F9'){ e.preventDefault(); completeSale(); }
+  else if(k === 'F8'){ e.preventDefault(); muhtelifPenceresi(); }
+  else if(e.altKey && /^[1-4]$/.test(k)){ e.preventDefault(); sepetSec(+k - 1); }
 });
 
 /* ================= HIZLI ÜRÜNLER ================= */
@@ -1351,7 +1467,7 @@ window.addEventListener('afterprint', focusScan);
 $('#pSearch').addEventListener('input', renderProducts);
 $('#pCrit').addEventListener('change', renderProducts);
 /* Ürün sıralama: seçim bu cihazda hatırlanır */
-const SIRA_VARSAYILAN = {ad: 1, kategori: 1, barkod: 1, stok: 1, satis: 1, alis: -1, satilan: -1, yeni: -1};
+const SIRA_VARSAYILAN = {ad: 1, kategori: 1, barkod: 1, stok: 1, satis: 1, alis: -1, satilan: -1, yeni: -1, kdv: 1};
 function urunSira(){ const [k, y] = String(cihaz.urunSira || 'ad:1').split(':'); return {k: SIRA_VARSAYILAN[k] ? k : 'ad', y: +y === -1 ? -1 : 1}; }
 function siraSecici(){
   const {k, y} = urunSira(), deger = k + ':' + y, s = $('#pSira');
@@ -1385,7 +1501,7 @@ function renderProducts(){
   let {k: sk, y: sy} = urunSira();
   if(sk === 'alis' && !yetkili('rapor') && !yetkili('urunDuzenle')){ sk = 'ad'; sy = 1; }
   const satilan = satilanAdetler();
-  const deger = p => sk === 'stok' ? stok(p.id) : sk === 'satis' ? +p.satis || 0 : sk === 'alis' ? +p.alis || 0 : sk === 'satilan' ? satilan.get(p.id) || 0 : sk === 'yeni' ? +p.olusturma || 0 : null;
+  const deger = p => sk === 'stok' ? stok(p.id) : sk === 'satis' ? +p.satis || 0 : sk === 'alis' ? +p.alis || 0 : sk === 'satilan' ? satilan.get(p.id) || 0 : sk === 'yeni' ? +p.olusturma || 0 : sk === 'kdv' ? urunKdv(p) : null;
   const metin = p => sk === 'kategori' ? low(p.kategori || '~') : sk === 'barkod' ? String(p.barkod || '~') : low(p.ad);
   list.sort((a, b) => {
     const da = deger(a), db = deger(b);
@@ -1410,10 +1526,11 @@ function renderProducts(){
       <td class="hide-m">${p.kategori ? `<span class="tag" style="font-family:var(--font-body)">${esc(p.kategori)}</span>` : ''}</td>
       <td class="r num muted hide-m">${!yetkili('rapor') && !yetkili('urunDuzenle') ? '•••' : p.alis ? tl(p.alis) : '—'}</td>
       <td class="r num"><b>${tl(p.satis)}</b></td>
+      <td class="r hide-m">${secilebilir ? `<select data-kdvsec="${p.id}" class="kdvSec" title="KDV oranını değiştir">${KDV_ORANLARI.concat(KDV_ORANLARI.includes(urunKdv(p)) ? [] : [urunKdv(p)]).map(o => `<option value="${o}" ${urunKdv(p) === o ? 'selected' : ''}>%${o}</option>`).join('')}</select>` : `<span class="num muted">%${urunKdv(p)}</span>`}</td>
       <td class="r"><span class="tag ${s <= 0 ? 'bad' : s <= (+p.kritik || 0) ? 'warn' : 'ok'}">${s}</span></td>
       <td class="r num muted hide-m">${satilan.get(p.id) || 0}</td>
       <td class="r"><button class="btn sm" data-edit="${p.id}">${yetkili('urunDuzenle') ? 'Düzenle' : 'Bilgi'}</button></td>
-    </tr>`; }).join('') || '<tr><td colspan="9" class="empty">Eşleşen ürün yok</td></tr>';
+    </tr>`; }).join('') || '<tr><td colspan="10" class="empty">Eşleşen ürün yok</td></tr>';
   const tum = $('#pSecTum'); const gorSecili = pGorunen.filter(id => seciliU.has(id)).length;
   tum.checked = pGorunen.length > 0 && gorSecili === pGorunen.length; tum.indeterminate = gorSecili > 0 && gorSecili < pGorunen.length;
 }
@@ -1450,6 +1567,15 @@ $('#pTopluBar').addEventListener('click', async e => {
     for(let i = 0; i < isl.length; i += 300) await kaydetCok(isl.slice(i, i + 300));
     seciliU.clear(); toast(`${sec.length} ürün silindi`); renderAktif();
   }
+});
+// Listede satır içinden KDV değiştirme (varyantlı üründe tüm varyantlara uygulanır)
+$('#pBody').addEventListener('change', async e => {
+  const s = e.target.closest('[data-kdvsec]'); if(!s) return;
+  const p = urunById(s.dataset.kdvsec); if(!p || !yetkili('urunDuzenle')) return;
+  const kdv = +s.value, hedef = p.grupId ? varyantlar(p.grupId) : [p];
+  try{ await kaydetCok(hedef.map(u => ['urun', u.id, Object.assign({}, u, {kdv})])); }
+  catch(err){ toast('Kaydedilemedi: ' + err.message, 'bad'); renderProducts(); return; }
+  toast(`${p.grupId ? p.grupAd + ' (tüm varyantlar)' : p.ad}: KDV %${kdv}`, 'ok'); renderProducts();
 });
 $('#pSecTum').addEventListener('change', e => {
   if(e.target.checked) pGorunen.forEach(id => seciliU.add(id)); else pGorunen.forEach(id => seciliU.delete(id));
@@ -2137,7 +2263,7 @@ function faturaForm(id, onceden = {}){
     const c = sat && sat.cariId ? D.cari.get(sat.cariId) : null;
     f = {tip: 'EARSIV', tarih: ymd(new Date()), durum: 'taslak', aciklama: sat ? `Fiş ${sat.no}` : '', cariId: c ? c.id : null, satisId: sat ? sat.id : null,
       alici: Object.assign({}, bosAlici, c ? {ad: c.ad, vkn: c.vkn || '', vergiDairesi: c.vergiDairesi || '', adres: c.adres || '', il: c.il || '', ilce: c.ilce || '', eposta: c.eposta || '', tel: c.tel || ''} : {}),
-      kalemler: sat ? sat.kalemler.map(k => ({urunId: k.urunId, ad: k.ad, adet: k.adet, fiyat: k.fiyat, kdv: urunKdv(urunById(k.urunId))})) : []};
+      kalemler: sat ? sat.kalemler.map(k => ({urunId: k.urunId, ad: k.ad, adet: k.adet, fiyat: k.fiyat, kdv: k.kdv != null ? k.kdv : urunKdv(urunById(k.urunId))})) : []};
     if(sat && sat.indirim) f.kalemler.push({urunId: null, ad: 'İndirim', adet: 1, fiyat: -sat.indirim, kdv: faturaAyar().varsayilanKdv});
   }
   const kilitli = f.durum !== 'taslak';
@@ -2840,8 +2966,8 @@ $('#exportSalesBtn').onclick = () => {
   download(`satislar_${$('#rFrom').value}_${$('#rTo').value}.csv`, toCsv(rows), 'text/csv;charset=utf-8');
 };
 $('#exportProdBtn').onclick = () => {
-  const rows = [['Barkod','Ürün Adı','Kategori','Alış Fiyatı','Satış Fiyatı','Stok','Kritik Stok']];
-  urunler().sort((a, b) => a.ad.localeCompare(b.ad, 'tr')).forEach(p => rows.push([p.barkod, p.ad, p.kategori, num2(p.alis), num2(p.satis), stok(p.id), p.kritik]));
+  const rows = [['Barkod','Ürün Adı','Kategori','Alış Fiyatı','Satış Fiyatı','Stok','Kritik Stok','KDV %']];
+  urunler().sort((a, b) => a.ad.localeCompare(b.ad, 'tr')).forEach(p => rows.push([p.barkod, p.ad, p.kategori, num2(p.alis), num2(p.satis), stok(p.id), p.kritik, urunKdv(p)]));
   download(`urunler_${ymd(new Date())}.csv`, toCsv(rows), 'text/csv;charset=utf-8');
 };
 async function urunleriIceAl(kayitlar, kaynak){
@@ -2851,30 +2977,82 @@ async function urunleriIceAl(kayitlar, kaynak){
   for(const r of kayitlar){
     const ex = r.barkod && byB.get(r.barkod);
     if(ex){
-      const doc = Object.assign({}, ex, {ad: r.ad, satis: r.satis}); if(r.kategori) doc.kategori = r.kategori; if(r.alis != null) doc.alis = r.alis; if(r.kritik != null) doc.kritik = r.kritik;
+      const doc = Object.assign({}, ex, {ad: r.ad, satis: r.satis}); if(r.kategori) doc.kategori = r.kategori; if(r.alis != null) doc.alis = r.alis; if(r.kritik != null) doc.kritik = r.kritik; if(r.kdv != null) doc.kdv = r.kdv;
       islemler.push(['urun', ex.id, doc]);
       if(r.stok != null){ const fark = r2(r.stok - stok(ex.id)); if(fark) islemler.push(['stokgiris', idUret(), {urunId: ex.id, miktar: fark, tip: 'Sayım', tarih: new Date().toISOString(), aciklama: kaynak, kasa: cihaz.kasa}]); }
       guncellenen++;
     } else {
       const id = idUret();
-      islemler.push(['urun', id, {barkod: r.barkod, ad: r.ad, kategori: r.kategori || '', alis: r.alis || 0, satis: r.satis, kritik: r.kritik ?? 5, acilis: r.stok || 0, olusturma: Date.now()}]);
+      islemler.push(['urun', id, Object.assign({barkod: r.barkod, ad: r.ad, kategori: r.kategori || '', alis: r.alis || 0, satis: r.satis, kritik: r.kritik ?? 5, acilis: r.stok || 0, olusturma: Date.now()}, r.kdv != null ? {kdv: r.kdv} : {})]);
       if(r.barkod) byB.set(r.barkod, {id}); eklenen++;
     }
   }
   for(let i = 0; i < islemler.length; i += 300) await kaydetCok(islemler.slice(i, i + 300));
   return {eklenen, guncellenen};
 }
+/* Excel şablonu ve .xlsx okuma (SheetJS, ilk kullanımda yüklenir) */
+const XLSX_URL = 'https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js';
+const SABLON_BASLIK = ['Barkod', 'Ürün Adı', 'Kategori', 'Alış Fiyatı', 'Satış Fiyatı', 'Stok', 'Kritik Stok', 'KDV %'];
+$('#sablonBtn').onclick = async () => {
+  try{ await scriptYukle(XLSX_URL, 'XLSX'); }catch(e){ toast('Excel bileşeni yüklenemedi. İnternet bağlantısını kontrol edin.', 'bad'); return; }
+  const X = window.XLSX, ornek = [
+    SABLON_BASLIK,
+    ['8690000000011', 'Tükenmez Kalem Mavi', 'Kalem', 4, 10, 100, 20, 20],
+    ['8690000000059', 'Çizgili Defter A4 60 Yaprak', 'Defter', 18, 35, 50, 10, 20],
+    ['', 'Fotokopi (sayfa) — barkodsuz ürün örneği', 'Hizmet', 0, 2, 0, 0, 20]
+  ];
+  const ws = X.utils.aoa_to_sheet(ornek);
+  // Barkod sütunu metin olsun (Excel uzun sayıları bozmasın)
+  for(let r = 1; r < 1000; r++){ const ad = 'A' + (r + 1); if(ws[ad]) ws[ad].t = 's'; ws[ad] = ws[ad] || {t: 's', v: ''}; ws[ad].z = '@'; }
+  ws['!ref'] = 'A1:H1000';
+  ws['!cols'] = [{wch: 16}, {wch: 34}, {wch: 14}, {wch: 12}, {wch: 12}, {wch: 8}, {wch: 11}, {wch: 7}];
+  ws['!autofilter'] = {ref: 'A1:H1'};
+  const aciklama = X.utils.aoa_to_sheet([
+    ['BRN Satış Programı — Ürün şablonu nasıl doldurulur?'], [''],
+    ['Sütun', 'Açıklama', 'Zorunlu mu?'],
+    ['Barkod', 'Ürünün barkodu. Barkodsuz ürünlerde boş bırakın. Aynı barkod programda varsa o ürün güncellenir.', 'Hayır'],
+    ['Ürün Adı', 'Ürünün adı', 'EVET'],
+    ['Kategori', 'Örn. Kalem, Defter, Boya', 'Hayır'],
+    ['Alış Fiyatı', 'KDV dahil alış fiyatı (örn. 4 veya 4,50)', 'Hayır'],
+    ['Satış Fiyatı', 'KDV dahil satış fiyatı', 'EVET'],
+    ['Stok', 'Elinizdeki adet. Mevcut üründe yazarsanız stok bu sayıya eşitlenir; boşsa stok değişmez.', 'Hayır'],
+    ['Kritik Stok', 'Bu sayının altına düşünce uyarı verir', 'Hayır'],
+    ['KDV %', '0, 1, 10 veya 20 yazın. Boşsa Ayarlar\'daki varsayılan oran kullanılır.', 'Hayır'],
+    [''], ['Örnek satırları silip kendi ürünlerinizi yazın. Başlık satırını silmeyin.'],
+    ['Kaydettikten sonra programda Ayarlar › Ürünleri içe aktar ile bu dosyayı seçin.']
+  ]);
+  aciklama['!cols'] = [{wch: 14}, {wch: 90}, {wch: 12}];
+  const wb = X.utils.book_new();
+  X.utils.book_append_sheet(wb, ws, 'Ürünler');
+  X.utils.book_append_sheet(wb, aciklama, 'Nasıl doldurulur');
+  X.writeFile(wb, 'BRN_urun_sablonu.xlsx');
+  toast('Şablon indirildi: BRN_urun_sablonu.xlsx', 'ok');
+};
+// Excel hücresini metne çevir (uzun barkodlar bilimsel gösterime düşmesin)
+const hucreMetin = v => v == null ? '' : typeof v === 'number' ? (Number.isInteger(v) ? v.toFixed(0) : String(v)) : String(v);
+
 $('#importFile').onchange = async e => {
   const f = e.target.files[0]; e.target.value = ''; if(!f) return;
-  let text = await f.text();
-  if(text.includes('�')){ try{ text = new TextDecoder('windows-1254').decode(await f.arrayBuffer()); }catch(_){} }
-  const rows = parseCsv(text);
+  let rows;
+  if(/\.(xlsx|xls)$/i.test(f.name)){
+    try{ await scriptYukle(XLSX_URL, 'XLSX'); }catch(_){ alert('Excel dosyasını okumak için internet bağlantısı gerekir (ilk kullanımda). Dilerseniz CSV olarak kaydedip yükleyin.'); return; }
+    const wb = window.XLSX.read(await f.arrayBuffer(), {type: 'array'});
+    const ad = wb.SheetNames.find(n => /ürün|urun/i.test(n)) || wb.SheetNames[0];
+    rows = window.XLSX.utils.sheet_to_json(wb.Sheets[ad], {header: 1, raw: true, defval: ''}).map(r => r.map(hucreMetin)).filter(r => r.some(x => String(x).trim()));
+  } else {
+    let text = await f.text();
+    if(text.includes('�')){ try{ text = new TextDecoder('windows-1254').decode(await f.arrayBuffer()); }catch(_){} }
+    rows = parseCsv(text);
+  }
   if(rows.length && /barkod|ürün|urun|ad/i.test(rows[0].join(' ')) && isNaN(parseNum(rows[0][4]))) rows.shift();
   const list = []; let atlanan = 0;
   rows.forEach(r => {
-    const [barkod = '', ad = '', kategori = '', alis = '', satis = '', st = '', kritik = ''] = r.map(x => String(x).trim());
+    const [barkod = '', ad = '', kategori = '', alis = '', satis = '', st = '', kritik = '', kdvH = ''] = r.map(x => String(x).trim());
+    // KDV: "20", "%20", "20%" ya da "0,20" kabul edilir
+    let kdv = parseNum(String(kdvH).replace(/%/g, '')); if(kdv > 0 && kdv < 1) kdv = Math.round(kdv * 100);
+    kdv = kdvH === '' || isNaN(kdv) || kdv < 0 || kdv > 100 ? null : Math.round(kdv);
     const sf = parseNum(satis); if(!ad || isNaN(sf)){ atlanan++; return; }
-    list.push({barkod, ad, kategori, alis: isNaN(parseNum(alis)) ? null : r2(parseNum(alis)), satis: r2(sf), stok: st === '' || isNaN(parseNum(st)) ? null : Math.floor(parseNum(st)), kritik: kritik === '' || isNaN(parseNum(kritik)) ? null : Math.floor(parseNum(kritik))});
+    list.push({barkod, ad, kategori, alis: isNaN(parseNum(alis)) ? null : r2(parseNum(alis)), satis: r2(sf), stok: st === '' || isNaN(parseNum(st)) ? null : Math.floor(parseNum(st)), kritik: kritik === '' || isNaN(parseNum(kritik)) ? null : Math.floor(parseNum(kritik)), kdv});
   });
   if(!list.length){ alert('Dosyada geçerli ürün satırı bulunamadı.'); return; }
   if(!confirm(`${list.length} ürün içe aktarılacak${atlanan ? ` (${atlanan} hatalı satır atlanacak)` : ''}. Devam edilsin mi?`)) return;

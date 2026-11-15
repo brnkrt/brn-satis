@@ -55,10 +55,25 @@ Programı açın, **Hesap oluştur** ile kaydolun ve e-postanızdaki onay bağla
 
 ## İlk kullanım
 
-- **Ürünleri yükleme:** *Ayarlar > Ürünleri içe aktar* ile Excel'den kaydedilmiş CSV dosyası yüklenebilir. Sütun sırası: Barkod; Ürün Adı; Kategori; Alış Fiyatı; Satış Fiyatı; Stok; Kritik Stok.
+- **Ürünleri yükleme:** *Ayarlar › Ürün Listesi (Excel)* bölümünde **📄 Boş şablon indir (Excel)** ile hazır şablonu indirin (içinde örnek satırlar ve "Nasıl doldurulur" sayfası vardır), ürünlerinizi doldurup kaydedin ve **Ürünleri içe aktar** ile seçin. Excel (.xlsx) ve CSV dosyaları kabul edilir. Sütun sırası: Barkod; Ürün Adı; Kategori; Alış Fiyatı; Satış Fiyatı; Stok; Kritik Stok; KDV %. KDV `20`, `%20` ya da `0,20` şeklinde yazılabilir; boş bırakılırsa varsayılan oran kullanılır. Dışa aktarılan dosyada da KDV sütunu bulunur.
 - **Önceki tek dosyalık programdan aktarma:** Eski programda *Ayarlar > Yedek Al* ile indirilen `.json` dosyasını burada *Ayarlar > Yedekten yükle* ile seçin. Ürünler ve stok adetleri aktarılır.
 - **Barkod okuyucu:** USB barkod okuyucu klavye gibi çalışır. Takıp okutmanız yeterli.
 - **Fiş yazıcı:** Termal yazıcıyı Windows'a kurun. İlk fişte açılan yazdırma penceresinde yazıcıyı ve *Kenar boşluğu: Yok* seçeneğini seçin.
+
+## Müşteri sekmeleri (aynı anda birden fazla satış)
+
+- Barkod kutusunun altında **Müşteri 1 – Müşteri 4** sekmeleri vardır. Her sekmenin sepeti, indirimi, alınan parası, ödeme şekli ve veresiye müşterisi ayrıdır.
+- Bir müşteri ürün eklerken bekletilip başka sekmede diğer müşteriye satış yapılabilir. Bekleyen (dolu) sekmeler turuncu görünür ve üzerinde ürün sayısı ile tutar yazar.
+- Sekmeler arasında tıklayarak ya da **Alt+1 … Alt+4** ile geçilir. Satış tamamlanınca yalnızca o sekme boşalır.
+- Bekleyen sepetler bu cihazda saklanır; program kapanıp açılsa da kaybolmaz.
+
+## Muhtelif tutar (ürünsüz satış)
+
+Ürün listesinde olmayan satışlar için (fotokopi, çıktı, cilt, küçük ıvır zıvır…):
+
+- Satış ekranında barkod kutusunun yanındaki **＋ Muhtelif** düğmesi (ya da **F8**) yalnızca bir tutar kutusu açar. Rakamı yazıp Enter'a basınca "Muhtelif" adıyla sepete eklenir.
+- Hızlı yol: barkod kutusuna **`+25`** yazıp Enter → 25 ₺'lik "Muhtelif" satırı eklenir. **`3*+2,50`** → 3 adet × 2,50 ₺.
+- Sepetteki muhtelif satırın tutarı fiyat kutusundan değiştirilebilir. Bu satırlar stoktan düşmez; fişte, raporlarda ve faturaya çevirmede açıklamasıyla görünür.
 
 ## Hızlı ürünler
 
@@ -164,6 +179,8 @@ Satış yapma, ürün arama, fiyat sorgulama ve etiket yazdırma her kullanıcı
 | F4 | Alınan para alanına geç |
 | F6 | Veresiye (müşteri seçimi) |
 | F7 | Sepeti temizle |
+| F8 / `+25` | Muhtelif tutar ekle |
+| Alt+1 … Alt+4 | Müşteri sekmeleri arasında geçiş |
 | F9 | Satışı tamamla |
 
 ## Notlar
