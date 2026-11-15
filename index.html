@@ -73,6 +73,9 @@ table{width:100%;border-collapse:collapse}
 th,td{padding:9px 8px;border-bottom:1px solid var(--line);text-align:left;vertical-align:middle}
 th{font-size:12px;color:var(--muted);font-weight:600;text-transform:uppercase;letter-spacing:.04em;background:var(--surface);position:sticky;top:0;z-index:1}
 td.r,th.r{text-align:right;white-space:nowrap}
+th.siralanir{cursor:pointer;user-select:none}
+th.siralanir:hover{color:var(--accent)}
+th.sirali{color:var(--accent)}
 .muted{color:var(--muted);font-size:13px}
 .tag{display:inline-block;font-size:12px;font-weight:600;padding:2px 8px;border-radius:20px;background:var(--surface-2);color:var(--muted);font-family:var(--font-num)}
 .tag.bad{background:var(--out-soft);color:var(--out)}.tag.ok{background:var(--in-soft);color:var(--in)}.tag.warn{background:var(--warn-soft);color:var(--warn)}
@@ -87,15 +90,31 @@ td.r,th.r{text-align:right;white-space:nowrap}
 #results{position:absolute;left:0;right:0;top:100%;margin-top:4px;background:var(--surface);border:1px solid var(--line);border-radius:10px;box-shadow:0 10px 30px rgba(0,0,0,.18);z-index:6;max-height:380px;overflow:auto;display:none}
 #results button{display:flex;width:100%;justify-content:space-between;align-items:center;gap:10px;border:0;background:none;color:var(--fg);padding:11px 14px;font:inherit;text-align:left;cursor:pointer;border-bottom:1px solid var(--line)}
 #results button:hover,#results button:focus{background:var(--accent-soft);outline:none}
-#cartBox{margin-top:12px;padding:0;overflow:auto;max-height:calc(100vh - 230px)}
+#cartBox{margin-top:12px;padding:0;overflow:auto;max-height:calc(100vh - 230px);min-height:200px}
 #cartBox tr.last td{background:var(--accent-soft)}
 .qty{display:inline-flex;align-items:center;gap:4px}
 .qty input{width:56px;text-align:center;padding:6px;font-family:var(--font-num)}
+.fiyatKutu{display:inline-flex;flex-direction:column;align-items:stretch;gap:5px;min-width:96px}
+.fiyatKutu input{width:96px;text-align:right;padding:7px 8px;font-size:15px}
+.fiyatKutu input.degisti{border-color:var(--warn);background:var(--warn-soft);font-weight:600}
+.kaliciBtn{font:inherit;font-size:13px;font-weight:700;padding:7px 8px;border-radius:8px;cursor:pointer;border:2px solid var(--warn);background:var(--warn-soft);color:var(--warn);white-space:nowrap}
+.kaliciBtn:hover{filter:brightness(.97)}
+.kaliciBtn.aktif{border-color:var(--in);background:var(--in);color:#fff}
+.fiyatNot{font-size:11px;color:var(--muted);text-align:right}
+@media (max-width:820px){.fiyatKutu{min-width:76px}.fiyatKutu input{width:76px;padding:6px}.kaliciBtn{font-size:12px;padding:6px 4px}.qty input{width:40px}.qty .btn{width:28px}}
 .qty .btn{width:32px;height:34px;padding:0;font-size:17px}
 #payCard .big{font-family:var(--font-num);font-size:40px;font-weight:600;text-align:right;letter-spacing:-1px;line-height:1.1}
 .sumrow{display:flex;justify-content:space-between;align-items:center;gap:8px;margin:6px 0}
-.methods{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin:14px 0}
-.methods .btn{padding:13px;font-size:16px}
+.methods{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;margin:14px 0}
+.methods .btn{padding:12px 4px;font-size:15px}
+.acilir{position:absolute;left:0;right:0;top:100%;margin-top:4px;background:var(--surface);border:1px solid var(--line);border-radius:10px;box-shadow:0 10px 30px rgba(0,0,0,.18);z-index:6;max-height:300px;overflow:auto;display:none}
+.acilir button{display:flex;width:100%;justify-content:space-between;align-items:center;gap:10px;border:0;background:none;color:var(--fg);padding:10px 12px;font:inherit;text-align:left;cursor:pointer;border-bottom:1px solid var(--line)}
+.acilir button:hover,.acilir button:focus{background:var(--accent-soft);outline:none}
+.etiket{box-sizing:border-box;overflow:hidden;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;font-family:Arial,Helvetica,sans-serif;color:#000;background:#fff;padding:1.2mm 1.5mm;line-height:1.1}
+.etiket .et-ad{font-weight:600;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;width:100%}
+.etiket .et-fiyat{font-weight:800;white-space:nowrap}
+.etiket svg{display:block;width:92%}
+.etiket .et-no{letter-spacing:.06em}
 .methods .btn.sel{background:var(--fg);color:var(--bg);border-color:var(--fg)}
 .bills{display:grid;grid-template-columns:repeat(6,1fr);gap:6px;margin:8px 0}
 .bills .btn{padding:7px 2px;font-size:13px}
@@ -104,6 +123,33 @@ td.r,th.r{text-align:right;white-space:nowrap}
 #lastSale{margin-top:12px;display:none;background:var(--in-soft);color:var(--in);border-radius:10px;padding:12px}
 #lastSale .chg{font-size:26px;font-weight:700;font-family:var(--font-num)}
 .keys{margin-top:10px;font-size:12px;color:var(--muted);line-height:1.8}
+#hizliBolum{margin-top:16px}
+#hizliGrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:8px}
+#hizliGrid .btn{white-space:normal;padding:10px 8px;font-size:16px;font-weight:600;line-height:1.25;min-height:84px;display:flex;flex-direction:column;justify-content:center;align-items:center;gap:6px;text-align:center}
+#hizliGrid .btn span{display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+#hizliGrid .btn small{font-family:var(--font-num);color:var(--accent);font-weight:700;font-size:16px}
+@media (max-width:820px){#hizliGrid{grid-template-columns:repeat(auto-fill,minmax(110px,1fr))}#hizliGrid .btn{font-size:14px;min-height:72px}#hizliGrid .btn small{font-size:14px}}
+#hizliGrid .btn.yok{border-color:var(--out)}
+#hizliGrid .btn:active{transform:scale(.97)}
+#hizliGrid .btn{-webkit-touch-callout:none;user-select:none}
+.show-m{display:none}
+@media (max-width:820px){.show-m{display:inline}}
+.baglamMenu{position:fixed;z-index:45;background:var(--surface);border:1px solid var(--line);border-radius:12px;box-shadow:0 12px 34px rgba(0,0,0,.22);min-width:230px;max-width:290px;padding:6px;font-size:15px}
+.baglamMenu .bmBaslik{padding:8px 10px 6px;font-weight:700;border-bottom:1px solid var(--line);margin-bottom:4px}
+.baglamMenu .bmBaslik .muted{font-weight:400}
+.baglamMenu button{display:block;width:100%;text-align:left;border:0;background:none;color:var(--fg);font:inherit;padding:9px 10px;border-radius:8px;cursor:pointer}
+.baglamMenu button:hover:not(:disabled){background:var(--accent-soft)}
+.baglamMenu button:disabled{opacity:.4;cursor:default}
+.baglamMenu button.bad{color:var(--out)}
+.baglamMenu hr{border:0;border-top:1px solid var(--line);margin:4px 0}
+.uyari{background:var(--warn-soft);color:var(--warn);border-radius:10px;padding:10px 12px;margin-bottom:10px;font-size:14px}
+.uyari.kirmizi{background:var(--out-soft);color:var(--out)}
+.sekmeler{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;margin-bottom:10px}
+.sekmeler .btn.sel{background:var(--fg);color:var(--bg);border-color:var(--fg)}
+.hesap{display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap;background:var(--surface-2);border-radius:8px;padding:8px 10px;font-family:var(--font-num);margin-top:8px}
+.kutu{background:var(--surface-2);border-radius:10px;padding:12px;margin:12px 0}
+.ayBaslik td{background:var(--surface-2);font-weight:600;font-size:13px}
+.psAksiyon{display:flex;gap:4px;flex-wrap:wrap;justify-content:flex-end}
 kbd{background:var(--surface-2);border:1px solid var(--line);border-radius:4px;padding:0 5px;font-size:11px;font-family:var(--font-num);color:var(--fg)}
 /* Raporlar */
 .stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(165px,1fr));gap:12px;margin:14px 0}
@@ -135,8 +181,9 @@ tr.cancel td:last-child{text-decoration:none}
 @media (max-width:820px){
   header{gap:10px;padding:0 12px}
   header h1 small{display:none}
-  nav{position:fixed;left:0;right:0;bottom:0;z-index:20;background:var(--surface);border-top:1px solid var(--line);justify-content:space-around;padding:6px 4px calc(6px + env(safe-area-inset-bottom))}
-  nav button{flex-direction:column;gap:1px;font-size:11px;color:var(--muted);padding:5px 8px;flex:1}
+  nav{position:fixed;left:0;right:0;bottom:0;z-index:20;background:var(--surface);border-top:1px solid var(--line);justify-content:flex-start;overflow-x:auto;scrollbar-width:none;padding:6px 4px calc(6px + env(safe-area-inset-bottom))}
+  nav::-webkit-scrollbar{display:none}
+  nav button{flex-direction:column;gap:1px;font-size:11px;color:var(--muted);padding:5px 6px;flex:1 0 58px}
   nav button.active{background:var(--accent-soft);color:var(--accent)}
   nav .ic{font-size:21px}
   main{padding:12px 10px 90px}
@@ -162,10 +209,13 @@ tr.cancel td:last-child{text-decoration:none}
 </head>
 <body>
 <header>
-  <h1>BRN Satış<small id="firmaAdi"></small></h1>
+  <h1 id="logo" title="Satış ekranına dön" style="cursor:pointer">BRN Satış<small id="firmaAdi"></small></h1>
   <nav>
     <button data-tab="satis" class="active"><span class="ic">🛒</span>Satış</button>
     <button data-tab="urunler"><span class="ic">📦</span>Ürünler</button>
+    <button data-tab="cariler"><span class="ic">📒</span>Veresiye</button>
+    <button data-tab="fatura"><span class="ic">🧾</span>Fatura</button>
+    <button data-tab="personel"><span class="ic">👥</span>Personel</button>
     <button data-tab="raporlar"><span class="ic">📊</span>Raporlar</button>
     <button data-tab="ayarlar"><span class="ic">⚙️</span>Ayarlar</button>
   </nav>
@@ -187,7 +237,7 @@ tr.cancel td:last-child{text-decoration:none}
       </div>
       <div class="card" id="cartBox">
         <table>
-          <thead><tr><th style="width:30px" class="hide-m">#</th><th>Ürün</th><th class="r hide-m">Fiyat</th><th style="text-align:center">Adet</th><th class="r">Tutar</th><th style="width:40px"></th></tr></thead>
+          <thead><tr><th style="width:30px" class="hide-m">#</th><th>Ürün</th><th class="r">Fiyat</th><th style="text-align:center">Adet</th><th class="r">Tutar</th><th style="width:40px"></th></tr></thead>
           <tbody id="cartBody"></tbody>
         </table>
       </div>
@@ -200,6 +250,12 @@ tr.cancel td:last-child{text-decoration:none}
       <div class="methods">
         <button class="btn sel" data-m="nakit">💵 Nakit <kbd class="hide-m">F2</kbd></button>
         <button class="btn" data-m="kart">💳 Kart <kbd class="hide-m">F3</kbd></button>
+        <button class="btn" data-m="veresiye">📒 Veresiye <kbd class="hide-m">F6</kbd></button>
+      </div>
+      <div id="veresiyeBox" style="display:none">
+        <div class="sumrow"><span class="muted">Müşteri</span><button class="btn sm" id="vYeniBtn">+ Yeni müşteri</button></div>
+        <div style="position:relative"><input id="vAra" placeholder="Müşteri adı veya telefon ara…" style="width:100%" autocomplete="off"><div id="vSonuc" class="acilir"></div></div>
+        <div id="vSecili" class="muted" style="margin:8px 0"></div>
       </div>
       <div id="cashBox">
         <div class="sumrow"><span class="muted">Alınan para <kbd class="hide-m">F4</kbd></span><input id="received" style="width:150px;text-align:right;font-size:18px" placeholder="0,00" inputmode="decimal"></div>
@@ -218,6 +274,10 @@ tr.cancel td:last-child{text-decoration:none}
       <div class="keys"><kbd>Enter</kbd> ekle · <kbd>5*barkod</kbd> 5 adet · <kbd>↓</kbd> arama sonuçları · <kbd>Esc</kbd> temizle</div>
     </div>
   </div>
+  <div class="card" id="hizliBolum">
+    <div class="sumrow" style="margin:0 0 10px"><span><b style="font-size:17px">⚡ Hızlı Ürünler</b> <span class="muted" id="hizliIpucu">· düzenlemek için ürüne <span class="hide-m">sağ tıklayın</span><span class="show-m">basılı tutun</span></span></span><button class="btn sm" id="hizliDuzenBtn">⚙ Düzenle</button></div>
+    <div id="hizliGrid"></div>
+  </div>
 </section>
 
 <!-- ÜRÜNLER -->
@@ -228,13 +288,89 @@ tr.cancel td:last-child{text-decoration:none}
       <button class="btn" id="pCam" title="Kamerayla fiyat/stok sorgula">📷</button>
       <label style="display:flex;align-items:center;gap:6px;margin:0;font-size:14px;color:var(--fg)"><input type="checkbox" id="pCrit"> Kritik stok</label>
       <button class="btn" id="stockInBtn">📥 Stok Girişi</button>
+      <button class="btn" id="etiketBtn">🏷 Etiket Yazdır</button>
+      <button class="btn" id="newVarBtn" title="Renk, ebat gibi seçenekleri olan ürün">🎨 Varyantlı Ürün</button>
       <button class="btn pri" id="newProdBtn">+ Yeni Ürün</button>
     </div>
-    <div class="muted" id="pCount" style="margin-bottom:8px"></div>
+    <div class="row" style="margin-bottom:8px;justify-content:space-between">
+      <div class="muted" id="pCount"></div>
+      <label style="display:flex;align-items:center;gap:6px;margin:0;font-size:14px;color:var(--fg)">↕ Sırala
+        <select id="pSira">
+          <option value="ad:1">Ada göre (A → Z)</option>
+          <option value="ad:-1">Ada göre (Z → A)</option>
+          <option value="stok:1">Stok (azdan çoğa)</option>
+          <option value="stok:-1">Stok (çoktan aza)</option>
+          <option value="satis:1">Fiyat (ucuzdan pahalıya)</option>
+          <option value="satis:-1">Fiyat (pahalıdan ucuza)</option>
+          <option value="satilan:-1">En çok satanlar</option>
+          <option value="satilan:1">En az satanlar</option>
+          <option value="yeni:-1">Son eklenenler</option>
+          <option value="kategori:1">Kategoriye göre</option>
+          <option value="barkod:1">Barkoda göre</option>
+          <option value="alis:-1">Alış fiyatı (yüksekten)</option>
+        </select>
+      </label>
+    </div>
     <div class="tblwrap" style="max-height:calc(100vh - 220px)">
       <table>
-        <thead><tr><th class="hide-m">Barkod</th><th>Ürün</th><th class="hide-m">Kategori</th><th class="r hide-m">Alış</th><th class="r">Satış</th><th class="r">Stok</th><th></th></tr></thead>
+        <thead id="pBaslik"><tr><th class="hide-m siralanir" data-sira="barkod">Barkod</th><th class="siralanir" data-sira="ad">Ürün</th><th class="hide-m siralanir" data-sira="kategori">Kategori</th><th class="r hide-m siralanir" data-sira="alis">Alış</th><th class="r siralanir" data-sira="satis">Satış</th><th class="r siralanir" data-sira="stok">Stok</th><th class="r hide-m siralanir" data-sira="satilan" title="Toplam satılan adet">Satılan</th><th></th></tr></thead>
         <tbody id="pBody"></tbody>
+      </table>
+    </div>
+  </div>
+</section>
+
+<!-- VERESİYE / MÜŞTERİLER -->
+<section class="tab" id="tab-cariler">
+  <div class="card">
+    <div class="row" style="margin-bottom:12px">
+      <input id="cAra" type="search" placeholder="Müşteri adı veya telefon…" style="flex:1;min-width:200px">
+      <label style="display:flex;align-items:center;gap:6px;margin:0;font-size:14px;color:var(--fg)"><input type="checkbox" id="cBorclu" checked> Sadece borçlular</label>
+      <button class="btn pri" id="cYeniBtn">+ Yeni Müşteri</button>
+    </div>
+    <div class="muted" id="cOzet" style="margin-bottom:8px"></div>
+    <div class="tblwrap" style="max-height:calc(100vh - 220px)">
+      <table>
+        <thead><tr><th>Müşteri</th><th class="hide-m">Telefon</th><th class="hide-m">Son işlem</th><th class="r">Borç</th><th></th></tr></thead>
+        <tbody id="cBody"></tbody>
+      </table>
+    </div>
+  </div>
+</section>
+
+<!-- FATURA -->
+<section class="tab" id="tab-fatura">
+  <div class="card">
+    <div class="row" style="margin-bottom:12px">
+      <input id="ftAra" type="search" placeholder="Alıcı, VKN/TCKN veya fatura no…" style="flex:1;min-width:200px">
+      <select id="ftDurum"><option value="">Tüm durumlar</option><option value="taslak">Taslak</option><option value="kesildi">Kesildi</option><option value="iptal">İptal</option></select>
+      <button class="btn" id="ftPortal" title="Trendyol e-Faturam portalını yeni sekmede açar">↗ Trendyol e-Faturam</button>
+      <button class="btn pri" id="ftYeni">+ Yeni Fatura</button>
+    </div>
+    <div class="muted" id="ftOzet" style="margin-bottom:8px"></div>
+    <div class="tblwrap" style="max-height:calc(100vh - 220px)">
+      <table>
+        <thead><tr><th>Kayıt</th><th class="hide-m">Tarih</th><th>Alıcı</th><th class="hide-m">Tip</th><th class="r">Tutar</th><th>Durum</th><th></th></tr></thead>
+        <tbody id="ftBody"></tbody>
+      </table>
+    </div>
+  </div>
+</section>
+
+<!-- PERSONEL -->
+<section class="tab" id="tab-personel">
+  <div id="psUyari"></div>
+  <div class="stats" id="psStats" style="margin-top:0"></div>
+  <div class="card">
+    <div class="row" style="margin-bottom:12px">
+      <select id="psDurum"><option value="aktif">Çalışanlar</option><option value="ayrildi">Ayrılanlar</option><option value="">Tümü</option></select>
+      <span style="flex:1"></span>
+      <button class="btn pri" id="psYeni">+ Personel ekle</button>
+    </div>
+    <div class="tblwrap">
+      <table>
+        <thead><tr><th>Ad soyad</th><th class="hide-m">Görev</th><th class="hide-m">İşe giriş</th><th class="hide-m">Telefon</th><th class="r">Net maaş</th><th class="r hide-m">Mesai, prim, yemek</th><th class="r hide-m">Ürün kesintisi</th><th class="r hide-m">Bu ay avans</th><th class="r">Bu ay ödenen</th><th class="r hide-m">Kalan izin</th><th></th></tr></thead>
+        <tbody id="psBody"></tbody>
       </table>
     </div>
   </div>
@@ -268,6 +404,7 @@ tr.cancel td:last-child{text-decoration:none}
 <section class="tab" id="tab-ayarlar">
   <div class="grid2">
     <div class="card">
+      <div id="ayarFis">
       <h2>Fiş Bilgileri <span class="muted">(tüm kasalarda ortak)</span></h2>
       <div class="form">
         <div class="full"><label>İşletme adı</label><input id="sName"></div>
@@ -277,6 +414,8 @@ tr.cancel td:last-child{text-decoration:none}
         <div class="full"><button class="btn pri" id="saveFisBtn">Kaydet</button></div>
       </div>
       <h2 style="margin-top:24px">Bu Cihaz</h2>
+      </div>
+      <h2 class="ayarFisYok" style="display:none">Bu Cihaz</h2>
       <div class="form">
         <div><label>Kasa adı (fiş numarasının başına yazılır)</label><input id="sKasa" maxlength="8" style="text-transform:uppercase"></div>
         <div><label>Fiş kağıdı</label><select id="sPaper"><option value="80">80 mm termal</option><option value="58">58 mm termal</option><option value="a4">A4 / normal yazıcı</option></select></div>
@@ -288,10 +427,18 @@ tr.cancel td:last-child{text-decoration:none}
       <h2>Veriler ve Eşitleme</h2>
       <p class="muted" style="margin-top:0">Tüm kayıtlar bulut veritabanında saklanır. İnternet yokken satışlar bu cihazda bekler, bağlantı gelince otomatik gönderilir. Bilgisayar bozulsa ya da tarayıcı temizlense bile buluttaki kayıtlar kaybolmaz.</p>
       <div id="esitBilgi" class="muted" style="margin-bottom:10px"></div>
-      <div class="row"><button class="btn" id="syncNowBtn">↻ Şimdi eşitle</button><button class="btn" id="backupBtn">⬇ Ek yedek indir (.json)</button><button class="btn" onclick="$('#restoreFile').click()">⬆ Yedekten yükle</button><input type="file" id="restoreFile" accept=".json,application/json" hidden></div>
+      <div class="row"><button class="btn" id="syncNowBtn">↻ Şimdi eşitle</button><button class="btn" id="backupBtn">⬇ Ek yedek indir (.json)</button><button class="btn" id="restoreBtn" onclick="$('#restoreFile').click()">⬆ Yedekten yükle</button><input type="file" id="restoreFile" accept=".json,application/json" hidden></div>
+      <div id="ayarExcel">
       <h2 style="margin-top:24px">Ürün Listesi (Excel)</h2>
       <p class="muted" style="margin-top:0">CSV sütun sırası: <b>Barkod; Ürün Adı; Kategori; Alış Fiyatı; Satış Fiyatı; Stok; Kritik Stok</b>. Aynı barkodlu ürün varsa güncellenir, yoksa eklenir. Excel'de <i>Farklı Kaydet → CSV (noktalı virgülle ayrılmış)</i> ile oluşturabilirsiniz.</p>
       <div class="row"><button class="btn" id="exportProdBtn">⬇ Ürünleri dışa aktar</button><button class="btn" onclick="$('#importFile').click()">⬆ Ürünleri içe aktar</button><input type="file" id="importFile" accept=".csv,.txt,text/csv" hidden></div>
+      </div>
+      <div id="ayarFatura">
+      <h2 style="margin-top:24px">🧾 Fatura</h2>
+      <div class="row"><label style="margin:0;color:var(--fg);font-size:14px">Varsayılan KDV oranı</label><select id="sKdv"><option value="0">%0</option><option value="1">%1</option><option value="10">%10</option><option value="20">%20</option></select><button class="btn sm" id="saveFaturaBtn">Kaydet</button></div>
+      <p class="muted" style="margin-bottom:0">KDV oranı girilmemiş ürünlerde bu oran kullanılır. Ürün formundan her ürüne ayrı oran verilebilir.<br>
+      <b>Trendyol e-Faturam bağlantısı:</b> Şu an faturalar BRN'de hazırlanıp portala kolay aktarılıyor. Tek tuşla otomatik kesim için Trendyol e-Faturam portalından <i>bireysel entegrasyon</i> başvurusu ve sabit IP'li bir aracı sunucu gerekir (ayrıntılar README.md'de).</p>
+      </div>
       <h2 style="margin-top:24px">Hesap</h2>
       <div id="hesapBilgi" class="muted" style="margin-bottom:10px"></div>
       <div class="row"><button class="btn" id="firmaDegBtn">Firma değiştir</button><button class="btn bad" id="cikisBtn">Çıkış yap</button></div>
@@ -378,13 +525,63 @@ function idbBekleyenSil(list){
 }
 
 /* ================= BELLEKTEKİ VERİ ================= */
-const D = {urun: new Map(), stokgiris: new Map(), satis: new Map(), ayar: new Map()};
+const D = {urun: new Map(), stokgiris: new Map(), satis: new Map(), ayar: new Map(), cari: new Map(), tahsilat: new Map(), yetki: new Map(), fatura: new Map(),
+  personel: new Map(), personelOdeme: new Map(), personelEk: new Map(), izin: new Map()};
 let stokKirli = true, stokMap = new Map(), barkodMap = new Map();
 function uygulaBellek(col, id, veri){
   const m = D[col]; if(!m) return;
   if(!veri || veri.silindi) m.delete(id); else m.set(id, Object.assign({}, veri, {id}));
-  stokKirli = true;
+  stokKirli = true; cariKirli = true;
 }
+const odemeAd = o => ({nakit: 'Nakit', kart: 'Kart', veresiye: 'Veresiye', personel: 'Maaştan'}[o] || o);
+
+/* ---------- Kullanıcı yetkileri ---------- */
+// [anahtar, açıklama, çalışan için varsayılan]
+const YETKILER = [
+  ['urunDuzenle', 'Ürün ekleme, düzenleme ve fiyat değiştirme', false],
+  ['stokGiris', 'Stok girişi ve sayım', true],
+  ['indirim', 'Satışta indirim yapma', false],
+  ['veresiye', 'Veresiye satış, müşteriler ve tahsilat', true],
+  ['iptal', 'Satış ve tahsilat iptali', false],
+  ['rapor', 'Raporları, kârı ve alış fiyatlarını görme', false],
+  ['fatura', 'Fatura hazırlama ve kesme', false],
+  ['personel', 'Personel, maaş, avans ve izinler', false],
+  ['ayar', 'Fiş bilgileri, yedek alma ve yedekten yükleme', false]
+];
+function yetkili(k){
+  if(!profil || profil.rol === 'sahip') return true;
+  const y = D.yetki.get(profil.userId) || {};
+  if(k in y) return !!y[k];
+  const d = YETKILER.find(x => x[0] === k); return d ? d[2] : false;
+}
+function yetkiUygula(){
+  const g = (sel, ok) => $$(sel).forEach(el => el.style.display = ok ? '' : 'none');
+  g('nav [data-tab="raporlar"]', yetkili('rapor'));
+  g('nav [data-tab="cariler"]', yetkili('veresiye'));
+  g('nav [data-tab="fatura"]', yetkili('fatura'));
+  g('nav [data-tab="personel"]', yetkili('personel'));
+  g('.methods [data-m="veresiye"]', yetkili('veresiye'));
+  $('.methods').style.gridTemplateColumns = yetkili('veresiye') ? '' : '1fr 1fr';
+  g('#newProdBtn', yetkili('urunDuzenle')); g('#newVarBtn', yetkili('urunDuzenle')); g('#hizliDuzenBtn', yetkili('urunDuzenle')); g('#ayarExcel', yetkili('urunDuzenle'));
+  g('#stockInBtn', yetkili('stokGiris'));
+  g('#ayarFis', yetkili('ayar')); g('.ayarFisYok', !yetkili('ayar')); g('#ayarFatura', yetkili('ayar') && yetkili('fatura')); g('#backupBtn', yetkili('ayar')); g('#restoreBtn', yetkili('ayar'));
+  const ind = $('#discount'); ind.disabled = !yetkili('indirim'); if(ind.disabled) ind.value = '';
+  if(payMethod === 'veresiye' && !yetkili('veresiye')) setMethod('nakit');
+  if((curTab === 'raporlar' && !yetkili('rapor')) || (curTab === 'cariler' && !yetkili('veresiye')) || (curTab === 'fatura' && !yetkili('fatura')) || (curTab === 'personel' && !yetkili('personel'))) showTab('satis');
+}
+
+/* ---------- Veresiye bakiyeleri ---------- */
+let cariKirli = true, cariBakiyeMap = new Map(), cariSonMap = new Map();
+function cariBakiyeler(){
+  if(!cariKirli) return cariBakiyeMap;
+  const m = new Map(), son = new Map();
+  const isle = (id, tutar, tarih) => { m.set(id, r2((m.get(id) || 0) + tutar)); if(!son.get(id) || tarih > son.get(id)) son.set(id, tarih); };
+  for(const s of D.satis.values()) if(s.odeme === 'veresiye' && !s.iptal && s.cariId) isle(s.cariId, +s.toplam || 0, s.tarih);
+  for(const t of D.tahsilat.values()) if(!t.iptal && t.cariId) isle(t.cariId, -(+t.tutar || 0), t.tarih);
+  cariBakiyeMap = m; cariSonMap = son; cariKirli = false; return m;
+}
+const cariBakiye = id => r2(cariBakiyeler().get(id) || 0);
+const cariler = () => [...D.cari.values()];
 function stoklar(){
   if(!stokKirli) return stokMap;
   const m = new Map(); barkodMap = new Map();
@@ -423,13 +620,33 @@ const bulut = {
     }
     return out;
   },
-  async gonder(rows){ const {error} = await sb.from(TABLO).upsert(rows); if(error) throw error; }
+  async gonder(rows){ const {error} = await sb.from(TABLO).upsert(rows); if(error) throw error; },
+  async tek(col, id){ const {data, error} = await sb.from(TABLO).select('koleksiyon,id,veri,guncelleme').eq('firma_id', firmaId).eq('koleksiyon', col).eq('id', id).maybeSingle(); if(error) throw error; return data; }
 };
+function idbKayitSil(keys){ return new Promise((res, rej) => { const t = idb.transaction('kayit', 'readwrite'); const s = t.objectStore('kayit'); keys.forEach(k => s.delete(k)); t.oncomplete = res; t.onerror = () => rej(t.error); }); }
 async function gonder(){
   for(;;){
     const list = (await idbHepsi('bekleyen')).sort((a, b) => a.zaman - b.zaman).slice(0, 200);
     if(!list.length) return;
-    await bulut.gonder(list.map(b => ({firma_id: firmaId, koleksiyon: b.koleksiyon, id: b.id, veri: b.veri})));
+    const satir = b => ({firma_id: firmaId, koleksiyon: b.koleksiyon, id: b.id, veri: b.veri});
+    try{ await bulut.gonder(list.map(satir)); }
+    catch(e){
+      // Yetki kuralına takılan kayıt varsa tek tek gönder; reddedilenleri kuyruktan çıkar ki diğerlerini tıkamasın
+      if(!/row-level security|42501|permission/i.test((e && (e.message || e.code)) || '')) throw e;
+      const red = [];
+      for(const b of list){ try{ await bulut.gonder([satir(b)]); }catch(e2){ if(/row-level security|42501|permission/i.test((e2 && (e2.message || e2.code)) || '')) red.push(b); else throw e2; } }
+      await idbBekleyenSil(list);
+      if(red.length){
+        console.warn('Reddedilen kayıtlar:', red); toast(`${red.length} değişiklik yetki olmadığı için kaydedilmedi`, 'bad');
+        // Reddedilen kayıtları sunucudaki asıl hâline döndür
+        for(const b of red){
+          const r = await bulut.tek(b.koleksiyon, b.id).catch(() => undefined);
+          if(r) await uzaktanGeldi([r]);
+          else if(r === null){ uygulaBellek(b.koleksiyon, b.id, null); await idbKayitSil([b.k]); renderSonra(); }
+        }
+      }
+      continue;
+    }
     await idbBekleyenSil(list);
   }
 }
@@ -601,13 +818,14 @@ $('#firmaDegBtn').onclick = () => { if(!oturum){ toast('Firma değiştirmek içi
 /* ---------- Modal ---------- */
 let modalKapaninca = null;
 function openModal(html, onClose){ $('#modal').innerHTML = html; $('#modalBg').style.display = 'flex'; modalKapaninca = onClose || null; const f = $('#modal [autofocus]') || $('#modal input:not([type=checkbox])'); if(f && matchMedia('(pointer:fine)').matches) setTimeout(() => f.focus(), 0); }
-function closeModal(){ const cb = modalKapaninca; modalKapaninca = null; $('#modalBg').style.display = 'none'; $('#modal').innerHTML = ''; if(cb) cb(); if(curTab === 'satis') focusScan(); }
+function closeModal(){ const cb = modalKapaninca; modalKapaninca = null; $('#modalBg').style.display = 'none'; $('#modal').innerHTML = ''; $('#modal').style.width = ''; if(cb) cb(); if(curTab === 'satis') focusScan(); }
 const modalOpen = () => $('#modalBg').style.display === 'flex';
 $('#modalBg').addEventListener('mousedown', e => { if(e.target.id === 'modalBg') closeModal(); });
 
 /* ---------- Sekmeler ---------- */
 let curTab = 'satis';
 $$('nav button').forEach(b => b.onclick = () => showTab(b.dataset.tab));
+$('#logo').onclick = () => { if(modalOpen()) closeModal(); showTab('satis'); };
 function showTab(t){
   curTab = t;
   $$('nav button').forEach(b => b.classList.toggle('active', b.dataset.tab === t));
@@ -617,8 +835,12 @@ function showTab(t){
   if(t === 'ayarlar') uyeleriYukle();
 }
 function renderAktif(){
-  if(curTab === 'satis'){ if(!$('#cartBody').contains(document.activeElement)) renderCart(); }
+  yetkiUygula();
+  if(curTab === 'satis'){ if(!$('#cartBody').contains(document.activeElement)) renderCart(); if(payMethod === 'veresiye' && seciliCari && document.activeElement !== $('#vAra')) cariSec(seciliCari); }
   if(curTab === 'urunler') renderProducts();
+  if(curTab === 'cariler') renderCariler();
+  if(curTab === 'fatura') renderFaturalar();
+  if(curTab === 'personel') renderPersonel();
   if(curTab === 'raporlar') renderReport();
   if(curTab === 'ayarlar') loadSettingsForm();
 }
@@ -626,7 +848,7 @@ let renderT; function renderSonra(){ clearTimeout(renderT); renderT = setTimeout
 
 /* ================= KAMERA ================= */
 let kamera = null;
-function scriptYukle(src){ return new Promise((res, rej) => { if(window.Html5Qrcode) return res(); const s = document.createElement('script'); s.src = src; s.onload = res; s.onerror = () => rej(new Error('yüklenemedi')); document.head.appendChild(s); }); }
+function scriptYukle(src, ad='Html5Qrcode'){ return new Promise((res, rej) => { if(window[ad]) return res(); const s = document.createElement('script'); s.src = src; s.onload = res; s.onerror = () => rej(new Error('yüklenemedi')); document.head.appendChild(s); }); }
 async function kameraAc(cb, {surekli=false, baslik='Barkod okut'} = {}){
   openModal(`<h2>📷 ${esc(baslik)}</h2><div id="kamKutu" style="width:100%;min-height:220px;background:#000;border-radius:10px;overflow:hidden"></div>
     <div id="kamBilgi" class="muted" style="margin-top:8px">Kamera açılıyor… Barkodu çerçevenin içine tutun.</div>
@@ -691,6 +913,7 @@ function handleScan(raw, kameradan=false){
   if(list.length === 1){ scan.value = ''; hideResults(); addToCart(list[0].id, qty); return; }
   if(list.length > 1){ showResults(raw, true); const f = $('#results button'); if(f && !dokunmatik()) f.focus(); return; }
   beep(false); scan.value = ''; hideResults();
+  if(/^\d{4,}$/.test(term) && !yetkili('urunDuzenle')){ toast(`"${term}" barkodlu ürün kayıtlı değil`, 'bad'); return; }
   if(/^\d{4,}$/.test(term)){
     if(kameradan) closeModal();
     if(confirm(`"${term}" barkodlu ürün kayıtlı değil.\n\nYeni ürün olarak eklemek ister misiniz?`)) openProductForm(null, {barkod: term}, np => addToCart(np.id, qty));
@@ -708,9 +931,12 @@ function addToCart(pid, qty=1){
   renderCart(); focusScan();
 }
 function setQty(pid, q){ q = Math.floor(+q); if(!(q > 0)) cart = cart.filter(l => l.pid !== pid); else { const l = cart.find(l => l.pid === pid); if(l) l.qty = q; } renderCart(); }
+// Sepet satırının fiyatı: kasada değiştirildiyse o, değilse ürünün kayıtlı fiyatı
+function satirFiyat(l){ const p = urunById(l.pid); return l.fiyat != null ? l.fiyat : (+(p && p.satis) || 0); }
+const fiyatDegistirebilir = () => yetkili('indirim') || yetkili('urunDuzenle');
 function getTotals(){
   let sub = 0, count = 0;
-  cart.forEach(l => { const p = urunById(l.pid); if(p){ sub += (+p.satis || 0) * l.qty; count += l.qty; } });
+  cart.forEach(l => { const p = urunById(l.pid); if(p){ sub += satirFiyat(l) * l.qty; count += l.qty; } });
   sub = r2(sub); let disc = parseNum($('#discount').value); disc = isNaN(disc) || disc < 0 ? 0 : r2(disc);
   return {sub, disc, total: r2(sub - disc), count};
 }
@@ -722,12 +948,14 @@ function renderCart(){
     <tr class="${l.pid === lastPid ? 'last' : ''}">
       <td class="muted hide-m">${i + 1}</td>
       <td><b>${esc(p.ad)}</b><div class="muted mono">${esc(p.barkod || '')} <span class="hide-m">${s < l.qty ? '<span class="tag bad">stok ' + s + '</span>' : ''}</span></div></td>
-      <td class="r num hide-m">${tl(p.satis)}</td>
+      <td class="r" style="white-space:nowrap">${fiyatDegistirebilir()
+        ? `<span class="fiyatKutu"><input data-act="fiyat" data-pid="${p.id}" value="${num2(satirFiyat(l))}" inputmode="decimal" class="num ${l.fiyat != null ? 'degisti' : ''}" title="Bu satış için fiyatı değiştirin">${l.fiyat != null ? `<span class="fiyatNot">eski fiyat: ${num2(p.satis)}</span>` : ''}${l.fiyat != null && yetkili('urunDuzenle') ? `<button class="kaliciBtn ${l.kalici ? 'aktif' : ''}" data-act="kalici" data-pid="${p.id}" title="${l.kalici ? 'Satış tamamlanınca bu fiyat ürüne kaydedilecek. Vazgeçmek için tekrar basın.' : 'Basarsanız satış tamamlanınca bu fiyat ürünün yeni fiyatı olur'}">${l.kalici ? '✓ Kalıcı olacak' : '📌 Kalıcı yap'}</button>` : ''}</span>`
+        : `<span class="num">${tl(satirFiyat(l))}</span>`}</td>
       <td style="text-align:center"><span class="qty"><button class="btn" data-act="dec" data-pid="${p.id}">−</button><input data-act="qty" data-pid="${p.id}" value="${l.qty}" inputmode="numeric"><button class="btn" data-act="inc" data-pid="${p.id}">+</button></span></td>
-      <td class="r num"><b>${tl(p.satis * l.qty)}</b></td>
+      <td class="r num"><b>${tl(satirFiyat(l) * l.qty)}</b></td>
       <td><button class="btn sm bad" data-act="del" data-pid="${p.id}" title="Kaldır">✕</button></td>
     </tr>`; }).join('');
-  updateTotals();
+  updateTotals(); renderHizli();
   const lr = body.querySelector('tr.last'); if(lr) lr.scrollIntoView({block: 'nearest'});
 }
 function updateTotals(){
@@ -744,16 +972,65 @@ $('#cartBody').addEventListener('click', e => {
   if(b.dataset.act === 'inc') setQty(l.pid, l.qty + 1);
   if(b.dataset.act === 'dec') setQty(l.pid, l.qty - 1);
   if(b.dataset.act === 'del') setQty(l.pid, 0);
+  if(b.dataset.act === 'kalici'){
+    l.kalici = !l.kalici; renderCart();
+    toast(l.kalici ? `Satış tamamlanınca ${tl(l.fiyat)} ürünün yeni fiyatı olacak` : 'Yeni fiyat sadece bu satış için geçerli', l.kalici ? 'ok' : '');
+  }
   focusScan();
 });
-$('#cartBody').addEventListener('change', e => { if(e.target.dataset.act === 'qty'){ setQty(e.target.dataset.pid, e.target.value); focusScan(); } });
-$('#cartBody').addEventListener('keydown', e => { if(e.target.dataset.act === 'qty' && e.key === 'Enter') e.target.blur(); });
+$('#cartBody').addEventListener('change', e => {
+  if(e.target.dataset.act === 'qty'){ setQty(e.target.dataset.pid, e.target.value); focusScan(); }
+  if(e.target.dataset.act === 'fiyat'){
+    const l = cart.find(x => x.pid === e.target.dataset.pid), p = l && urunById(l.pid); if(!p) return;
+    const f = parseNum(e.target.value);
+    if(isNaN(f) || f < 0){ toast('Geçerli bir fiyat girin', 'bad'); renderCart(); return; }
+    if(r2(f) === r2(p.satis)){ delete l.fiyat; l.kalici = false; } else l.fiyat = r2(f);
+    renderCart(); focusScan();
+  }
+});
+$('#cartBody').addEventListener('keydown', e => { if((e.target.dataset.act === 'qty' || e.target.dataset.act === 'fiyat') && e.key === 'Enter') e.target.blur(); });
+$('#cartBody').addEventListener('focusin', e => { if(e.target.dataset.act === 'fiyat') setTimeout(() => e.target.select(), 0); });
 $('#discount').addEventListener('input', updateTotals);
 $('#received').addEventListener('input', updateTotals);
 $('#received').addEventListener('keydown', e => { if(e.key === 'Enter'){ e.preventDefault(); completeSale(); } });
 $('#discount').addEventListener('keydown', e => { if(e.key === 'Enter'){ e.preventDefault(); focusScan(); } });
-function setMethod(m){ payMethod = m; $$('.methods .btn').forEach(b => b.classList.toggle('sel', b.dataset.m === m)); $('#cashBox').style.display = m === 'nakit' ? 'block' : 'none'; updateTotals(); }
-$$('.methods .btn').forEach(b => b.onclick = () => { setMethod(b.dataset.m); if(b.dataset.m === 'nakit' && !dokunmatik()) $('#received').focus(); else focusScan(); });
+function setMethod(m){
+  if(m === 'veresiye' && !yetkili('veresiye')){ toast('Veresiye satış yetkiniz yok', 'bad'); return; }
+  payMethod = m; $$('.methods .btn').forEach(b => b.classList.toggle('sel', b.dataset.m === m));
+  $('#cashBox').style.display = m === 'nakit' ? 'block' : 'none';
+  $('#veresiyeBox').style.display = m === 'veresiye' ? 'block' : 'none';
+  if(m === 'veresiye') cariSec(seciliCari);
+  updateTotals();
+}
+$$('.methods .btn').forEach(b => b.onclick = () => {
+  setMethod(b.dataset.m);
+  if(dokunmatik()) return;
+  if(b.dataset.m === 'nakit') $('#received').focus(); else if(b.dataset.m === 'veresiye' && !seciliCari) $('#vAra').focus(); else focusScan();
+});
+
+/* Veresiye müşteri seçimi */
+let seciliCari = null;
+function cariSec(id){
+  const c = id && D.cari.get(id); seciliCari = c ? id : null;
+  $('#vAra').value = ''; $('#vSonuc').style.display = 'none';
+  $('#vSecili').innerHTML = c ? `<div class="sumrow" style="background:var(--accent-soft);border-radius:8px;padding:8px 10px;margin:0"><span><b style="color:var(--fg)">${esc(c.ad)}</b><br>mevcut borç: <b class="num">${tl(cariBakiye(c.id))}</b></span><button class="btn sm" id="vKaldir" title="Başka müşteri seç">✕</button></div>` : '<span style="color:var(--out)">Müşteri seçin</span>';
+  if(c) $('#vKaldir').onclick = () => { cariSec(null); if(!dokunmatik()) $('#vAra').focus(); };
+}
+function cariAra(q, limit=20){
+  q = low(String(q).trim()); const qt = q.replace(/\s/g, '');
+  return cariler().filter(c => !q || low(c.ad).includes(q) || (qt && String(c.tel || '').replace(/\s/g, '').includes(qt))).sort((a, b) => a.ad.localeCompare(b.ad, 'tr')).slice(0, limit);
+}
+function vSonucGoster(){
+  const l = cariAra($('#vAra').value), box = $('#vSonuc');
+  box.innerHTML = l.length ? l.map(c => `<button data-cari="${c.id}"><span>${esc(c.ad)} <span class="muted">${esc(c.tel || '')}</span></span><span class="num">${tl(cariBakiye(c.id))}</span></button>`).join('') : '<div class="empty">Müşteri bulunamadı — "+ Yeni müşteri" ile ekleyin</div>';
+  box.style.display = 'block';
+}
+$('#vAra').addEventListener('input', vSonucGoster);
+$('#vAra').addEventListener('focus', vSonucGoster);
+$('#vAra').addEventListener('keydown', e => { if(e.key === 'Enter'){ e.preventDefault(); const f = $('#vSonuc [data-cari]'); if(f) cariSec(f.dataset.cari); } else if(e.key === 'Escape') $('#vSonuc').style.display = 'none'; });
+$('#vSonuc').addEventListener('click', e => { const b = e.target.closest('[data-cari]'); if(b) cariSec(b.dataset.cari); });
+document.addEventListener('click', e => { if(!e.target.closest('#veresiyeBox')) $('#vSonuc').style.display = 'none'; });
+$('#vYeniBtn').onclick = () => cariForm(null, c => { setMethod('veresiye'); cariSec(c.id); });
 $$('.bills .btn').forEach(b => b.onclick = () => { const t = getTotals(); $('#received').value = b.dataset.bill === 'tam' ? num2(t.total) : b.dataset.bill; updateTotals(); });
 $('#completeBtn').onclick = completeSale;
 $('#clearCartBtn').onclick = clearCart;
@@ -768,12 +1045,16 @@ async function completeSale(){
   const t = getTotals();
   if(t.total < 0){ toast('İndirim toplamdan büyük olamaz', 'bad'); return; }
   let alinan = t.total, paraUstu = 0;
+  const cari = payMethod === 'veresiye' ? D.cari.get(seciliCari) : null;
+  if(payMethod === 'veresiye'){
+    if(!cari){ toast('Veresiye için müşteri seçin', 'bad'); beep(false); setMethod('veresiye'); if(!dokunmatik()) $('#vAra').focus(); return; }
+    alinan = 0;
+  }
   if(payMethod === 'nakit'){
     const r = parseNum($('#received').value);
     if(!isNaN(r)){ if(r2(r) < t.total){ toast('Alınan para tutardan az!', 'bad'); beep(false); $('#received').focus(); return; } alinan = r2(r); paraUstu = r2(r - t.total); }
   }
-  const eksik = cart.map(l => ({l, p: urunById(l.pid), s: stok(l.pid)})).filter(x => x.s < x.l.qty);
-  if(eksik.length && !confirm('Stokta yeterli olmayan ürünler var:\n\n' + eksik.map(x => `• ${x.p.ad} (stok: ${x.s}, satılan: ${x.l.qty})`).join('\n') + '\n\nYine de satış yapılsın mı?')) return;
+  // Stok yetersiz olsa da satış soru sormadan yapılır (stok eksiye düşer; Stok Girişi ile düzeltilir)
   satisSuruyor = true; $('#completeBtn').disabled = true;
   try{
     // Fiş numarası: bu kasanın bilinen en büyük numarasından devam eder (cihaz sıfırlansa da çakışmaz)
@@ -783,15 +1064,29 @@ async function completeSale(){
     const id = idUret();
     const satis = {
       no: cihaz.kasa + '-' + String(sayac).padStart(5, '0'), kasa: cihaz.kasa, tarih: new Date().toISOString(),
-      kalemler: cart.map(l => { const p = urunById(l.pid); return {urunId: p.id, barkod: p.barkod || '', ad: p.ad, adet: l.qty, fiyat: r2(p.satis), alis: r2(p.alis || 0)}; }),
+      kalemler: cart.map(l => { const p = urunById(l.pid), k = {urunId: p.id, barkod: p.barkod || '', ad: p.ad, adet: l.qty, fiyat: r2(satirFiyat(l)), alis: r2(p.alis || 0)}; if(l.fiyat != null) k.listeFiyati = r2(p.satis); return k; }),
       araToplam: t.sub, indirim: t.disc, toplam: t.total, odeme: payMethod, alinan, paraUstu, iptal: false, kullanici: profil.email
     };
-    await kaydet('satis', id, satis);
+    if(cari){ satis.cariId = cari.id; satis.cariAd = cari.ad; }
+    // Satış ve kalıcı fiyat değişiklikleri tek seferde kaydedilir
+    const yeniFiyat = new Map();   // ürün id → yeni kalıcı fiyat (varyantlarda tüm grup)
+    cart.filter(l => l.kalici && l.fiyat != null && yetkili('urunDuzenle')).forEach(l => {
+      const p = urunById(l.pid); if(!p) return;
+      (p.grupId ? varyantlar(p.grupId) : [p]).forEach(x => yeniFiyat.set(x.id, l.fiyat));
+    });
+    const kalicilar = [...yeniFiyat.keys()].map(urunById).filter(Boolean);
+    const islemler = [['satis', id, satis]].concat(kalicilar.map(p => ['urun', p.id, Object.assign({}, p, {satis: yeniFiyat.get(p.id), fiyatDegisim: new Date().toISOString()})]));
+    await kaydetCok(islemler);
+    if(kalicilar.length) setTimeout(() => toast(`${kalicilar.length} ürünün fiyatı kalıcı olarak güncellendi`, 'ok'), 900);
     lastSaleObj = Object.assign({id}, satis); $('#reprintBtn').disabled = false;
-    cart = []; lastPid = null; $('#discount').value = ''; $('#received').value = ''; setMethod('nakit'); renderCart();
+    cart = []; lastPid = null; seciliCari = null; $('#discount').value = ''; $('#received').value = ''; setMethod('nakit'); renderCart();
     const ls = $('#lastSale');
-    ls.innerHTML = `<div>Fiş ${esc(satis.no)} kaydedildi — ${tl(satis.toplam)} (${satis.odeme === 'nakit' ? 'Nakit' : 'Kart'})</div>` + (satis.odeme === 'nakit' ? `<div class="chg">Para üstü: ${tl(satis.paraUstu)}</div>` : '');
+    ls.innerHTML = `<div>Fiş ${esc(satis.no)} kaydedildi — ${tl(satis.toplam)} (${odemeAd(satis.odeme)})</div>` +
+      (satis.odeme === 'nakit' ? `<div class="chg">Para üstü: ${tl(satis.paraUstu)}</div>` : '') +
+      (cari ? `<div class="chg" style="font-size:18px">${esc(cari.ad)} · borç: ${tl(cariBakiye(cari.id))}</div>` : '');
+    if(yetkili('fatura')) ls.insertAdjacentHTML('beforeend', `<button class="btn sm" id="lsFatura" style="margin-top:8px">🧾 Bu satışa fatura kes</button>`);
     ls.style.display = 'block'; beep(true);
+    if($('#lsFatura')) $('#lsFatura').onclick = () => faturaSatistan(D.satis.get(id));
     if(cihaz.otoYazdir) printReceipt(lastSaleObj);
   }catch(e){ alert('Satış kaydedilemedi: ' + e.message); }
   finally{ satisSuruyor = false; $('#completeBtn').disabled = false; focusScan(); }
@@ -803,9 +1098,222 @@ document.addEventListener('keydown', e => {
   if(k === 'F2'){ e.preventDefault(); setMethod('nakit'); $('#received').focus(); }
   else if(k === 'F3'){ e.preventDefault(); setMethod('kart'); focusScan(); }
   else if(k === 'F4'){ e.preventDefault(); setMethod('nakit'); $('#received').focus(); $('#received').select(); }
+  else if(k === 'F6'){ e.preventDefault(); setMethod('veresiye'); if(payMethod === 'veresiye') $('#vAra').focus(); }
   else if(k === 'F7'){ e.preventDefault(); clearCart(); }
   else if(k === 'F9'){ e.preventDefault(); completeSale(); }
 });
+
+/* ================= HIZLI ÜRÜNLER ================= */
+function renderHizli(){
+  const g = $('#hizliGrid'); if(!g) return;
+  const list = hizliListe();
+  g.innerHTML = list.length ? list.map(p => { const s = stok(p.id); return `<button class="btn ${s <= 0 ? 'yok' : ''}" data-hizli="${p.id}" title="${esc(p.ad)} — stok: ${s}"><span>${esc(p.ad)}</span><small>${tl(p.satis)}</small></button>`; }).join('')
+    : '<div class="muted" style="grid-column:1/-1">Henüz hızlı ürün yok. <b>⚙ Düzenle</b> ile sık satılan ürünleri ekleyin.</div>';
+}
+const hizliListe = () => urunler().filter(p => p.hizli).sort((a, b) => (a.hizliSira || 0) - (b.hizliSira || 0) || a.ad.localeCompare(b.ad, 'tr'));
+let uzunBasildi = 0;   // telefonda basılı tutunca sonraki "tıklama" sepete eklemesin
+$('#hizliGrid').addEventListener('click', e => {
+  const b = e.target.closest('[data-hizli]'); if(!b) return;
+  if(Date.now() - uzunBasildi < 700){ e.preventDefault(); return; }
+  addToCart(b.dataset.hizli, 1);
+});
+
+/* Hızlı ürün sağ tık / basılı tutma menüsü */
+let baglamMenu = null, baglamZaman = 0;
+function baglamKapat(){ if(baglamMenu){ baglamMenu.remove(); baglamMenu = null; } }
+document.addEventListener('click', e => { if(baglamMenu && !baglamMenu.contains(e.target)) baglamKapat(); });
+document.addEventListener('keydown', e => { if(e.key === 'Escape') baglamKapat(); });
+window.addEventListener('scroll', baglamKapat, true);
+window.addEventListener('resize', baglamKapat);
+function hizliMenuAc(pid, x, y){
+  const p = urunById(pid); if(!p) return;
+  if(Date.now() - baglamZaman < 400) return;   // aynı dokunuşta iki kez açılmasın
+  baglamKapat(); baglamZaman = Date.now();
+  const yet = yetkili('urunDuzenle'), liste = hizliListe(), sira = liste.findIndex(x => x.id === pid);
+  const m = document.createElement('div'); m.className = 'baglamMenu';
+  m.innerHTML = `<div class="bmBaslik">${esc(p.ad)}<div class="muted">${tl(p.satis)} · stok ${stok(p.id)}${p.barkod ? ' · <span class="mono">' + esc(p.barkod) + '</span>' : ''}</div></div>
+    ${yet ? '<button data-bm="duzenle">✏️ Düzenle (ad, fiyat, barkod, stok…)</button>' : '<button data-bm="bilgi">ℹ️ Ürün bilgisi</button>'}
+    ${yet && p.grupId ? '<button data-bm="varyant">🎨 Tüm varyantları düzenle</button>' : ''}
+    <button data-bm="sepet">🛒 Sepete ekle</button>
+    <button data-bm="etiket">🏷 Etiket yazdır</button>
+    ${yet ? `<hr><button data-bm="sol" ${sira <= 0 ? 'disabled' : ''}>◀ Sola taşı</button><button data-bm="sag" ${sira >= liste.length - 1 ? 'disabled' : ''}>▶ Sağa taşı</button>
+    <button data-bm="cikar" class="bad">✕ Hızlı ürünlerden çıkar</button>` : ''}`;
+  document.body.appendChild(m); baglamMenu = m;
+  // Ekrandan taşmasın
+  const r = m.getBoundingClientRect();
+  m.style.left = Math.max(8, Math.min(x, innerWidth - r.width - 8)) + 'px';
+  m.style.top = Math.max(8, Math.min(y, innerHeight - r.height - 8)) + 'px';
+  m.addEventListener('click', async ev => {
+    const a = ev.target.closest('[data-bm]'); if(!a || a.disabled) return;
+    ev.stopPropagation(); baglamKapat();
+    const islem = a.dataset.bm;
+    if(islem === 'duzenle') openProductForm(urunById(pid));
+    else if(islem === 'bilgi') urunBilgi(urunById(pid));
+    else if(islem === 'varyant') varyantForm(p.grupId);
+    else if(islem === 'sepet') addToCart(pid, 1);
+    else if(islem === 'etiket') etiketPenceresi([pid]);
+    else if(islem === 'sol' || islem === 'sag'){
+      const yeni = hizliListe(), i = yeni.findIndex(x => x.id === pid), j = islem === 'sol' ? i - 1 : i + 1;
+      if(i < 0 || j < 0 || j >= yeni.length) return;
+      [yeni[i], yeni[j]] = [yeni[j], yeni[i]];
+      const isl = []; yeni.forEach((u, k) => { if(u.hizliSira !== k + 1) isl.push(['urun', u.id, Object.assign({}, u, {hizliSira: k + 1})]); });
+      await kaydetCok(isl); renderHizli();
+    }
+    else if(islem === 'cikar'){
+      await kaydet('urun', pid, Object.assign({}, urunById(pid), {hizli: false, hizliSira: null}));
+      renderHizli(); toast(`"${p.ad}" hızlı ürünlerden çıkarıldı`);
+    }
+  });
+}
+$('#hizliGrid').addEventListener('contextmenu', e => {
+  const b = e.target.closest('[data-hizli]'); if(!b) return;
+  e.preventDefault(); hizliMenuAc(b.dataset.hizli, e.clientX, e.clientY);
+});
+// Telefonda basılı tutma (bazı tarayıcılar sağ tık olayını göndermez)
+let basiliT = null;
+$('#hizliGrid').addEventListener('touchstart', e => {
+  const b = e.target.closest('[data-hizli]'); if(!b) return;
+  const t = e.touches[0], x = t.clientX, y = t.clientY;
+  clearTimeout(basiliT);
+  basiliT = setTimeout(() => { uzunBasildi = Date.now(); if(navigator.vibrate) navigator.vibrate(15); hizliMenuAc(b.dataset.hizli, x, y); }, 550);
+}, {passive: true});
+['touchend', 'touchmove', 'touchcancel'].forEach(ev => $('#hizliGrid').addEventListener(ev, () => clearTimeout(basiliT), {passive: true}));
+$('#hizliDuzenBtn').onclick = hizliYonet;
+function hizliYonet(){
+  openModal(`<h2>⚡ Hızlı Satış Ürünleri</h2>
+    <p class="muted" style="margin-top:0">İşaretlediğiniz ürünler satış ekranında düğme olarak görünür. Seçim tüm kasalarda ortaktır.</p>
+    <input id="hzAra" type="search" placeholder="Ürün adı veya barkod ara…" style="width:100%">
+    <div id="hzListe" class="tblwrap" style="max-height:50vh;margin-top:8px"></div>
+    <div class="mfoot"><button class="btn" id="hzYeni" style="margin-right:auto">+ Barkodsuz ürün ekle</button><button class="btn pri" id="hzKapat">Tamam</button></div>`);
+  const ciz = () => {
+    const raw = $('#hzAra').value.trim(), q = low(raw);
+    const list = urunler().filter(p => !q || low(p.ad).includes(q) || String(p.barkod || '').includes(raw))
+      .sort((a, b) => (b.hizli ? 1 : 0) - (a.hizli ? 1 : 0) || a.ad.localeCompare(b.ad, 'tr')).slice(0, 200);
+    $('#hzListe').innerHTML = list.length ? `<table><tbody>${list.map(p => `<tr><td style="width:40px"><input type="checkbox" data-hz="${p.id}" ${p.hizli ? 'checked' : ''} style="width:20px;height:20px"></td><td><label for="" style="margin:0;color:var(--fg);font-size:14px">${esc(p.ad)}</label><div class="muted mono">${esc(p.barkod || 'barkodsuz')}</div></td><td class="r num">${tl(p.satis)}</td></tr>`).join('')}</tbody></table>`
+      : '<div class="empty">Ürün bulunamadı</div>';
+  };
+  ciz();
+  $('#hzAra').addEventListener('input', ciz);
+  $('#hzListe').addEventListener('click', e => { const tr = e.target.closest('tr'); if(tr && e.target.type !== 'checkbox'){ const c = tr.querySelector('[data-hz]'); if(c){ c.checked = !c.checked; c.dispatchEvent(new Event('change', {bubbles: true})); } } });
+  $('#hzListe').addEventListener('change', async e => {
+    const id = e.target.dataset.hz, p = id && urunById(id); if(!p) return;
+    try{ await kaydet('urun', id, Object.assign({}, p, {hizli: e.target.checked, hizliSira: e.target.checked ? Date.now() : null})); renderHizli(); }
+    catch(err){ toast('Kaydedilemedi: ' + err.message, 'bad'); e.target.checked = !e.target.checked; }
+  });
+  $('#hzKapat').onclick = closeModal;
+  $('#hzYeni').onclick = () => { closeModal(); openProductForm(null, {hizli: true, kritik: 0}); };
+}
+
+/* ================= BARKOD ETİKETİ ================= */
+const JSB_URL = 'https://cdn.jsdelivr.net/npm/jsbarcode@3.11.6/dist/JsBarcode.all.min.js';
+const ETIKET = {
+  '40x30': {ad: '40 × 30 mm termal etiket', w: 40, h: 30},
+  '50x30': {ad: '50 × 30 mm termal etiket', w: 50, h: 30},
+  '58x40': {ad: '58 × 40 mm termal etiket', w: 58, h: 40},
+  'a4-24': {ad: "A4 sayfa — 24'lü (70 × 37 mm)", w: 70, h: 37, a4: true, sutun: 3},
+  'a4-40': {ad: "A4 sayfa — 40'lı (52,5 × 29,7 mm)", w: 52.5, h: 29.7, a4: true, sutun: 4}
+};
+function eanKontrol(d12){ let s = 0; for(let i = 0; i < 12; i++) s += (+d12[i]) * (i % 2 ? 3 : 1); return String((10 - s % 10) % 10); }
+// Mağaza içi barkod: "29" ile başlayan geçerli EAN-13 (ticari barkodlarla çakışmaz)
+function barkodUret(kullanilan = new Set()){
+  for(;;){ let d = '29'; for(const x of crypto.getRandomValues(new Uint8Array(10))) d += x % 10; const b = d + eanKontrol(d); if(!urunByBarkod(b) && !kullanilan.has(b)) return b; }
+}
+const barkodBicim = k => /^\d{13}$/.test(k) && eanKontrol(k.slice(0, 12)) === k[12] ? 'EAN13' : 'CODE128';
+$('#etiketBtn').onclick = () => etiketPenceresi([]);
+
+function etiketPenceresi(baslangic){
+  const sec = new Map(); baslangic.forEach(id => sec.set(id, 1));
+  const boyut = ETIKET[cihaz.etiketBoyut] ? cihaz.etiketBoyut : '40x30';
+  openModal(`<h2>🏷 Etiket Yazdır</h2>
+    <div class="form">
+      <div class="full"><label>Etiket boyutu</label><select id="eBoyut">${Object.entries(ETIKET).map(([k, e]) => `<option value="${k}" ${k === boyut ? 'selected' : ''}>${e.ad}</option>`).join('')}</select></div>
+      <div class="full row" style="gap:16px">
+        <label style="display:flex;gap:6px;align-items:center;margin:0;color:var(--fg);font-size:14px"><input type="checkbox" id="eAd" ${cihaz.etiketAd !== false ? 'checked' : ''}> Ürün adı</label>
+        <label style="display:flex;gap:6px;align-items:center;margin:0;color:var(--fg);font-size:14px"><input type="checkbox" id="eFiyat" ${cihaz.etiketFiyat !== false ? 'checked' : ''}> Fiyat</label>
+        <label style="display:flex;gap:6px;align-items:center;margin:0;color:var(--fg);font-size:14px"><input type="checkbox" id="eBarkod" ${cihaz.etiketBarkod !== false ? 'checked' : ''}> Barkod</label>
+      </div>
+    </div>
+    <div style="position:relative;margin-top:12px"><input id="eAra" type="search" placeholder="Etiketi basılacak ürünü arayın veya barkod okutun…" style="width:100%" autocomplete="off"><div id="eSonuc" class="acilir"></div></div>
+    <div class="row" style="margin-top:8px"><button class="btn sm" id="eKritik">Kritik stoktakileri ekle</button><button class="btn sm" id="eBarkodsuz">Barkodsuzları ekle</button><button class="btn sm bad" id="eTemizle">Listeyi temizle</button></div>
+    <div class="tblwrap" style="max-height:34vh;margin-top:8px"><table><thead><tr><th>Ürün</th><th class="r">Fiyat</th><th style="text-align:center">Adet</th><th></th></tr></thead><tbody id="eListe"></tbody></table></div>
+    <div class="muted" id="eBilgi" style="margin-top:6px"></div>
+    <div class="mfoot"><button class="btn" id="eVaz">Kapat</button><button class="btn pri" id="eYazdir">🖨 Yazdır</button></div>`);
+  const ciz = () => {
+    const ids = [...sec.keys()].filter(id => urunById(id));
+    $('#eListe').innerHTML = ids.map(id => { const p = urunById(id); return `<tr><td>${esc(p.ad)}<div class="muted mono">${p.barkod ? esc(p.barkod) : '<span style="color:var(--warn)">barkodsuz</span>'}</div></td><td class="r num">${tl(p.satis)}</td>
+      <td style="text-align:center"><input data-eadet="${id}" value="${sec.get(id)}" type="number" min="1" step="1" style="width:64px;text-align:center" inputmode="numeric"></td><td><button class="btn sm bad" data-esil="${id}">✕</button></td></tr>`; }).join('') || '<tr><td colspan="4" class="empty">Yukarıdan ürün arayıp ekleyin</td></tr>';
+    const toplam = ids.reduce((a, id) => a + sec.get(id), 0), barkodsuz = ids.filter(id => !urunById(id).barkod).length;
+    $('#eBilgi').innerHTML = `${ids.length} ürün, toplam <b>${toplam}</b> etiket` + (barkodsuz && $('#eBarkod').checked ? ` · <span style="color:var(--warn)">${barkodsuz} ürünün barkodu yok${yetkili('urunDuzenle') ? ' (yazdırırken üretilebilir)' : ''}</span>` : '');
+  };
+  const ekle = id => { sec.set(id, (sec.get(id) || 0) + (sec.has(id) ? 1 : 1)); ciz(); };
+  const sonuc = () => {
+    const raw = $('#eAra').value.trim(), box = $('#eSonuc');
+    if(!raw){ box.style.display = 'none'; return; }
+    const l = searchProducts(raw).slice(0, 12);
+    box.innerHTML = l.length ? l.map(p => `<button data-eekle="${p.id}"><span>${esc(p.ad)} <span class="muted mono">${esc(p.barkod || '')}</span></span><b class="num">${tl(p.satis)}</b></button>`).join('') : '<div class="empty">Ürün bulunamadı</div>';
+    box.style.display = 'block';
+  };
+  $('#eAra').addEventListener('input', sonuc);
+  $('#eAra').addEventListener('keydown', e => {
+    if(e.key !== 'Enter') return; e.preventDefault();
+    const raw = $('#eAra').value.trim(), p = urunByBarkod(raw) || (searchProducts(raw).length === 1 ? searchProducts(raw)[0] : null);
+    if(p){ ekle(p.id); beep(true); $('#eAra').value = ''; $('#eSonuc').style.display = 'none'; } else { const f = $('#eSonuc [data-eekle]'); if(f) f.click(); else beep(false); }
+  });
+  $('#eSonuc').addEventListener('click', e => { const b = e.target.closest('[data-eekle]'); if(!b) return; ekle(b.dataset.eekle); $('#eAra').value = ''; $('#eSonuc').style.display = 'none'; $('#eAra').focus(); });
+  $('#eListe').addEventListener('change', e => { const id = e.target.dataset.eadet; if(id){ const n = Math.max(1, Math.floor(+e.target.value) || 1); sec.set(id, n); ciz(); } });
+  $('#eListe').addEventListener('click', e => { const b = e.target.closest('[data-esil]'); if(b){ sec.delete(b.dataset.esil); ciz(); } });
+  $('#eKritik').onclick = () => { urunler().filter(p => stok(p.id) <= (+p.kritik || 0)).forEach(p => { if(!sec.has(p.id)) sec.set(p.id, 1); }); ciz(); };
+  $('#eBarkodsuz').onclick = () => { urunler().filter(p => !p.barkod).forEach(p => { if(!sec.has(p.id)) sec.set(p.id, 1); }); ciz(); };
+  $('#eTemizle').onclick = () => { sec.clear(); ciz(); };
+  ['#eAd', '#eFiyat', '#eBarkod'].forEach(s => $(s).addEventListener('change', ciz));
+  $('#eVaz').onclick = closeModal;
+  $('#eYazdir').onclick = async () => {
+    const ids = [...sec.keys()].filter(id => urunById(id));
+    if(!ids.length){ toast('Önce ürün ekleyin', 'bad'); return; }
+    const sec_ = {boyut: $('#eBoyut').value, ad: $('#eAd').checked, fiyat: $('#eFiyat').checked, barkod: $('#eBarkod').checked};
+    cihaz = Object.assign(cihaz, {etiketBoyut: sec_.boyut, etiketAd: sec_.ad, etiketFiyat: sec_.fiyat, etiketBarkod: sec_.barkod}); lsYaz('brn-cihaz', cihaz);
+    // Barkodu olmayan ürünlere barkod üret (yetki varsa ve istenirse)
+    const barkodsuz = ids.map(urunById).filter(p => !p.barkod);
+    if(sec_.barkod && barkodsuz.length && yetkili('urunDuzenle') && confirm(`${barkodsuz.length} ürünün barkodu yok.\nProgram bu ürünlere barkod üretip kaydetsin mi?\n(Hayır derseniz bu ürünlerin etiketinde barkod olmaz.)`)){
+      const kul = new Set();
+      await kaydetCok(barkodsuz.map(p => { const b = barkodUret(kul); kul.add(b); return ['urun', p.id, Object.assign({}, p, {barkod: b})]; }));
+      ciz();
+    }
+    try{ await etiketBas(ids.map(id => ({p: urunById(id), adet: sec.get(id)})), sec_); }
+    catch(e){ toast('Etiket hazırlanamadı: ' + e.message, 'bad'); }
+  };
+  ciz();
+}
+async function etiketBas(liste, o){
+  if(o.barkod) await scriptYukle(JSB_URL, 'JsBarcode');
+  const E = ETIKET[o.boyut] || ETIKET['40x30'];
+  const pt = k => (E.h * k).toFixed(1) + 'pt';
+  const kapsayici = document.createElement('div');
+  if(E.a4) kapsayici.style.cssText = `display:grid;grid-template-columns:repeat(${E.sutun},${E.w}mm);grid-auto-rows:${E.h}mm`;
+  const tum = [];
+  liste.forEach(({p, adet}) => { for(let i = 0; i < adet; i++) tum.push(p); });
+  tum.forEach((p, i) => {
+    const d = document.createElement('div'); d.className = 'etiket';
+    d.style.cssText = `width:${E.w}mm;height:${E.h}mm;` + (!E.a4 && i < tum.length - 1 ? 'break-after:page;' : '') + (E.a4 ? 'break-inside:avoid;' : '');
+    const barkodVar = o.barkod && p.barkod;
+    if(o.ad) d.insertAdjacentHTML('beforeend', `<div class="et-ad" style="font-size:${pt(barkodVar ? .24 : .32)}">${esc(p.ad)}</div>`);
+    if(o.fiyat) d.insertAdjacentHTML('beforeend', `<div class="et-fiyat" style="font-size:${pt(barkodVar ? .4 : .62)}">${tl(p.satis)}</div>`);
+    if(barkodVar){
+      const ns = 'http://www.w3.org/2000/svg', svg = document.createElementNS(ns, 'svg');
+      try{ window.JsBarcode(svg, p.barkod, {format: barkodBicim(p.barkod), displayValue: false, margin: 0, height: 60, width: 2}); }
+      catch(e){ window.JsBarcode(svg, p.barkod, {format: 'CODE128', displayValue: false, margin: 0, height: 60, width: 2}); }
+      const w = parseFloat(svg.getAttribute('width')), h = parseFloat(svg.getAttribute('height'));
+      svg.setAttribute('viewBox', `0 0 ${w} ${h}`); svg.setAttribute('preserveAspectRatio', 'none'); svg.removeAttribute('width'); svg.removeAttribute('height');
+      svg.style.height = (E.h * (o.ad || o.fiyat ? .3 : .55)).toFixed(1) + 'mm'; svg.style.marginTop = '.6mm';
+      d.appendChild(svg);
+      d.insertAdjacentHTML('beforeend', `<div class="et-no" style="font-size:${pt(.19)}">${esc(p.barkod)}</div>`);
+    }
+    kapsayici.appendChild(d);
+  });
+  const area = $('#printArea'); area.innerHTML = ''; area.appendChild(kapsayici);
+  $('#pageStyle').textContent = `@media print{@page{size:${E.a4 ? 'A4' : E.w + 'mm ' + E.h + 'mm'};margin:0} #printArea{width:auto!important;padding:0!important;font-family:Arial,sans-serif}}`;
+  setTimeout(() => window.print(), 80);
+}
 
 /* ================= FİŞ ================= */
 function kagitAyarla(){ const w = cihaz.kagit === '58' ? '48mm' : cihaz.kagit === 'a4' ? '80mm' : '72mm', fs = cihaz.kagit === '58' ? '11px' : '12px'; $('#pageStyle').textContent = `@media print{@page{margin:${cihaz.kagit === 'a4' ? '10mm' : '0'}} #printArea{width:${w};font-size:${fs}}}`; }
@@ -818,8 +1326,10 @@ function printReceipt(s){
     <table>${items}</table><hr>
     <table>${s.indirim ? `<tr><td>Ara Toplam</td><td class="r">${num2(s.araToplam)}</td></tr><tr><td>İndirim</td><td class="r">-${num2(s.indirim)}</td></tr>` : ''}
       <tr class="b lg"><td>TOPLAM</td><td class="r">${tl(s.toplam)}</td></tr>
-      <tr><td>Ödeme</td><td class="r">${s.odeme === 'nakit' ? 'NAKİT' : 'KREDİ KARTI'}</td></tr>
-      ${s.odeme === 'nakit' ? `<tr><td>Alınan</td><td class="r">${num2(s.alinan)}</td></tr><tr><td>Para Üstü</td><td class="r">${num2(s.paraUstu)}</td></tr>` : ''}</table>
+      <tr><td>Ödeme</td><td class="r">${({nakit: 'NAKİT', kart: 'KREDİ KARTI', veresiye: 'VERESİYE', personel: 'PERSONEL (MAAŞTAN)'})[s.odeme] || ''}</td></tr>
+      ${s.odeme === 'nakit' ? `<tr><td>Alınan</td><td class="r">${num2(s.alinan)}</td></tr><tr><td>Para Üstü</td><td class="r">${num2(s.paraUstu)}</td></tr>` : ''}
+      ${s.odeme === 'veresiye' ? `<tr><td colspan="2">Müşteri: ${esc(s.cariAd || '')}</td></tr>${s.cariId && D.cari.has(s.cariId) ? `<tr><td>Güncel borç</td><td class="r">${num2(cariBakiye(s.cariId))}</td></tr>` : ''}` : ''}</table>
+    ${s.odeme === 'veresiye' ? '<div style="margin-top:14px">İmza: ........................</div>' : ''}
     ${s.iptal ? '<hr><div class="c b">*** İPTAL EDİLDİ ***</div>' : ''}<hr>
     ${f.altYazi ? `<div class="c">${esc(f.altYazi)}</div>` : ''}<div class="c" style="font-size:.85em;margin-top:4px">BİLGİ FİŞİDİR - MALİ DEĞERİ YOKTUR</div>`;
   setTimeout(() => window.print(), 60);
@@ -829,51 +1339,254 @@ window.addEventListener('afterprint', focusScan);
 /* ================= ÜRÜNLER ================= */
 $('#pSearch').addEventListener('input', renderProducts);
 $('#pCrit').addEventListener('change', renderProducts);
+/* Ürün sıralama: seçim bu cihazda hatırlanır */
+const SIRA_VARSAYILAN = {ad: 1, kategori: 1, barkod: 1, stok: 1, satis: 1, alis: -1, satilan: -1, yeni: -1};
+function urunSira(){ const [k, y] = String(cihaz.urunSira || 'ad:1').split(':'); return {k: SIRA_VARSAYILAN[k] ? k : 'ad', y: +y === -1 ? -1 : 1}; }
+function siraSecici(){
+  const {k, y} = urunSira(), deger = k + ':' + y, s = $('#pSira');
+  s.value = deger;
+  if(s.value !== deger){ // listede olmayan yön (örn. başlıktan "Barkod Z→A") için geçici seçenek
+    let o = s.querySelector('option[data-gecici]'); if(!o){ o = document.createElement('option'); o.dataset.gecici = '1'; s.appendChild(o); }
+    const th = $(`#pBaslik [data-sira="${k}"]`);
+    o.value = deger; o.textContent = (th ? th.textContent.replace(/[▲▼]/g, '').trim() : k) + (y === 1 ? ' (artan)' : ' (azalan)'); s.value = deger;
+  }
+}
+function urunSiraKoy(k, y){ cihaz.urunSira = k + ':' + y; lsYaz('brn-cihaz', cihaz); renderProducts(); }
+$('#pSira').addEventListener('change', () => { const [k, y] = $('#pSira').value.split(':'); urunSiraKoy(k, +y); });
+$('#pBaslik').addEventListener('click', e => {
+  const th = e.target.closest('[data-sira]'); if(!th) return;
+  const k = th.dataset.sira, s = urunSira();
+  urunSiraKoy(k, s.k === k ? -s.y : SIRA_VARSAYILAN[k]);
+});
+function satilanAdetler(){
+  const m = new Map();
+  for(const s of D.satis.values()) if(!s.iptal) for(const k of (s.kalemler || [])) m.set(k.urunId, (m.get(k.urunId) || 0) + (+k.adet || 0));
+  return m;
+}
 $('#newProdBtn').onclick = () => openProductForm(null);
+$('#newVarBtn').onclick = () => varyantForm(null);
 $('#stockInBtn').onclick = openStockIn;
-$('#pCam').onclick = () => kameraAc(kod => { const p = urunByBarkod(kod); if(p) openProductForm(p); else if(confirm(`"${kod}" kayıtlı değil. Yeni ürün olarak eklensin mi?`)) openProductForm(null, {barkod: kod}); }, {baslik: 'Fiyat / stok sorgula'});
+$('#pCam').onclick = () => kameraAc(kod => { const p = urunByBarkod(kod); if(p) openProductForm(p); else if(!yetkili('urunDuzenle')) toast(`"${kod}" kayıtlı değil`, 'bad'); else if(confirm(`"${kod}" kayıtlı değil. Yeni ürün olarak eklensin mi?`)) openProductForm(null, {barkod: kod}); }, {baslik: 'Fiyat / stok sorgula'});
 function renderProducts(){
   const raw = $('#pSearch').value.trim(), q = low(raw), crit = $('#pCrit').checked, all = urunler();
-  const list = all.filter(p => (!q || low(p.ad).includes(q) || String(p.barkod || '').includes(raw) || low(p.kategori).includes(q)) && (!crit || stok(p.id) <= (+p.kritik || 0))).sort((a, b) => a.ad.localeCompare(b.ad, 'tr'));
+  const list = all.filter(p => (!q || low(p.ad).includes(q) || String(p.barkod || '').includes(raw) || low(p.kategori).includes(q)) && (!crit || stok(p.id) <= (+p.kritik || 0)));
+  // Sıralama
+  let {k: sk, y: sy} = urunSira();
+  if(sk === 'alis' && !yetkili('rapor') && !yetkili('urunDuzenle')){ sk = 'ad'; sy = 1; }
+  const satilan = satilanAdetler();
+  const deger = p => sk === 'stok' ? stok(p.id) : sk === 'satis' ? +p.satis || 0 : sk === 'alis' ? +p.alis || 0 : sk === 'satilan' ? satilan.get(p.id) || 0 : sk === 'yeni' ? +p.olusturma || 0 : null;
+  const metin = p => sk === 'kategori' ? low(p.kategori || '~') : sk === 'barkod' ? String(p.barkod || '~') : low(p.ad);
+  list.sort((a, b) => {
+    const da = deger(a), db = deger(b);
+    const r = da !== null ? (da - db) : metin(a).localeCompare(metin(b), 'tr');
+    return r * sy || a.ad.localeCompare(b.ad, 'tr');
+  });
+  $$('#pBaslik [data-sira]').forEach(th => { th.textContent = th.textContent.replace(/ [▲▼]$/, '') + (th.dataset.sira === sk ? (sy === 1 ? ' ▲' : ' ▼') : ''); th.classList.toggle('sirali', th.dataset.sira === sk); });
+  siraSecici();
   const critCount = all.filter(p => stok(p.id) <= (+p.kritik || 0)).length;
   $('#pCount').innerHTML = `${all.length} ürün` + (critCount ? ` · <span style="color:var(--out)">${critCount} ürün kritik stokta</span>` : '') + (list.length > 400 ? ' · ilk 400 gösteriliyor, aramayı daraltın' : '');
-  if(!all.length){ $('#pBody').innerHTML = `<tr><td colspan="7" class="empty">Henüz ürün yok.<br><br><button class="btn pri" onclick="openProductForm(null)">+ İlk ürünü ekle</button> <button class="btn" onclick="showTab('ayarlar')">Excel'den aktar</button></td></tr>`; return; }
+  if(!all.length){ $('#pBody').innerHTML = `<tr><td colspan="8" class="empty">Henüz ürün yok.<br><br><button class="btn pri" onclick="openProductForm(null)">+ İlk ürünü ekle</button> <button class="btn" onclick="showTab('ayarlar')">Excel'den aktar</button></td></tr>`; return; }
   $('#pBody').innerHTML = list.slice(0, 400).map(p => { const s = stok(p.id); return `
     <tr>
       <td class="muted mono hide-m">${esc(p.barkod || '—')}</td>
-      <td><b>${esc(p.ad)}</b></td>
+      <td>${p.grupId ? `<b>${esc(p.grupAd)}</b> <span class="tag" style="font-family:var(--font-body);background:var(--accent-soft);color:var(--accent)">${p.varyant ? esc(p.varyant) : '🎨 varyant'}</span>` : `<b>${esc(p.ad)}</b>`}${p.hizli ? ' <span title="Hızlı ürün">⚡</span>' : ''}</td>
       <td class="hide-m">${p.kategori ? `<span class="tag" style="font-family:var(--font-body)">${esc(p.kategori)}</span>` : ''}</td>
-      <td class="r num muted hide-m">${p.alis ? tl(p.alis) : '—'}</td>
+      <td class="r num muted hide-m">${!yetkili('rapor') && !yetkili('urunDuzenle') ? '•••' : p.alis ? tl(p.alis) : '—'}</td>
       <td class="r num"><b>${tl(p.satis)}</b></td>
       <td class="r"><span class="tag ${s <= 0 ? 'bad' : s <= (+p.kritik || 0) ? 'warn' : 'ok'}">${s}</span></td>
-      <td class="r"><button class="btn sm" data-edit="${p.id}">Düzenle</button></td>
-    </tr>`; }).join('') || '<tr><td colspan="7" class="empty">Eşleşen ürün yok</td></tr>';
+      <td class="r num muted hide-m">${satilan.get(p.id) || 0}</td>
+      <td class="r"><button class="btn sm" data-edit="${p.id}">${yetkili('urunDuzenle') ? 'Düzenle' : 'Bilgi'}</button></td>
+    </tr>`; }).join('') || '<tr><td colspan="8" class="empty">Eşleşen ürün yok</td></tr>';
 }
-$('#pBody').addEventListener('click', e => { const ed = e.target.closest('[data-edit]'); if(ed) openProductForm(urunById(ed.dataset.edit)); });
+$('#pBody').addEventListener('click', e => {
+  const ed = e.target.closest('[data-edit]'); if(!ed) return;
+  const p = urunById(ed.dataset.edit); if(!p) return;
+  if(p.grupId && yetkili('urunDuzenle')) varyantForm(p.grupId); else openProductForm(p);
+});
 
+/* ================= VARYANTLI ÜRÜN ================= */
+// Her varyant ayrı bir üründür (kendi barkodu, fiyatı, stoğu). Aynı grupId ile birbirine bağlanır.
+// Ürün adı otomatik "Grup Adı - Varyant" olur; böylece satış, etiket ve raporlar aynen çalışır.
+const varyantlar = grupId => urunler().filter(p => p.grupId === grupId).sort((a, b) => (a.varyantSira || 0) - (b.varyantSira || 0) || a.varyant.localeCompare(b.varyant, 'tr'));
+function varyantForm(grupId, tekUrun, geriDon){
+  if(!yetkili('urunDuzenle')){ toast('Ürün düzenleme yetkiniz yok', 'bad'); return; }
+  const mevcut = grupId ? varyantlar(grupId) : (tekUrun ? [tekUrun] : []);
+  const ilk = mevcut[0] || {};
+  const grupAd = ilk.grupAd || (tekUrun ? tekUrun.ad : '');
+  const cats = [...new Set(urunler().map(x => x.kategori).filter(Boolean))].sort((a, b) => a.localeCompare(b, 'tr'));
+  // Satırlar: mevcut varyantlar + (yeni gruba) 1 boş satır
+  let satirlar = mevcut.map(p => ({id: p.id, varyant: p.grupId ? (p.varyant || '') : '', barkod: p.barkod || '', satis: num2(p.satis), stok: stok(p.id), yeni: false}));
+  const silinen = [];
+  openModal(`<h2>🎨 ${grupId ? 'Varyantlı Ürünü Düzenle' : 'Varyantlı Ürün'}</h2>
+    <p class="muted" style="margin-top:0">Renk, ebat, çizgi tipi gibi seçenekleri olan ürünler için. Her varyantın kendi barkodu, fiyatı ve stoğu olur.</p>
+    <div class="form">
+      <div class="full"><label>Ürün adı * <span class="muted">(örn. Faber Tükenmez Kalem)</span></label><input id="vgAd" value="${esc(grupAd)}" ${grupAd ? '' : 'autofocus'}></div>
+      <div><label>Kategori</label><input id="vgKat" list="vgKatList" value="${esc(ilk.kategori || '')}"><datalist id="vgKatList">${cats.map(c => `<option value="${esc(c)}">`).join('')}</datalist></div>
+      <div><label>Alış fiyatı (₺) <span class="muted">— tümüne</span></label><input id="vgAlis" value="${ilk.alis ? num2(ilk.alis) : ''}" placeholder="0,00" inputmode="decimal"></div>
+      <div><label>Satış fiyatı (₺) * <span class="muted">— tüm varyantlara</span></label><input id="vgSatis" value="${ilk.satis != null && ilk.satis !== '' ? num2(ilk.satis) : ''}" placeholder="0,00" inputmode="decimal"></div>
+      <div><label>Kritik stok <span class="muted">— tümüne</span></label><input id="vgKritik" type="number" min="0" step="1" value="${ilk.kritik ?? 5}" inputmode="numeric"></div>
+      <div><label>KDV oranı <span class="muted">— tümüne</span></label><select id="vgKdv">${KDV_ORANLARI.map(o => `<option value="${o}" ${urunKdv(ilk.id ? ilk : null) === o ? 'selected' : ''}>%${o}</option>`).join('')}</select></div>
+    </div>
+    <div style="background:var(--surface-2);border-radius:10px;padding:10px 12px;margin-top:14px">
+      <label style="color:var(--fg);font-weight:600">📷 Varyantları hızlıca ekle — barkodları sırayla okutun</label>
+      <div class="row" style="flex-wrap:nowrap"><input id="vgHizli" placeholder="Barkod okutun: her okutmada alta yeni satır eklenir" style="flex:1;font-size:16px;border-width:2px;border-color:var(--accent)" autocomplete="off" ${grupAd ? 'autofocus' : ''}><button type="button" class="btn" id="vgKam" title="Kamerayla okut">📷</button><button type="button" class="btn" id="vgHizliBtn">Ekle</button></div>
+      <div class="muted" style="margin-top:4px">İsterseniz barkod yerine virgülle renk/ebat da yazabilirsiniz: <i>Kırmızı, Mavi, Yeşil</i></div>
+      <div id="vgSon" class="muted" style="margin-top:4px;min-height:18px"></div>
+    </div>
+    <div class="tblwrap" style="max-height:38vh;margin-top:10px"><table>
+      <thead><tr><th>Varyant <span style="text-transform:none;font-weight:400">(isteğe bağlı)</span></th><th>Barkod <span style="text-transform:none;font-weight:400">(okutabilirsiniz)</span></th><th class="r">Stok</th><th></th></tr></thead>
+      <tbody id="vgSatirlar"></tbody></table></div>
+    <button type="button" class="btn sm" id="vgSatirEkle" style="margin-top:8px">+ Satır ekle</button>
+    <div class="err" id="vgErr" style="margin-top:8px"></div>
+    <div class="mfoot"><button class="btn" id="vgVaz">Vazgeç</button><button class="btn pri" id="vgKaydet">Kaydet</button></div>`);
+  $('#modal').style.width = 'min(800px,100%)';
+  const ciz = () => {
+    $('#vgSatirlar').innerHTML = satirlar.map((s, i) => `<tr>
+      <td><input data-i="${i}" data-k="varyant" value="${esc(s.varyant)}" placeholder="boş: aynı ad" style="width:100%;min-width:90px"></td>
+      <td><div class="row" style="flex-wrap:nowrap;gap:4px"><input data-i="${i}" data-k="barkod" value="${esc(s.barkod)}" class="mono" inputmode="numeric" style="flex:1;min-width:120px"><button type="button" class="btn sm" data-uret="${i}" title="Barkod üret">🎲</button></div></td>
+      <td class="r">${s.yeni ? `<input data-i="${i}" data-k="stok" value="${s.stok}" type="number" step="1" inputmode="numeric" style="width:64px;text-align:right" title="Başlangıç stoku">` : `<span class="tag" title="Stok, Stok Girişi ekranından değiştirilir">${s.stok}</span>`}</td>
+      <td class="r" style="white-space:nowrap">${!s.yeni ? `<button type="button" class="btn sm" data-detay="${i}" title="Kritik stok, hızlı ürün, sayım, etiket">⚙</button> ` : ''}<button type="button" class="btn sm bad" data-sil="${i}" title="Varyantı kaldır">✕</button></td>
+    </tr>`).join('') || '<tr><td colspan="4" class="empty">Yukarıdaki kutuya barkodları sırayla okutun — her biri buraya yeni satır olarak eklenir</td></tr>';
+  };
+  const satirEkle = (varyant = '') => satirlar.push({varyant, barkod: '', satis: '', stok: 0, yeni: true});
+  ciz();
+  $('#vgSatirlar').addEventListener('input', e => { const i = e.target.dataset.i, k = e.target.dataset.k; if(i != null && k) satirlar[i][k] = e.target.value; });
+  $('#vgSatirlar').addEventListener('keydown', e => {
+    if(e.key !== 'Enter') return; e.preventDefault();
+    // Barkod okutunca bir sonraki satırın barkod kutusuna geç
+    const i = +e.target.dataset.i, k = e.target.dataset.k;
+    const sonraki = $(`#vgSatirlar [data-i="${i + 1}"][data-k="${k === 'barkod' ? 'barkod' : k}"]`);
+    if(sonraki) sonraki.focus();
+  });
+  $('#vgSatirlar').addEventListener('click', e => {
+    const u = e.target.closest('[data-uret]'), s = e.target.closest('[data-sil]'), d = e.target.closest('[data-detay]');
+    if(u){ const kul = new Set(satirlar.map(x => x.barkod).filter(Boolean)); satirlar[+u.dataset.uret].barkod = barkodUret(kul); ciz(); }
+    if(s){ const i = +s.dataset.sil, r = satirlar[i];
+      if(!r.yeni){ if(!confirm(`"${r.varyant || 'Bu'}" varyantı silinsin mi?\n(Geçmiş satışlar korunur.)`)) return; silinen.push(r.id); }
+      satirlar.splice(i, 1); ciz(); }
+    if(d){ const r = satirlar[+d.dataset.detay]; const p = urunById(r.id); if(p){ closeModal(); openProductForm(p, {}, () => {}); } }
+  });
+  $('#vgSatirEkle').onclick = () => { satirEkle(); ciz(); const l = $$('#vgSatirlar [data-k="varyant"]'); if(l.length) l[l.length - 1].focus(); };
+  // Barkod okutuldukça alta yeni satır ekler
+  const barkodEkle = kod => {
+    kod = String(kod).trim(); const son = $('#vgSon');
+    if(satirlar.some(r => r.barkod.trim() === kod)){ beep(false); son.innerHTML = `<span style="color:var(--out)">${esc(kod)} zaten listede</span>`; return; }
+    const baska = urunler().find(x => x.barkod === kod && !satirlar.some(r => r.id === x.id));
+    if(baska){ beep(false); son.innerHTML = `<span style="color:var(--out)">${esc(kod)} barkodu zaten "${esc(baska.ad)}" ürününde kayıtlı</span>`; return; }
+    satirlar = satirlar.filter(r => !(r.yeni && !r.varyant.trim() && !r.barkod.trim()));   // boş satırları at
+    satirlar.push({varyant: '', barkod: kod, satis: '', stok: 0, yeni: true});
+    ciz(); beep(true);
+    son.innerHTML = `✓ <b class="mono">${esc(kod)}</b> eklendi · toplam ${satirlar.length} varyant`;
+    const w = $('#modal .tblwrap'); if(w) w.scrollTop = w.scrollHeight;
+  };
+  $('#vgHizliBtn').onclick = () => {
+    const deger = $('#vgHizli').value.trim();
+    if(!deger){ $('#vgHizli').focus(); return; }
+    if(/^\d{4,}$/.test(deger)) barkodEkle(deger);
+    else {
+      const adlar = deger.split(/[,;\n]/).map(x => x.trim()).filter(Boolean);
+      satirlar = satirlar.filter(r => !(r.yeni && !r.varyant.trim() && !r.barkod.trim()));
+      adlar.forEach(a => { if(!satirlar.some(r => low(r.varyant) === low(a))) satirEkle(a); });
+      ciz(); $('#vgSon').textContent = `✓ ${adlar.length} varyant eklendi`;
+    }
+    $('#vgHizli').value = ''; $('#vgHizli').focus();
+  };
+  $('#vgHizli').addEventListener('keydown', e => { if(e.key === 'Enter'){ e.preventDefault(); $('#vgHizliBtn').click(); } });
+  $('#vgAd').addEventListener('keydown', e => { if(e.key === 'Enter'){ e.preventDefault(); $('#vgHizli').focus(); } });
+  $('#vgKam').onclick = () => {
+    // Formu kaybetmeden kamerayla sürekli okut: pencere içinde ayrı kamera açılamadığı için önce mevcut durumu saklayıp geri açarız
+    const taslak = {ad: $('#vgAd').value, kat: $('#vgKat').value, alis: $('#vgAlis').value, satis: $('#vgSatis').value, kritik: $('#vgKritik').value};
+    const okunan = [];
+    closeModal();
+    kameraAc(kod => okunan.push(kod), {surekli: true, baslik: 'Varyant barkodlarını okut'});
+    const eski = modalKapaninca;
+    modalKapaninca = async () => { if(eski) await eski(); setTimeout(() => { varyantForm(grupId, tekUrun, {taslak, satirlar, silinen, okunan}); }, 50); };
+  };
+  if(geriDon){
+    const t = geriDon.taslak; $('#vgAd').value = t.ad; $('#vgKat').value = t.kat; $('#vgAlis').value = t.alis; $('#vgSatis').value = t.satis; $('#vgKritik').value = t.kritik;
+    satirlar = geriDon.satirlar; silinen.push(...geriDon.silinen); ciz();
+    geriDon.okunan.forEach(barkodEkle);
+  }
+  $('#vgVaz').onclick = closeModal;
+  $('#vgKaydet').onclick = async () => {
+    const er = $('#vgErr'); er.textContent = '';
+    const ad = $('#vgAd').value.trim(), varsFiyat = parseNum($('#vgSatis').value), alis = parseNum($('#vgAlis').value);
+    const kritik = Math.max(0, Math.floor(+$('#vgKritik').value || 0)), kategori = $('#vgKat').value.trim();
+    if(!ad){ er.textContent = 'Ürün adını yazın.'; $('#vgAd').focus(); return; }
+    if(isNaN(varsFiyat) || varsFiyat < 0){ er.textContent = 'Satış fiyatını yazın (tüm varyantlara uygulanır).'; $('#vgSatis').focus(); return; }
+    const dolu = satirlar.filter(r => r.varyant.trim() || r.barkod.trim() || !r.yeni);
+    if(!dolu.length){ er.textContent = 'En az bir varyant ekleyin.'; return; }
+    const adlar = new Set(), barkodlar = new Set(), ids = new Set(dolu.filter(r => r.id).map(r => r.id));
+    for(const r of dolu){
+      const v = r.varyant.trim(), b = r.barkod.trim();
+      if(v){ if(adlar.has(low(v))){ er.textContent = `"${v}" iki kez yazılmış.`; return; } adlar.add(low(v)); }
+      if(b){
+        if(barkodlar.has(b)){ er.textContent = `${b} barkodu iki satırda var.`; return; } barkodlar.add(b);
+        const baska = urunler().find(x => x.barkod === b && !ids.has(x.id));
+        if(baska){ er.textContent = `${b} barkodu zaten "${baska.ad}" ürününde kayıtlı.`; return; }
+      }
+    }
+    const gid = grupId || (ilk.grupId) || idUret();
+    const islemler = dolu.map((r, sira) => {
+      const v = r.varyant.trim(), f = r2(varsFiyat);
+      const eski = r.id ? urunById(r.id) : null;
+      const doc = Object.assign({}, eski || {olusturma: Date.now(), acilis: Math.floor(+r.stok || 0)}, {
+        grupId: gid, grupAd: ad, varyant: v, varyantSira: sira, ad: v ? `${ad} - ${v}` : ad, barkod: r.barkod.trim(),
+        kategori, satis: f, kritik, kdv: +$('#vgKdv').value, alis: isNaN(alis) ? (eski ? eski.alis || 0 : 0) : r2(alis)
+      });
+      return ['urun', r.id || idUret(), doc];
+    });
+    silinen.forEach(id => { const p = urunById(id); if(p) islemler.push(['urun', id, Object.assign({}, p, {silindi: true})]); });
+    $('#vgKaydet').disabled = true;
+    try{ await kaydetCok(islemler); }catch(e){ er.textContent = 'Kaydedilemedi: ' + e.message; $('#vgKaydet').disabled = false; return; }
+    closeModal(); toast(`${dolu.length} varyant kaydedildi`, 'ok'); renderAktif();
+  };
+}
+
+function urunBilgi(p){
+  const s = stok(p.id);
+  openModal(`<h2>${esc(p.ad)}</h2>
+    <div class="muted mono">${esc(p.barkod || 'barkodsuz')}${p.kategori ? ' · ' + esc(p.kategori) : ''}</div>
+    <div class="stats" style="grid-template-columns:1fr 1fr"><div class="stat"><div class="muted">Satış fiyatı</div><div class="v">${tl(p.satis)}</div></div><div class="stat"><div class="muted">Stok</div><div class="v" style="color:${s <= 0 ? 'var(--out)' : 'inherit'}">${s}</div></div></div>
+    <div class="mfoot"><button class="btn" id="ubEtiket" style="margin-right:auto">🏷 Etiket</button><button class="btn" id="ubSepet">🛒 Sepete ekle</button><button class="btn pri" id="ubKapat">Kapat</button></div>`);
+  $('#ubKapat').onclick = closeModal;
+  $('#ubEtiket').onclick = () => { closeModal(); etiketPenceresi([p.id]); };
+  $('#ubSepet').onclick = () => { closeModal(); showTab('satis'); addToCart(p.id, 1); };
+}
 function openProductForm(p, preset={}, onSaved){
-  const v = Object.assign({barkod:'', ad:'', kategori:'', alis:'', satis:'', kritik:5, acilis:0}, p || {}, preset);
+  if(!yetkili('urunDuzenle')){ if(p) urunBilgi(p); else toast('Ürün ekleme yetkiniz yok', 'bad'); return; }
+  const v =Object.assign({barkod:'', ad:'', kategori:'', alis:'', satis:'', kritik:5, acilis:0}, p || {}, preset);
   const cats = [...new Set(urunler().map(x => x.kategori).filter(Boolean))].sort((a, b) => a.localeCompare(b, 'tr'));
   const mevcut = p ? stok(p.id) : 0;
   openModal(`
     <h2>${p ? 'Ürünü Düzenle' : 'Yeni Ürün'}</h2>
+    ${p && p.grupId ? `<div class="sumrow" style="background:var(--accent-soft);border-radius:8px;padding:8px 10px;margin:-4px 0 12px"><span>🎨 <b>${esc(p.grupAd)}</b> ürününün ${p.varyant ? `<b>${esc(p.varyant)}</b> varyantı` : 'bir varyantı'}</span><button type="button" class="btn sm" id="fVarGrup">Tüm varyantlar</button></div>` : ''}
     <form id="pForm" class="form" autocomplete="off">
-      <div class="full"><label>Barkod (boş bırakılabilir)</label><div class="row" style="flex-wrap:nowrap"><input id="fBarkod" value="${esc(v.barkod)}" inputmode="numeric" class="mono" style="flex:1" ${v.barkod ? '' : 'autofocus'}><button type="button" class="btn" id="fCam">📷</button></div></div>
-      <div class="full"><label>Ürün adı *</label><input id="fAd" value="${esc(v.ad)}" ${v.barkod && !p ? 'autofocus' : ''}></div>
+      <div class="full"><label>Barkod (boş bırakılabilir)</label><div class="row" style="flex-wrap:nowrap"><input id="fBarkod" value="${esc(v.barkod)}" inputmode="numeric" class="mono" style="flex:1" ${v.barkod ? '' : 'autofocus'}><button type="button" class="btn" id="fCam" title="Kamerayla okut">📷</button><button type="button" class="btn" id="fUret" title="Barkodu olmayan ürüne program barkod üretir">🎲 Üret</button></div></div>
+      <div class="full"><label>Ürün adı *${p && p.grupId ? ' <span class="muted">(ad ve varyant "Tüm varyantlar" ekranından değişir)</span>' : ''}</label><input id="fAd" value="${esc(v.ad)}" ${v.barkod && !p ? 'autofocus' : ''} ${p && p.grupId ? 'readonly style="opacity:.7"' : ''}></div>
       <div class="full"><label>Kategori</label><input id="fKat" list="katList" value="${esc(v.kategori)}" placeholder="örn. Kalem, Defter, Boya…"><datalist id="katList">${cats.map(c => `<option value="${esc(c)}">`).join('')}</datalist></div>
       <div><label>Alış fiyatı (₺)</label><input id="fAlis" value="${v.alis !== '' && v.alis != null ? num2(v.alis) : ''}" placeholder="0,00" inputmode="decimal"></div>
       <div><label>Satış fiyatı (₺) *</label><input id="fSatis" value="${v.satis !== '' && v.satis != null ? num2(v.satis) : ''}" placeholder="0,00" inputmode="decimal"></div>
       ${p ? `<div><label>Mevcut stok: <b class="mono">${mevcut}</b> — sayım yaptıysanız gerçek adedi yazın</label><input id="fSayim" type="number" step="1" placeholder="değiştirmek için yazın" inputmode="numeric"></div>`
           : `<div><label>Başlangıç stoku</label><input id="fAcilis" type="number" step="1" value="${+v.acilis || 0}" inputmode="numeric"></div>`}
       <div><label>Kritik stok (uyarı sınırı)</label><input id="fKritik" type="number" step="1" min="0" value="${v.kritik ?? 0}" inputmode="numeric"></div>
+      <div><label>KDV oranı <span class="muted">(fatura için)</span></label><select id="fKdv">${KDV_ORANLARI.map(o => `<option value="${o}" ${urunKdv(v) === o ? 'selected' : ''}>%${o}</option>`).join('')}</select></div>
+      <div class="full"><label style="display:flex;align-items:center;gap:8px;color:var(--fg);font-size:14px;margin:0"><input type="checkbox" id="fHizli" ${v.hizli ? 'checked' : ''}> ⚡ Satış ekranında hızlı ürün düğmesi olarak göster</label></div>
       <div class="err full" id="fErr"></div>
     </form>
-    <div class="mfoot">${p ? '<button class="btn bad" id="pDel" style="margin-right:auto">Sil</button>' : ''}<button class="btn" id="pVaz">Vazgeç</button><button class="btn pri" id="pSave">Kaydet</button></div>`);
+    <div class="mfoot">${p ? `<button class="btn bad" id="pDel" style="margin-right:auto">Sil</button>${p.grupId ? '' : '<button class="btn" id="pVarEkle" title="Bu ürünü renk/ebat gibi varyantlara ayır">🎨 Varyant ekle</button>'}<button class="btn" id="pEtiket">🏷 Etiket</button>` : ''}<button class="btn" id="pVaz">Vazgeç</button><button class="btn pri" id="pSave">Kaydet</button></div>`);
   $('#pVaz').onclick = closeModal;
+  $('#fUret').onclick = () => {
+    if($('#fBarkod').value.trim() && !confirm('Bu ürünün zaten barkodu var. Yerine yeni barkod üretilsin mi?\n(Eski barkodlu etiketler artık okunmaz.)')) return;
+    $('#fBarkod').value = barkodUret(); toast('Barkod üretildi — kaydetmeyi unutmayın');
+  };
+  if($('#pEtiket')) $('#pEtiket').onclick = () => { closeModal(); etiketPenceresi([p.id]); };
+  if($('#fVarGrup')) $('#fVarGrup').onclick = () => { closeModal(); varyantForm(p.grupId); };
+  if($('#pVarEkle')) $('#pVarEkle').onclick = () => { closeModal(); varyantForm(null, urunById(p.id)); toast('Bu ürünün varyant adını yazın (örn. Mavi), sonra diğer varyantları ekleyin'); };
   $('#fBarkod').addEventListener('keydown', e => { if(e.key === 'Enter'){ e.preventDefault(); $('#fAd').focus(); } });
   $('#fCam').onclick = async () => {
     // Formu kapatmadan kamerayı ayrı açmak yerine: formdaki değerleri koru, kamerayla barkodu al, formu geri aç
-    const taslak = {barkod: $('#fBarkod').value, ad: $('#fAd').value, kategori: $('#fKat').value, alis: parseNum($('#fAlis').value), satis: parseNum($('#fSatis').value), kritik: +$('#fKritik').value || 0, acilis: $('#fAcilis') ? +$('#fAcilis').value || 0 : 0};
+    const taslak = {barkod: $('#fBarkod').value, ad: $('#fAd').value, kategori: $('#fKat').value, alis: parseNum($('#fAlis').value), satis: parseNum($('#fSatis').value), kritik: +$('#fKritik').value || 0, acilis: $('#fAcilis') ? +$('#fAcilis').value || 0 : 0, hizli: $('#fHizli').checked};
     ['alis','satis'].forEach(k => { if(isNaN(taslak[k])) taslak[k] = ''; });
     closeModal();
     kameraAc(kod => openProductForm(p, Object.assign(taslak, {barkod: kod}), onSaved), {baslik: 'Ürün barkodunu okut'});
@@ -888,9 +1601,15 @@ function openProductForm(p, preset={}, onSaved){
     const dup = barkod && urunler().find(x => x.barkod === barkod && (!p || x.id !== p.id));
     if(dup){ er.textContent = `Bu barkod zaten "${dup.ad}" ürününde kayıtlı.`; $('#fBarkod').focus(); return; }
     const id = p ? p.id : idUret();
-    const doc = Object.assign({}, p || {olusturma: Date.now()}, {barkod, ad, kategori: $('#fKat').value.trim(), alis: isNaN(alis) ? 0 : r2(alis), satis: r2(satis), kritik: Math.max(0, Math.floor(+$('#fKritik').value || 0))});
+    const doc = Object.assign({}, p || {olusturma: Date.now()}, {barkod, ad, kategori: $('#fKat').value.trim(), alis: isNaN(alis) ? 0 : r2(alis), satis: r2(satis), kritik: Math.max(0, Math.floor(+$('#fKritik').value || 0)), kdv: +$('#fKdv').value});
     if(!p) doc.acilis = Math.floor(+$('#fAcilis').value || 0);
+    doc.hizli = $('#fHizli').checked;
+    if(doc.hizli && !doc.hizliSira) doc.hizliSira = Date.now();
+    if(!doc.hizli) doc.hizliSira = null;
     const islemler = [['urun', id, doc]];
+    // Varyantlı üründe fiyat tüm varyantlarda aynıdır: biri değişirse hepsi değişir
+    if(p && p.grupId && (r2(doc.satis) !== r2(p.satis) || r2(doc.alis) !== r2(p.alis)))
+      varyantlar(p.grupId).filter(x => x.id !== p.id).forEach(x => islemler.push(['urun', x.id, Object.assign({}, x, {satis: doc.satis, alis: doc.alis})]));
     if(p && $('#fSayim').value.trim() !== ''){
       const fark = r2(Math.floor(+$('#fSayim').value) - stok(p.id));
       if(fark) islemler.push(['stokgiris', idUret(), {urunId: id, miktar: fark, tip: 'Sayım', tarih: new Date().toISOString(), aciklama: 'Sayım farkı', kasa: cihaz.kasa}]);
@@ -940,6 +1659,147 @@ function openStockIn(){
   $('#siCam').onclick = () => { closeModal(); kameraAc(kod => { openStockIn(); $('#siCode').value = kod; found = null; setTimeout(() => { const ev = new KeyboardEvent('keydown', {key: 'Enter'}); $('#siCode').dispatchEvent(ev); }, 30); }, {baslik: 'Stok girişi — barkod okut'}); };
 }
 
+/* ================= VERESİYE / MÜŞTERİLER ================= */
+$('#cAra').addEventListener('input', renderCariler);
+$('#cBorclu').addEventListener('change', renderCariler);
+$('#cYeniBtn').onclick = () => cariForm(null, c => cariDetay(c.id));
+function renderCariler(){
+  const b = cariBakiyeler(), hepsi = cariler(), sadece = $('#cBorclu').checked;
+  const toplam = r2(hepsi.reduce((a, c) => a + Math.max(0, b.get(c.id) || 0), 0));
+  const borclu = hepsi.filter(c => (b.get(c.id) || 0) > 0.004).length;
+  $('#cOzet').innerHTML = `${hepsi.length} müşteri · ${borclu} borçlu · toplam alacak <b class="num" style="color:var(--fg)">${tl(toplam)}</b>`;
+  let list = cariAra($('#cAra').value, 100000);
+  if(sadece) list = list.filter(c => Math.abs(b.get(c.id) || 0) > 0.004);
+  list.sort((x, y) => (b.get(y.id) || 0) - (b.get(x.id) || 0) || x.ad.localeCompare(y.ad, 'tr'));
+  $('#cBody').innerHTML = list.slice(0, 500).map(c => { const bk = b.get(c.id) || 0, son = cariSonMap.get(c.id); return `
+    <tr><td><b>${esc(c.ad)}</b>${c.not ? `<div class="muted">${esc(c.not)}</div>` : ''}</td><td class="hide-m">${esc(c.tel || '')}</td>
+    <td class="hide-m muted">${son ? fmtDate(son) : '—'}</td>
+    <td class="r num"><b style="color:${bk > 0.004 ? 'var(--out)' : 'var(--in)'}">${tl(bk)}</b></td>
+    <td class="r"><button class="btn sm" data-cari-ac="${c.id}">Aç</button></td></tr>`; }).join('')
+    || `<tr><td colspan="5" class="empty">${hepsi.length ? (sadece ? 'Borçlu müşteri yok 🎉 Tüm müşterileri görmek için "Sadece borçlular" işaretini kaldırın.' : 'Eşleşen müşteri yok') : 'Henüz müşteri yok. Veresiye satış yaparken ya da "+ Yeni Müşteri" ile ekleyebilirsiniz.'}</td></tr>`;
+}
+$('#cBody').addEventListener('click', e => { const b = e.target.closest('[data-cari-ac]'); if(b) cariDetay(b.dataset.cariAc); });
+
+function cariForm(c, onSaved){
+  if(!yetkili('veresiye')){ toast('Bu işlem için yetkiniz yok', 'bad'); return; }
+  const v = Object.assign({ad: '', tel: '', not: '', vkn: '', vergiDairesi: '', adres: '', il: '', ilce: '', eposta: ''}, c || {});
+  const faturaBilgiVar = v.vkn || v.adres || v.vergiDairesi;
+  openModal(`<h2>${c ? 'Müşteriyi Düzenle' : 'Yeni Müşteri'}</h2>
+    <form id="cForm" class="form" autocomplete="off">
+      <div class="full"><label>Ad Soyad / Ünvan *</label><input id="cfAd" value="${esc(v.ad)}" autofocus></div>
+      <div><label>Telefon</label><input id="cfTel" value="${esc(v.tel)}" inputmode="tel"></div>
+      <div><label>Not</label><input id="cfNot" value="${esc(v.not)}" placeholder="örn. 4-B sınıfı velisi"></div>
+      <details class="full" ${faturaBilgiVar ? 'open' : ''}><summary style="cursor:pointer;font-weight:600;padding:4px 0">🧾 Fatura bilgileri <span class="muted" style="font-weight:400">(isteğe bağlı)</span></summary>
+        <div class="form" style="margin-top:8px">
+          <div><label>VKN / TCKN</label><input id="cfVkn" value="${esc(v.vkn)}" inputmode="numeric" maxlength="11" class="mono"></div>
+          <div><label>Vergi dairesi</label><input id="cfVd" value="${esc(v.vergiDairesi)}"></div>
+          <div class="full"><label>Adres</label><input id="cfAdres" value="${esc(v.adres)}"></div>
+          <div><label>İl</label><input id="cfIl" value="${esc(v.il)}"></div>
+          <div><label>İlçe</label><input id="cfIlce" value="${esc(v.ilce)}"></div>
+          <div class="full"><label>E-posta</label><input id="cfEposta" value="${esc(v.eposta)}" type="email"></div>
+        </div>
+      </details>
+      <div class="err full" id="cfErr"></div>
+    </form>
+    <div class="mfoot">${c ? '<button class="btn bad" id="cfSil" style="margin-right:auto">Sil</button>' : ''}<button class="btn" id="cfVaz">Vazgeç</button><button class="btn pri" id="cfKaydet">Kaydet</button></div>`);
+  $('#cfVaz').onclick = closeModal;
+  const kaydetF = async () => {
+    const ad = $('#cfAd').value.trim(); if(!ad){ $('#cfErr').textContent = 'Ad gerekli.'; $('#cfAd').focus(); return; }
+    const ayni = cariler().find(x => low(x.ad) === low(ad) && (!c || x.id !== c.id));
+    if(ayni && !confirm(`"${ayni.ad}" adında bir müşteri zaten var. Yine de yeni kayıt açılsın mı?`)) return;
+    const id = c ? c.id : idUret();
+    $('#cfKaydet').disabled = true;
+    try{ await kaydet('cari', id, Object.assign({}, c || {olusturma: Date.now()}, {ad, tel: $('#cfTel').value.trim(), not: $('#cfNot').value.trim(),
+      vkn: $('#cfVkn').value.replace(/\D/g, ''), vergiDairesi: $('#cfVd').value.trim(), adres: $('#cfAdres').value.trim(), il: $('#cfIl').value.trim(), ilce: $('#cfIlce').value.trim(), eposta: $('#cfEposta').value.trim()})); }
+    catch(e){ $('#cfErr').textContent = 'Kaydedilemedi: ' + e.message; $('#cfKaydet').disabled = false; return; }
+    closeModal(); toast('Müşteri kaydedildi', 'ok'); renderAktif();
+    if(onSaved) onSaved(D.cari.get(id));
+  };
+  $('#cfKaydet').onclick = kaydetF;
+  $('#cForm').addEventListener('submit', e => { e.preventDefault(); kaydetF(); });
+  $('#cForm').addEventListener('keydown', e => { if(e.key === 'Enter'){ e.preventDefault(); kaydetF(); } });
+  if($('#cfSil')) $('#cfSil').onclick = async () => {
+    const bk = cariBakiye(c.id);
+    if(!confirm(bk ? `${c.ad} müşterisinin ${tl(bk)} borcu var.\nSilinirse listede görünmez ama geçmiş satışlar korunur. Yine de silinsin mi?` : `${c.ad} silinsin mi?`)) return;
+    await kaydet('cari', c.id, Object.assign({}, c, {silindi: true})); closeModal(); toast('Müşteri silindi'); renderAktif();
+  };
+}
+function cariHareketleri(id){
+  const h = [];
+  for(const s of D.satis.values()) if(s.odeme === 'veresiye' && s.cariId === id) h.push({tur: 'satis', tarih: s.tarih, tutar: +s.toplam, aciklama: `Satış · Fiş ${s.no} · ${s.kalemler.reduce((a, i) => a + i.adet, 0)} ürün`, iptal: s.iptal, ref: s});
+  for(const t of D.tahsilat.values()) if(t.cariId === id) h.push({tur: 'tahsilat', tarih: t.tarih, tutar: -(+t.tutar), aciklama: `Tahsilat (${odemeAd(t.odeme)})` + (t.aciklama ? ' · ' + t.aciklama : ''), iptal: t.iptal, ref: t});
+  h.sort((a, b) => a.tarih.localeCompare(b.tarih));
+  let bak = 0; h.forEach(x => { if(!x.iptal) bak = r2(bak + x.tutar); x.bakiye = bak; });
+  return h;
+}
+function cariDetay(id){
+  const c = D.cari.get(id); if(!c) return;
+  const bk = cariBakiye(id), h = cariHareketleri(id).reverse();
+  openModal(`<h2>${esc(c.ad)}</h2><div class="muted">${esc(c.tel || '')}${c.not ? ' · ' + esc(c.not) : ''}</div>
+    <div class="sumrow" style="margin:12px 0;font-size:18px"><span>Güncel borç</span><b class="num" style="font-size:24px;color:${bk > 0.004 ? 'var(--out)' : 'var(--in)'}">${tl(bk)}</b></div>
+    <div style="background:var(--surface-2);border-radius:10px;padding:12px">
+      <b>💰 Tahsilat al</b>
+      <div class="row" style="margin-top:8px">
+        <input id="tTutar" placeholder="Tutar" inputmode="decimal" style="width:120px;text-align:right" value="${bk > 0.004 ? num2(bk) : ''}">
+        <select id="tOdeme"><option value="nakit">Nakit</option><option value="kart">Kart</option></select>
+        <input id="tAcik" placeholder="Açıklama (isteğe bağlı)" style="flex:1;min-width:120px">
+        <button class="btn pri" id="tKaydet">Tahsil et</button>
+      </div>
+    </div>
+    <h3 style="font-size:15px;margin:16px 0 6px">Hesap hareketleri</h3>
+    <div class="tblwrap" style="max-height:38vh"><table><thead><tr><th>Tarih</th><th>Açıklama</th><th class="r">Tutar</th><th class="r hide-m">Bakiye</th><th></th></tr></thead><tbody>
+    ${h.map(x => `<tr class="${x.iptal ? 'cancel' : ''}"><td class="muted" style="white-space:nowrap">${fmtDate(x.tarih)}</td><td>${esc(x.aciklama)}${x.iptal ? ' <span class="tag bad">iptal</span>' : ''}</td>
+      <td class="r num" style="color:${x.tutar > 0 ? 'var(--out)' : 'var(--in)'}">${x.tutar > 0 ? '+' : ''}${num2(x.tutar)}</td><td class="r num hide-m">${x.iptal ? '' : num2(x.bakiye)}</td>
+      <td class="r" style="white-space:nowrap">${x.tur === 'satis' ? `<button class="btn sm" data-sfis="${x.ref.id}" title="Fişi yazdır">🖨</button>` : ''}${x.tur === 'tahsilat' && !x.iptal ? `<button class="btn sm" data-tfis="${x.ref.id}" title="Makbuz yazdır">🖨</button>${yetkili('iptal') ? ` <button class="btn sm bad" data-tiptal="${x.ref.id}">İptal</button>` : ''}` : ''}</td></tr>`).join('') || '<tr><td colspan="5" class="empty">Henüz hareket yok</td></tr>'}
+    </tbody></table></div>
+    <div class="mfoot"><button class="btn" id="cdEkstre" style="margin-right:auto">🖨 Hesap Dökümü</button><button class="btn" id="cdDuzen">Düzenle</button><button class="btn" id="cdKapat">Kapat</button></div>`);
+  $('#cdKapat').onclick = closeModal;
+  $('#cdDuzen').onclick = () => { closeModal(); cariForm(c, () => cariDetay(id)); };
+  $('#cdEkstre').onclick = () => cariEkstre(id);
+  $('#tTutar').addEventListener('keydown', e => { if(e.key === 'Enter'){ e.preventDefault(); $('#tKaydet').click(); } });
+  $('#tKaydet').onclick = async () => {
+    const t = parseNum($('#tTutar').value);
+    if(isNaN(t) || t <= 0){ toast('Geçerli bir tutar girin', 'bad'); $('#tTutar').focus(); return; }
+    if(t > bk + 0.004 && !confirm(`Tahsilat (${tl(t)}) borçtan (${tl(bk)}) fazla. Müşteri alacaklı duruma geçecek. Devam edilsin mi?`)) return;
+    $('#tKaydet').disabled = true;
+    const tid = idUret(), doc = {cariId: id, cariAd: c.ad, tutar: r2(t), odeme: $('#tOdeme').value, aciklama: $('#tAcik').value.trim(), tarih: new Date().toISOString(), kasa: cihaz.kasa, kullanici: profil.email, iptal: false};
+    try{ await kaydet('tahsilat', tid, doc); }catch(e){ toast('Kaydedilemedi: ' + e.message, 'bad'); $('#tKaydet').disabled = false; return; }
+    beep(true); toast(`${tl(t)} tahsil edildi`, 'ok'); renderAktif();
+    const yaz = confirm('Tahsilat makbuzu yazdırılsın mı?');
+    cariDetay(id);
+    if(yaz) tahsilatFis(Object.assign({id: tid}, doc));
+  };
+  const tbl = $('#modal tbody');
+  tbl.addEventListener('click', async e => {
+    const sf = e.target.closest('[data-sfis]'), tf = e.target.closest('[data-tfis]'), ti = e.target.closest('[data-tiptal]');
+    if(sf){ const s = D.satis.get(sf.dataset.sfis); if(s) printReceipt(s); }
+    if(tf){ const t = D.tahsilat.get(tf.dataset.tfis); if(t) tahsilatFis(t); }
+    if(ti){ const t = D.tahsilat.get(ti.dataset.tiptal); if(!t || !confirm(`${tl(t.tutar)} tutarındaki tahsilat iptal edilsin mi?\nMüşterinin borcu bu kadar artacak.`)) return;
+      await kaydet('tahsilat', t.id, Object.assign({}, t, {iptal: true, iptalTarih: new Date().toISOString(), iptalEden: profil.email})); toast('Tahsilat iptal edildi'); renderAktif(); cariDetay(id); }
+  });
+}
+function fisBaslik(baslik){ const f = fisAyar(); return `<div class="c b lg">${esc(f.isletme)}</div>${f.adres ? `<div class="c">${esc(f.adres)}</div>` : ''}${f.tel ? `<div class="c">Tel: ${esc(f.tel)}</div>` : ''}<hr><div class="c b">${baslik}</div>`; }
+function tahsilatFis(t){
+  kagitAyarla();
+  $('#printArea').innerHTML = `${fisBaslik('TAHSİLAT MAKBUZU')}<div class="c">${fmtDate(t.tarih)}</div><hr>
+    <table><tr><td>Müşteri</td><td class="r">${esc(t.cariAd || (D.cari.get(t.cariId) || {}).ad || '')}</td></tr>
+    <tr class="b lg"><td>Tahsil edilen</td><td class="r">${tl(t.tutar)}</td></tr>
+    <tr><td>Ödeme</td><td class="r">${t.odeme === 'kart' ? 'KREDİ KARTI' : 'NAKİT'}</td></tr>
+    ${t.aciklama ? `<tr><td colspan="2">${esc(t.aciklama)}</td></tr>` : ''}
+    ${D.cari.has(t.cariId) ? `<tr><td>Kalan borç</td><td class="r">${num2(cariBakiye(t.cariId))}</td></tr>` : ''}</table>
+    ${t.iptal ? '<hr><div class="c b">*** İPTAL EDİLDİ ***</div>' : ''}<hr><div style="margin-top:12px">Teslim alan: ........................</div>`;
+  setTimeout(() => window.print(), 60);
+}
+function cariEkstre(id){
+  const c = D.cari.get(id); if(!c) return; kagitAyarla();
+  const h = cariHareketleri(id).filter(x => !x.iptal);
+  $('#printArea').innerHTML = `${fisBaslik('HESAP DÖKÜMÜ')}<div class="c">${esc(c.ad)}${c.tel ? ' · ' + esc(c.tel) : ''}</div><hr>
+    <table>${h.map(x => `<tr><td colspan="2">${new Date(x.tarih).toLocaleDateString('tr-TR')} ${esc(x.aciklama)}</td></tr><tr><td>&nbsp; ${x.tutar > 0 ? 'Borç' : 'Ödeme'} ${num2(Math.abs(x.tutar))}</td><td class="r">${num2(x.bakiye)}</td></tr>`).join('') || '<tr><td>Hareket yok</td></tr>'}</table><hr>
+    <table><tr class="b lg"><td>GÜNCEL BORÇ</td><td class="r">${tl(cariBakiye(id))}</td></tr></table><hr>
+    <div class="c" style="font-size:.85em">Yazdırma: ${fmtDate(new Date().toISOString())}</div>`;
+  setTimeout(() => window.print(), 60);
+}
+
 /* ================= RAPORLAR ================= */
 ['#rFrom', '#rTo', '#rKasa'].forEach(s => $(s).addEventListener('change', renderReport));
 $$('[data-range]').forEach(b => b.onclick = () => setRange(b.dataset.range));
@@ -964,7 +1824,15 @@ function raporOzet(){
   const maliyetVar = ok.some(s => s.kalemler.some(i => i.alis > 0));
   const adet = ok.reduce((a, s) => a + s.kalemler.reduce((b, i) => b + i.adet, 0), 0);
   const indirim = sum(ok, s => s.indirim || 0);
-  return {all, ok, ciro, nakit, kart, maliyet, maliyetVar, adet, indirim, iptal: all.length - ok.length};
+  const veresiye = sum(ok.filter(s => s.odeme === 'veresiye'), s => s.toplam);
+  const f = new Date($('#rFrom').value + 'T00:00:00'), t = new Date($('#rTo').value + 'T23:59:59.999'), k = $('#rKasa').value;
+  const tah = [...D.tahsilat.values()].filter(x => { const d = new Date(x.tarih); return !x.iptal && d >= f && d <= t && (!k || x.kasa === k); });
+  const tahNakit = sum(tah.filter(x => x.odeme === 'nakit'), x => x.tutar), tahKart = sum(tah.filter(x => x.odeme === 'kart'), x => x.tutar);
+  const maastan = sum(ok.filter(s => s.odeme === 'personel'), s => s.toplam);
+  const fGun = $('#rFrom').value, tGun = $('#rTo').value;
+  const perOd = [...D.personelOdeme.values()].filter(o => o.tarih >= fGun && o.tarih <= tGun && (!k || o.kasa === k));
+  const perNakit = sum(perOd.filter(o => o.odeme !== 'banka'), o => o.tutar);
+  return {all, ok, ciro, nakit, kart, veresiye, maastan, tahNakit, tahKart, perNakit, maliyet, maliyetVar, adet, indirim, iptal: all.length - ok.length};
 }
 function renderReport(){
   const kasalar = [...new Set([...D.satis.values()].map(s => s.kasa).filter(Boolean))].sort(), sel = $('#rKasa').value;
@@ -974,6 +1842,7 @@ function renderReport(){
   $('#stats').innerHTML = [
     ['Toplam Ciro', tl(o.ciro)], ['Satış Sayısı', o.ok.length + (o.iptal ? ` <span class="muted">(${o.iptal} iptal)</span>` : '')],
     ['Nakit', tl(o.nakit)], ['Kredi Kartı', tl(o.kart)],
+    ['Veresiye Satış', tl(o.veresiye)], ['Tahsilat', tl(o.tahNakit + o.tahKart) + (o.tahKart ? `<div class="muted" style="font-size:12px">nakit ${num2(o.tahNakit)} · kart ${num2(o.tahKart)}</div>` : '')],
     ['Brüt Kâr', o.maliyetVar ? tl(o.ciro - o.maliyet) : '<span class="muted" style="font-size:13px;font-family:var(--font-body)">alış fiyatı girilmemiş</span>'],
     ['Satılan Ürün', o.adet + ' adet'], ['Ort. Sepet', tl(o.ok.length ? o.ciro / o.ok.length : 0)],
     ['Kritik Stok', crit ? `<a href="#" id="critLink" style="color:var(--out)">${crit} ürün</a>` : '0 ürün']
@@ -981,7 +1850,7 @@ function renderReport(){
   if($('#critLink')) $('#critLink').onclick = e => { e.preventDefault(); $('#pCrit').checked = true; showTab('urunler'); };
   const rows = [...o.all].sort((a, b) => b.tarih.localeCompare(a.tarih));
   $('#rSales').innerHTML = rows.slice(0, 500).map(s => `
-    <tr class="${s.iptal ? 'cancel' : ''}"><td class="mono">${esc(s.no)}</td><td>${fmtDate(s.tarih)}</td><td>${s.odeme === 'nakit' ? 'Nakit' : 'Kart'}</td><td class="r num"><b>${tl(s.toplam)}</b></td>
+    <tr class="${s.iptal ? 'cancel' : ''}"><td class="mono">${esc(s.no)}${s.faturaId && D.fatura.has(s.faturaId) ? ' <span title="Faturası kesildi">🧾</span>' : ''}</td><td>${fmtDate(s.tarih)}</td><td>${odemeAd(s.odeme)}${s.cariAd ? `<div class="muted">${esc(s.cariAd)}</div>` : ''}</td><td class="r num"><b>${tl(s.toplam)}</b></td>
     <td class="r"><button class="btn sm" data-view="${s.id}">Detay</button></td></tr>`).join('') || '<tr><td colspan="5" class="empty">Bu tarih aralığında satış yok</td></tr>';
   const agg = {};
   o.ok.forEach(s => s.kalemler.forEach(i => { const k = i.urunId || i.ad; agg[k] = agg[k] || {ad: i.ad, adet: 0, ciro: 0}; agg[k].adet += i.adet; agg[k].ciro += i.adet * i.fiyat; }));
@@ -992,12 +1861,13 @@ $('#rSales').addEventListener('click', e => {
   const s = D.satis.get(v.dataset.view); if(!s) return;
   openModal(`
     <h2>Fiş ${esc(s.no)} ${s.iptal ? '<span class="tag bad">İptal</span>' : ''}</h2>
-    <div class="muted">${fmtDate(s.tarih)} · ${s.odeme === 'nakit' ? 'Nakit' : 'Kredi Kartı'} · ${esc(s.kullanici || '')}</div>
+    <div class="muted">${fmtDate(s.tarih)} · ${odemeAd(s.odeme)}${s.cariAd ? ' · ' + esc(s.cariAd) : ''} · ${esc(s.kullanici || '')}</div>
     <div class="tblwrap"><table style="margin-top:10px"><thead><tr><th>Ürün</th><th class="r">Adet</th><th class="r">Fiyat</th><th class="r">Tutar</th></tr></thead><tbody>
     ${s.kalemler.map(i => `<tr><td>${esc(i.ad)}</td><td class="r num">${i.adet}</td><td class="r num">${tl(i.fiyat)}</td><td class="r num">${tl(i.adet * i.fiyat)}</td></tr>`).join('')}
     ${s.indirim ? `<tr><td colspan="3">İndirim</td><td class="r num">-${tl(s.indirim)}</td></tr>` : ''}
     <tr><td colspan="3"><b>TOPLAM</b></td><td class="r num"><b>${tl(s.toplam)}</b></td></tr></tbody></table></div>
-    <div class="mfoot">${s.iptal ? '' : '<button class="btn bad" id="sIptal" style="margin-right:auto">Satışı İptal Et</button>'}<button class="btn" id="sFis">🖨 Fiş</button><button class="btn" id="sKapat">Kapat</button></div>`);
+    <div class="mfoot">${s.iptal || !yetkili('iptal') ? '' : '<button class="btn bad" id="sIptal" style="margin-right:auto">Satışı İptal Et</button>'}${!s.iptal && yetkili('fatura') ? `<button class="btn" id="sFatura">🧾 ${s.faturaId && D.fatura.has(s.faturaId) ? 'Faturayı aç' : 'Fatura kes'}</button>` : ''}<button class="btn" id="sFis">🖨 Fiş</button><button class="btn" id="sKapat">Kapat</button></div>`);
+  if($('#sFatura')) $('#sFatura').onclick = () => { closeModal(); faturaSatistan(s); };
   $('#sKapat').onclick = closeModal;
   $('#sFis').onclick = () => printReceipt(s);
   if($('#sIptal')) $('#sIptal').onclick = async () => {
@@ -1011,10 +1881,762 @@ $('#zRaporBtn').onclick = () => {
   const aralik = $('#rFrom').value === $('#rTo').value ? new Date($('#rFrom').value + 'T12:00').toLocaleDateString('tr-TR') : new Date($('#rFrom').value + 'T12:00').toLocaleDateString('tr-TR') + ' - ' + new Date($('#rTo').value + 'T12:00').toLocaleDateString('tr-TR');
   $('#printArea').innerHTML = `<div class="c b lg">${esc(f.isletme)}</div><div class="c b">GÜN SONU RAPORU</div><div class="c">${aralik}${$('#rKasa').value ? ' · Kasa ' + esc($('#rKasa').value) : ''}</div><hr>
     <table><tr><td>Satış sayısı</td><td class="r">${o.ok.length}</td></tr><tr><td>İptal</td><td class="r">${o.iptal}</td></tr><tr><td>Satılan ürün</td><td class="r">${o.adet}</td></tr><tr><td>İndirimler</td><td class="r">${num2(o.indirim)}</td></tr></table><hr>
-    <table><tr><td>Nakit</td><td class="r">${num2(o.nakit)}</td></tr><tr><td>Kredi kartı</td><td class="r">${num2(o.kart)}</td></tr><tr class="b lg"><td>TOPLAM</td><td class="r">${tl(o.ciro)}</td></tr></table><hr>
+    <table><tr><td>Nakit satış</td><td class="r">${num2(o.nakit)}</td></tr><tr><td>Kartlı satış</td><td class="r">${num2(o.kart)}</td></tr><tr><td>Veresiye satış</td><td class="r">${num2(o.veresiye)}</td></tr>${o.maastan ? `<tr><td>Personel (maaştan)</td><td class="r">${num2(o.maastan)}</td></tr>` : ''}<tr class="b lg"><td>TOPLAM SATIŞ</td><td class="r">${tl(o.ciro)}</td></tr></table><hr>
+    <table><tr><td>Tahsilat (nakit)</td><td class="r">${num2(o.tahNakit)}</td></tr><tr><td>Tahsilat (kart)</td><td class="r">${num2(o.tahKart)}</td></tr></table><hr>
+    <table><tr class="b"><td>Kasaya giren nakit</td><td class="r">${num2(o.nakit + o.tahNakit)}</td></tr>${o.perNakit ? `<tr><td>Personel ödemesi (kasadan)</td><td class="r">-${num2(o.perNakit)}</td></tr><tr class="b"><td>Kasada kalması gereken</td><td class="r">${num2(o.nakit + o.tahNakit - o.perNakit)}</td></tr>` : ''}<tr class="b"><td>Karta geçen</td><td class="r">${num2(o.kart + o.tahKart)}</td></tr></table><hr>
     <div class="c" style="font-size:.85em">Yazdırma: ${fmtDate(new Date().toISOString())}</div>`;
   setTimeout(() => window.print(), 60);
 };
+
+/* ================= FATURA ================= */
+// Fatura burada hazırlanır; yasal fatura Trendyol e-Faturam'da kesilir.
+// Otomatik gönderim (API) için sabit IP'li bir aracı sunucu gerekir; o kurulunca "Trendyol'a gönder" buraya eklenecek.
+const PORTAL_URL = 'https://trendyolefaturam.com/portal/giris';
+const KDV_ORANLARI = [0, 1, 10, 20];
+const faturaAyar = () => Object.assign({varsayilanKdv: 20}, D.ayar.get('fatura') || {});
+const faturalar = () => [...D.fatura.values()];
+const urunKdv = p => p && p.kdv != null && p.kdv !== '' ? +p.kdv : faturaAyar().varsayilanKdv;
+const FATURA_DURUM = {taslak: ['Taslak', ''], kesildi: ['Kesildi', 'ok'], iptal: ['İptal', 'bad']};
+function tcknGecerli(t){
+  if(t === '11111111111') return true;   // nihai tüketici
+  if(!/^[1-9]\d{10}$/.test(t)) return false;
+  const d = t.split('').map(Number), o = d[0] + d[2] + d[4] + d[6] + d[8], e = d[1] + d[3] + d[5] + d[7];
+  return ((o * 7 - e) % 10 + 10) % 10 === d[9] && d.slice(0, 10).reduce((a, b) => a + b, 0) % 10 === d[10];
+}
+function vknGecerli(v){
+  if(!/^\d{10}$/.test(v)) return false;
+  const d = v.split('').map(Number); let s = 0;
+  for(let i = 0; i < 9; i++){ const t = (d[i] + (9 - i)) % 10; let p = (t * Math.pow(2, 9 - i)) % 9; if(t !== 0 && p === 0) p = 9; s += p; }
+  return (10 - s % 10) % 10 === d[9];
+}
+// Fiyatlar KDV dahildir; matrah ve KDV satır satır ayrıştırılır
+function kdvHesap(kalemler){
+  const oran = new Map(); let net = 0, brut = 0;
+  for(const k of kalemler){
+    const b = r2((+k.adet || 0) * (+k.fiyat || 0)), n = r2(b / (1 + (+k.kdv || 0) / 100));
+    net += n; brut += b; oran.set(+k.kdv || 0, r2((oran.get(+k.kdv || 0) || 0) + b - n));
+  }
+  return {matrah: r2(net), kdvler: [...oran.entries()].sort((a, b) => a[0] - b[0]), kdvToplam: r2(brut - net), toplam: r2(brut)};
+}
+const kdvHaric = (fiyat, kdv) => Math.round((+fiyat || 0) / (1 + (+kdv || 0) / 100) * 10000) / 10000;
+
+$('#ftAra').addEventListener('input', renderFaturalar);
+$('#ftDurum').addEventListener('change', renderFaturalar);
+$('#ftYeni').onclick = () => faturaForm(null);
+$('#ftPortal').onclick = () => window.open(PORTAL_URL, '_blank', 'noopener');
+function renderFaturalar(){
+  const q = low($('#ftAra').value.trim()), du = $('#ftDurum').value, hepsi = faturalar();
+  const list = hepsi.filter(f => (!du || f.durum === du) && (!q || low(f.alici && f.alici.ad).includes(q) || String(f.alici && f.alici.vkn || '').includes(q) || low(f.no).includes(q) || low(f.disNo).includes(q)))
+    .sort((a, b) => String(b.tarih).localeCompare(String(a.tarih)) || String(b.no).localeCompare(String(a.no)));
+  const taslak = hepsi.filter(f => f.durum === 'taslak').length;
+  $('#ftOzet').innerHTML = `${hepsi.length} fatura` + (taslak ? ` · <span style="color:var(--warn)">${taslak} taslak kesilmeyi bekliyor</span>` : '');
+  $('#ftBody').innerHTML = list.slice(0, 500).map(f => { const [dAd, dCls] = FATURA_DURUM[f.durum] || ['?', '']; return `
+    <tr class="${f.durum === 'iptal' ? 'cancel' : ''}"><td class="mono">${esc(f.no)}${f.disNo ? `<div class="muted">${esc(f.disNo)}</div>` : ''}</td>
+    <td class="hide-m">${f.tarih ? new Date(f.tarih + 'T12:00').toLocaleDateString('tr-TR') : ''}</td>
+    <td><b>${esc(f.alici && f.alici.ad || '—')}</b><div class="muted mono">${esc(f.alici && f.alici.vkn || '')}</div></td>
+    <td class="hide-m">${f.tip === 'EFATURA' ? 'e-Fatura' : 'e-Arşiv'}</td>
+    <td class="r num"><b>${tl(f.toplam)}</b></td>
+    <td><span class="tag ${dCls}" style="font-family:var(--font-body)">${dAd}</span></td>
+    <td class="r"><button class="btn sm" data-fac="${f.id}">Aç</button></td></tr>`; }).join('')
+    || `<tr><td colspan="7" class="empty">${hepsi.length ? 'Eşleşen fatura yok' : 'Henüz fatura yok. "+ Yeni Fatura" ile ya da Raporlar › satış detayındaki "🧾 Fatura" düğmesiyle oluşturabilirsiniz.'}</td></tr>`;
+}
+$('#ftBody').addEventListener('click', e => { const b = e.target.closest('[data-fac]'); if(b) faturaForm(b.dataset.fac); });
+
+async function faturaNoUret(){
+  let enBuyuk = (await metaAl('faturaSayac')) || 0;
+  for(const f of D.fatura.values()) if(String(f.no).startsWith(cihaz.kasa + '-F')){ const n = parseInt(String(f.no).split('-F').pop(), 10); if(n > enBuyuk) enBuyuk = n; }
+  await metaYaz('faturaSayac', enBuyuk + 1);
+  return cihaz.kasa + '-F' + String(enBuyuk + 1).padStart(4, '0');
+}
+
+// Fatura formu. onceden: {satis} → satıştan faturaya çevirme
+function faturaForm(id, onceden = {}){
+  if(!yetkili('fatura')){ toast('Fatura yetkiniz yok', 'bad'); return; }
+  const mevcut = id ? D.fatura.get(id) : null;
+  const sat = onceden.satis;
+  const bosAlici = {ad: '', vkn: '', vergiDairesi: '', adres: '', il: '', ilce: '', eposta: '', tel: ''};
+  let f;
+  if(mevcut) f = JSON.parse(JSON.stringify(mevcut));
+  else {
+    const c = sat && sat.cariId ? D.cari.get(sat.cariId) : null;
+    f = {tip: 'EARSIV', tarih: ymd(new Date()), durum: 'taslak', aciklama: sat ? `Fiş ${sat.no}` : '', cariId: c ? c.id : null, satisId: sat ? sat.id : null,
+      alici: Object.assign({}, bosAlici, c ? {ad: c.ad, vkn: c.vkn || '', vergiDairesi: c.vergiDairesi || '', adres: c.adres || '', il: c.il || '', ilce: c.ilce || '', eposta: c.eposta || '', tel: c.tel || ''} : {}),
+      kalemler: sat ? sat.kalemler.map(k => ({urunId: k.urunId, ad: k.ad, adet: k.adet, fiyat: k.fiyat, kdv: urunKdv(urunById(k.urunId))})) : []};
+    if(sat && sat.indirim) f.kalemler.push({urunId: null, ad: 'İndirim', adet: 1, fiyat: -sat.indirim, kdv: faturaAyar().varsayilanKdv});
+  }
+  const kilitli = f.durum !== 'taslak';
+  const a = f.alici;
+  const dis = kilitli ? 'disabled' : '';
+  openModal(`<h2>🧾 ${mevcut ? 'Fatura ' + esc(f.no) : 'Yeni Fatura'} ${mevcut ? `<span class="tag ${FATURA_DURUM[f.durum][1]}" style="font-family:var(--font-body)">${FATURA_DURUM[f.durum][0]}</span>` : ''}</h2>
+    ${f.disNo ? `<div class="muted" style="margin-top:-8px;margin-bottom:10px">Trendyol fatura no: <b class="mono" style="color:var(--fg)">${esc(f.disNo)}</b></div>` : ''}
+    ${kilitli ? '<div class="muted" style="background:var(--surface-2);padding:8px 10px;border-radius:8px;margin-bottom:10px">Bu fatura kesilmiş/iptal edilmiş; bilgileri değiştirilemez.</div>' : ''}
+    <div class="grid2" style="gap:14px">
+      <div>
+        <b>Alıcı</b>
+        ${kilitli ? '' : `<div style="position:relative;margin:8px 0"><input id="feCariAra" placeholder="🔎 Kayıtlı müşteriden seç (ad / telefon)…" style="width:100%" autocomplete="off"><div id="feCariSonuc" class="acilir"></div></div>`}
+        <div class="form">
+          <div class="full"><label>Ad Soyad / Ünvan *</label><input id="feAd" value="${esc(a.ad)}" ${dis}></div>
+          <div><label>VKN (10) / TCKN (11) *</label><input id="feVkn" value="${esc(a.vkn)}" inputmode="numeric" maxlength="11" class="mono" ${dis}><div id="feVknBilgi" class="muted" style="font-size:12px;margin-top:2px"></div></div>
+          <div><label>Vergi dairesi <span class="muted">(şirketse)</span></label><input id="feVd" value="${esc(a.vergiDairesi)}" ${dis}></div>
+          ${kilitli ? '' : `<div class="full"><label style="display:flex;gap:6px;align-items:center;margin:0;color:var(--fg);font-size:13px"><input type="checkbox" id="feNihai" ${a.vkn === '11111111111' ? 'checked' : ''}> TCKN bilinmiyor — nihai tüketici (11111111111)</label></div>`}
+          <div class="full"><label>Adres *</label><input id="feAdres" value="${esc(a.adres)}" ${dis}></div>
+          <div><label>İl</label><input id="feIl" value="${esc(a.il)}" ${dis}></div>
+          <div><label>İlçe</label><input id="feIlce" value="${esc(a.ilce)}" ${dis}></div>
+          <div><label>E-posta <span class="muted">(fatura gönderimi)</span></label><input id="feEposta" value="${esc(a.eposta)}" type="email" ${dis}></div>
+          <div><label>Telefon</label><input id="feTel" value="${esc(a.tel)}" inputmode="tel" ${dis}></div>
+        </div>
+      </div>
+      <div>
+        <b>Fatura bilgileri</b>
+        <div class="form" style="margin-top:8px">
+          <div><label>Fatura tipi</label><select id="feTip" ${dis}><option value="EARSIV" ${f.tip !== 'EFATURA' ? 'selected' : ''}>e-Arşiv</option><option value="EFATURA" ${f.tip === 'EFATURA' ? 'selected' : ''}>e-Fatura</option></select></div>
+          <div><label>Fatura tarihi</label><input id="feTarih" type="date" value="${esc(f.tarih)}" ${dis}></div>
+          <div class="full muted" style="font-size:12px">Alıcı e-Fatura mükellefi (genelde şirketler) ise <b>e-Fatura</b>, değilse (şahıslar, nihai tüketici) <b>e-Arşiv</b> seçin. Emin değilseniz Trendyol e-Faturam portalında mükellef sorgulamasıyla bakabilirsiniz.</div>
+          <div class="full"><label>Açıklama / not</label><input id="feAcik" value="${esc(f.aciklama || '')}" ${dis}></div>
+          ${kilitli ? '' : `<div class="full"><label style="display:flex;gap:6px;align-items:center;margin:0;color:var(--fg);font-size:13px"><input type="checkbox" id="feCariKaydet" checked> Alıcı bilgilerini müşteri kartına kaydet</label></div>`}
+        </div>
+      </div>
+    </div>
+    <h3 style="font-size:15px;margin:16px 0 6px">Kalemler <span class="muted" style="font-weight:400">(fiyatlar KDV dahil)</span></h3>
+    ${kilitli ? '' : `<div style="position:relative"><input id="feUrunAra" placeholder="📷 Barkod okutun veya ürün adı yazın…" style="width:100%;border-width:2px;border-color:var(--accent)" autocomplete="off"><div id="feUrunSonuc" class="acilir"></div></div>`}
+    <div class="tblwrap" style="max-height:34vh;margin-top:8px"><table>
+      <thead><tr><th>Ürün / hizmet</th><th class="r">Adet</th><th class="r">Birim fiyat</th><th class="r">KDV</th><th class="r">Tutar</th><th></th></tr></thead>
+      <tbody id="feKalemler"></tbody></table></div>
+    ${kilitli ? '' : '<button type="button" class="btn sm" id="feBosSatir" style="margin-top:6px">+ Boş satır (hizmet vb.)</button>'}
+    <div id="feToplam" style="margin-top:10px;margin-left:auto;max-width:320px"></div>
+    <div class="err" id="feErr" style="margin-top:8px"></div>
+    <div class="mfoot">
+      ${mevcut && f.durum === 'taslak' ? '<button class="btn bad" id="feSil" style="margin-right:auto">Taslağı sil</button>' : ''}
+      ${mevcut && f.durum === 'kesildi' ? '<button class="btn bad" id="feIptal" style="margin-right:auto">İptal edildi olarak işaretle</button>' : ''}
+      <button class="btn" id="feYazdir">🖨 Önizleme</button>
+      <button class="btn" id="feKapat">${kilitli ? 'Kapat' : 'Vazgeç'}</button>
+      ${kilitli ? '' : '<button class="btn" id="feKaydet">Taslak kaydet</button><button class="btn pri" id="feKes">Trendyol e-Faturam\'da kes →</button>'}
+    </div>`);
+  $('#modal').style.width = 'min(980px,100%)';
+
+  const kalemCiz = () => {
+    $('#feKalemler').innerHTML = f.kalemler.map((k, i) => `<tr>
+      <td><input data-ki="${i}" data-kk="ad" value="${esc(k.ad)}" style="width:100%;min-width:140px" ${dis}></td>
+      <td class="r"><input data-ki="${i}" data-kk="adet" value="${k.adet}" inputmode="decimal" style="width:64px;text-align:right" ${dis}></td>
+      <td class="r"><input data-ki="${i}" data-kk="fiyat" value="${num2(k.fiyat)}" inputmode="decimal" style="width:92px;text-align:right" ${dis}></td>
+      <td class="r"><select data-ki="${i}" data-kk="kdv" ${dis}>${KDV_ORANLARI.concat(KDV_ORANLARI.includes(+k.kdv) ? [] : [+k.kdv]).map(o => `<option value="${o}" ${+k.kdv === o ? 'selected' : ''}>%${o}</option>`).join('')}</select></td>
+      <td class="r num"><b>${tl((+k.adet || 0) * (+k.fiyat || 0))}</b></td>
+      <td>${kilitli ? '' : `<button class="btn sm bad" data-ksil="${i}">✕</button>`}</td></tr>`).join('') || '<tr><td colspan="6" class="empty">Ürün okutun ya da arayıp ekleyin</td></tr>';
+    toplamCiz();
+  };
+  const toplamCiz = () => {
+    const h = kdvHesap(f.kalemler);
+    $('#feToplam').innerHTML = `<div class="sumrow"><span class="muted">Mal/hizmet toplamı (KDV hariç)</span><b class="num">${tl(h.matrah)}</b></div>` +
+      h.kdvler.map(([o, t]) => `<div class="sumrow"><span class="muted">KDV %${o}</span><span class="num">${tl(t)}</span></div>`).join('') +
+      `<div class="sumrow" style="font-size:20px;border-top:1px solid var(--line);padding-top:6px"><b>Genel toplam</b><b class="num">${tl(h.toplam)}</b></div>`;
+  };
+  const vknKontrol = () => {
+    const v = $('#feVkn').value.trim(), el = $('#feVknBilgi');
+    if(!v){ el.textContent = ''; return; }
+    if(v.length === 10) el.innerHTML = vknGecerli(v) ? '<span style="color:var(--in)">✓ Geçerli VKN (şirket)</span>' : '<span style="color:var(--out)">VKN hatalı görünüyor</span>';
+    else if(v.length === 11) el.innerHTML = v === '11111111111' ? 'Nihai tüketici' : tcknGecerli(v) ? '<span style="color:var(--in)">✓ Geçerli TCKN (şahıs)</span>' : '<span style="color:var(--out)">TCKN hatalı görünüyor</span>';
+    else el.innerHTML = '<span style="color:var(--warn)">VKN 10, TCKN 11 haneli olmalı</span>';
+  };
+  kalemCiz(); vknKontrol();
+  $('#feKapat').onclick = closeModal;
+  $('#feYazdir').onclick = () => { if(!kilitli) formOku(); faturaYazdir(Object.assign({}, f, {no: f.no || 'TASLAK'})); };
+
+  // Formdaki alanları f nesnesine aktar
+  const formOku = () => {
+    Object.assign(f.alici, {ad: $('#feAd').value.trim(), vkn: $('#feVkn').value.trim(), vergiDairesi: $('#feVd').value.trim(), adres: $('#feAdres').value.trim(), il: $('#feIl').value.trim(), ilce: $('#feIlce').value.trim(), eposta: $('#feEposta').value.trim(), tel: $('#feTel').value.trim()});
+    f.tip = $('#feTip').value; f.tarih = $('#feTarih').value || ymd(new Date()); f.aciklama = $('#feAcik').value.trim();
+  };
+  if(kilitli){
+    if($('#feIptal')) $('#feIptal').onclick = async () => {
+      if(!confirm(`Bu fatura Trendyol e-Faturam'da iptal edildi mi?\n\nÖnemli: Faturayı önce portalda iptal etmelisiniz. Bu düğme yalnızca BRN'deki kaydı "İptal" olarak işaretler.`)) return;
+      await kaydet('fatura', mevcut.id, Object.assign({}, mevcut, {durum: 'iptal', iptalTarih: new Date().toISOString()}));
+      if(mevcut.satisId && D.satis.has(mevcut.satisId)){ const s = D.satis.get(mevcut.satisId); await kaydet('satis', s.id, Object.assign({}, s, {faturaId: null})); }
+      closeModal(); toast('Fatura iptal olarak işaretlendi'); renderAktif();
+    };
+    return;
+  }
+
+  // --- Düzenleme olayları ---
+  $('#feVkn').addEventListener('input', () => { $('#feVkn').value = $('#feVkn').value.replace(/\D/g, ''); $('#feNihai').checked = $('#feVkn').value === '11111111111'; vknKontrol(); });
+  $('#feNihai').addEventListener('change', () => { $('#feVkn').value = $('#feNihai').checked ? '11111111111' : ''; vknKontrol(); if(!$('#feNihai').checked) $('#feVkn').focus(); });
+  // Müşteri seçimi
+  const cariSonuc = () => {
+    const l = cariAra($('#feCariAra').value), box = $('#feCariSonuc');
+    box.innerHTML = l.length ? l.map(c => `<button data-fcari="${c.id}"><span>${esc(c.ad)} <span class="muted">${esc(c.tel || '')}</span></span><span class="muted mono">${esc(c.vkn || '')}</span></button>`).join('') : '<div class="empty">Müşteri bulunamadı — bilgileri aşağıya yazın</div>';
+    box.style.display = 'block';
+  };
+  $('#feCariAra').addEventListener('input', cariSonuc);
+  $('#feCariAra').addEventListener('focus', cariSonuc);
+  $('#feCariAra').addEventListener('blur', () => setTimeout(() => { const b = $('#feCariSonuc'); if(b) b.style.display = 'none'; }, 200));
+  $('#feCariSonuc').addEventListener('mousedown', e => {
+    const b = e.target.closest('[data-fcari]'); if(!b) return; e.preventDefault();
+    const c = D.cari.get(b.dataset.fcari); if(!c) return;
+    f.cariId = c.id;
+    const set = (s, v) => { if(v != null) $(s).value = v; };
+    set('#feAd', c.ad); set('#feVkn', c.vkn || ''); set('#feVd', c.vergiDairesi || ''); set('#feAdres', c.adres || ''); set('#feIl', c.il || ''); set('#feIlce', c.ilce || ''); set('#feEposta', c.eposta || ''); set('#feTel', c.tel || '');
+    $('#feNihai').checked = $('#feVkn').value === '11111111111'; vknKontrol();
+    $('#feCariAra').value = ''; $('#feCariSonuc').style.display = 'none';
+    if(!c.adres) $('#feAdres').focus();
+  });
+  // Ürün ekleme
+  const urunEkle = p => {
+    const v = f.kalemler.find(k => k.urunId === p.id);
+    if(v) v.adet = (+v.adet || 0) + 1; else f.kalemler.push({urunId: p.id, ad: p.ad, adet: 1, fiyat: r2(p.satis), kdv: urunKdv(p)});
+    kalemCiz(); beep(true);
+  };
+  const urunSonuc = () => {
+    const raw = $('#feUrunAra').value.trim(), box = $('#feUrunSonuc');
+    if(raw.length < 2 || /^\d+$/.test(raw)){ box.style.display = 'none'; return; }
+    const l = searchProducts(raw).slice(0, 12);
+    box.innerHTML = l.length ? l.map(p => `<button data-furun="${p.id}"><span>${esc(p.ad)}</span><b class="num">${tl(p.satis)}</b></button>`).join('') : '<div class="empty">Ürün bulunamadı</div>';
+    box.style.display = 'block';
+  };
+  $('#feUrunAra').addEventListener('input', urunSonuc);
+  $('#feUrunAra').addEventListener('keydown', e => {
+    if(e.key !== 'Enter') return; e.preventDefault();
+    const raw = $('#feUrunAra').value.trim(); if(!raw) return;
+    const p = urunByBarkod(raw) || (searchProducts(raw).length === 1 ? searchProducts(raw)[0] : null);
+    if(p){ urunEkle(p); $('#feUrunAra').value = ''; $('#feUrunSonuc').style.display = 'none'; }
+    else { const fb = $('#feUrunSonuc [data-furun]'); if(fb) fb.dispatchEvent(new MouseEvent('mousedown', {bubbles: true})); else { beep(false); toast('Ürün bulunamadı: ' + raw, 'bad'); } }
+  });
+  $('#feUrunAra').addEventListener('blur', () => setTimeout(() => { const b = $('#feUrunSonuc'); if(b) b.style.display = 'none'; }, 200));
+  $('#feUrunSonuc').addEventListener('mousedown', e => { const b = e.target.closest('[data-furun]'); if(!b) return; e.preventDefault(); const p = urunById(b.dataset.furun); if(p) urunEkle(p); $('#feUrunAra').value = ''; $('#feUrunSonuc').style.display = 'none'; $('#feUrunAra').focus(); });
+  $('#feBosSatir').onclick = () => { f.kalemler.push({urunId: null, ad: '', adet: 1, fiyat: 0, kdv: faturaAyar().varsayilanKdv}); kalemCiz(); const l = $$('#feKalemler [data-kk="ad"]'); if(l.length) l[l.length - 1].focus(); };
+  $('#feKalemler').addEventListener('change', e => {
+    const i = e.target.dataset.ki, k = e.target.dataset.kk; if(i == null || !k) return;
+    const r = f.kalemler[+i]; if(!r) return;
+    if(k === 'ad') r.ad = e.target.value;
+    else { const n = parseNum(e.target.value); if(isNaN(n)){ toast('Geçerli bir sayı girin', 'bad'); kalemCiz(); return; } r[k] = k === 'kdv' ? n : r2(n); }
+    kalemCiz();
+  });
+  $('#feKalemler').addEventListener('click', e => { const b = e.target.closest('[data-ksil]'); if(b){ f.kalemler.splice(+b.dataset.ksil, 1); kalemCiz(); } });
+
+  // Doğrula ve kaydet
+  const kaydetFatura = async (sessiz) => {
+    formOku(); const er = $('#feErr'); er.textContent = '';
+    const a = f.alici;
+    f.kalemler = f.kalemler.filter(k => String(k.ad).trim() || +k.fiyat);
+    if(!a.ad){ er.textContent = 'Alıcının adını / ünvanını yazın.'; $('#feAd').focus(); return null; }
+    if(!/^\d{10,11}$/.test(a.vkn)){ er.textContent = 'VKN (10 hane) veya TCKN (11 hane) yazın. Bilinmiyorsa "nihai tüketici" kutusunu işaretleyin.'; $('#feVkn').focus(); return null; }
+    if(!f.kalemler.length){ er.textContent = 'En az bir kalem ekleyin.'; $('#feUrunAra').focus(); return null; }
+    if(f.kalemler.some(k => !String(k.ad).trim())){ er.textContent = 'Her kalemin adı olmalı.'; return null; }
+    const h = kdvHesap(f.kalemler);
+    if(h.toplam <= 0){ er.textContent = 'Fatura toplamı sıfırdan büyük olmalı.'; return null; }
+    if(!sessiz){
+      if(!a.adres){ er.textContent = 'Alıcının adresini yazın (faturada zorunlu).'; $('#feAdres').focus(); return null; }
+      const gecerli = a.vkn.length === 10 ? vknGecerli(a.vkn) : tcknGecerli(a.vkn);
+      if(!gecerli && !confirm(`${a.vkn.length === 10 ? 'VKN' : 'TCKN'} hatalı görünüyor (${a.vkn}). Yine de devam edilsin mi?`)) return null;
+      if(a.vkn.length === 10 && !a.vergiDairesi && !confirm('Şirket faturası için vergi dairesi boş. Yine de devam edilsin mi?')) return null;
+    }
+    const fid = mevcut ? mevcut.id : idUret();
+    if(!f.no) f.no = await faturaNoUret();
+    Object.assign(f, {matrah: h.matrah, kdvToplam: h.kdvToplam, toplam: h.toplam, olusturan: f.olusturan || profil.email});
+    const islemler = [['fatura', fid, f]];
+    // Müşteri kartını güncelle / oluştur
+    if($('#feCariKaydet') && $('#feCariKaydet').checked && a.vkn !== '11111111111'){
+      const c = f.cariId ? D.cari.get(f.cariId) : null;
+      const bilgi = {ad: a.ad, vkn: a.vkn, vergiDairesi: a.vergiDairesi, adres: a.adres, il: a.il, ilce: a.ilce, eposta: a.eposta, tel: a.tel || (c && c.tel) || ''};
+      if(c) islemler.push(['cari', c.id, Object.assign({}, c, bilgi)]);
+      else { const cid = idUret(); f.cariId = cid; islemler.push(['cari', cid, Object.assign({olusturma: Date.now()}, bilgi)]); }
+    }
+    // Satıştan geldiyse satışa bağla
+    if(f.satisId && D.satis.has(f.satisId)){ const s = D.satis.get(f.satisId); if(s.faturaId !== fid) islemler.push(['satis', s.id, Object.assign({}, s, {faturaId: fid})]); }
+    try{ await kaydetCok(islemler); }catch(e){ er.textContent = 'Kaydedilemedi: ' + e.message; return null; }
+    renderAktif();
+    return Object.assign({id: fid}, f);
+  };
+  $('#feKaydet').onclick = async () => { const s = await kaydetFatura(true); if(s){ toast('Taslak kaydedildi', 'ok'); closeModal(); } };
+  $('#feKes').onclick = async () => { const s = await kaydetFatura(false); if(s){ closeModal(); portalAktarim(s.id); } };
+  if($('#feSil')) $('#feSil').onclick = async () => {
+    if(!confirm('Taslak fatura silinsin mi?')) return;
+    await kaydet('fatura', mevcut.id, Object.assign({}, mevcut, {silindi: true}));
+    if(mevcut.satisId && D.satis.has(mevcut.satisId)){ const s = D.satis.get(mevcut.satisId); await kaydet('satis', s.id, Object.assign({}, s, {faturaId: null})); }
+    closeModal(); toast('Taslak silindi'); renderAktif();
+  };
+  if(!kilitli && !a.ad) setTimeout(() => { const el = $('#feCariAra'); if(el && !dokunmatik()) el.focus(); }, 30);
+}
+
+// Satıştan fatura: satış zaten faturalandıysa o fatura açılır
+function faturaSatistan(s){
+  if(!s) return;
+  if(s.faturaId && D.fatura.has(s.faturaId)) return faturaForm(s.faturaId);
+  faturaForm(null, {satis: s});
+}
+// Trendyol e-Faturam portalına aktarım paneli: bilgileri tek tıkla kopyalanır, kesilen fatura no geri yazılır
+function portalAktarim(fid){
+  const f = D.fatura.get(fid); if(!f) return;
+  const a = f.alici, h = kdvHesap(f.kalemler);
+  const kop = (v, etiket) => `<button type="button" class="btn sm" data-kop="${esc(v)}" title="Kopyala">${etiket || '📋'}</button>`;
+  const satir = (ad, v) => v ? `<tr><td class="muted" style="white-space:nowrap">${ad}</td><td><b>${esc(v)}</b></td><td class="r">${kop(v)}</td></tr>` : '';
+  openModal(`<div id="paIc"><h2>↗ Trendyol e-Faturam'da kes</h2>
+    <ol style="margin:0 0 12px;padding-left:20px;line-height:1.7">
+      <li><button type="button" class="btn sm pri" id="paAc">Trendyol e-Faturam'ı aç</button> ve <b>${f.tip === 'EFATURA' ? 'e-Fatura' : 'e-Arşiv'} oluştur</b> ekranına gidin.</li>
+      <li>Aşağıdaki bilgileri 📋 düğmeleriyle kopyalayıp portala yapıştırın.</li>
+      <li>Fatura kesilince portalın verdiği <b>fatura numarasını</b> en alttaki kutuya yazıp kaydedin.</li>
+    </ol>
+    <div class="grid2" style="gap:14px">
+      <div><b>Alıcı</b><table style="margin-top:4px"><tbody>
+        ${satir(a.vkn.length === 10 ? 'VKN' : 'TCKN', a.vkn)}${satir('Ad / Ünvan', a.ad)}${satir('Vergi dairesi', a.vergiDairesi)}${satir('Adres', a.adres)}${satir('İl', a.il)}${satir('İlçe', a.ilce)}${satir('E-posta', a.eposta)}${satir('Telefon', a.tel)}
+      </tbody></table></div>
+      <div><b>Fatura</b><table style="margin-top:4px"><tbody>
+        ${satir('Tip', f.tip === 'EFATURA' ? 'e-Fatura' : 'e-Arşiv')}${satir('Tarih', new Date(f.tarih + 'T12:00').toLocaleDateString('tr-TR'))}${satir('Açıklama', f.aciklama)}
+        <tr><td class="muted">KDV hariç toplam</td><td colspan="2"><b class="num">${tl(h.matrah)}</b></td></tr>
+        ${h.kdvler.map(([o, t]) => `<tr><td class="muted">KDV %${o}</td><td colspan="2" class="num">${tl(t)}</td></tr>`).join('')}
+        <tr><td class="muted">Genel toplam</td><td colspan="2"><b class="num" style="font-size:18px">${tl(h.toplam)}</b></td></tr>
+      </tbody></table></div>
+    </div>
+    <b style="display:block;margin-top:12px">Kalemler</b>
+    <div class="muted" style="font-size:12px">Portal genelde <b>KDV hariç</b> birim fiyat ister; iki fiyat da verilmiştir.</div>
+    <div class="tblwrap" style="max-height:30vh"><table><thead><tr><th>Ürün / hizmet</th><th class="r">Adet</th><th class="r">Birim (KDV hariç)</th><th class="r">Birim (KDV dahil)</th><th class="r">KDV</th></tr></thead><tbody>
+      ${f.kalemler.map(k => { const hr = kdvHaric(k.fiyat, k.kdv); const hrStr = hr.toLocaleString('tr-TR', {minimumFractionDigits: 2, maximumFractionDigits: 4}); return `<tr><td>${esc(k.ad)} ${kop(k.ad)}</td><td class="r num">${k.adet} ${kop(String(k.adet).replace('.', ','))}</td><td class="r num">${hrStr} ${kop(hrStr)}</td><td class="r num">${num2(k.fiyat)}</td><td class="r">%${k.kdv}</td></tr>`; }).join('')}
+    </tbody></table></div>
+    <div style="background:var(--surface-2);border-radius:10px;padding:12px;margin-top:14px">
+      <b>Fatura kesildi mi?</b>
+      <div class="row" style="margin-top:8px"><input id="paNo" placeholder="Trendyol'un verdiği fatura no (örn. ABC2026000000001)" style="flex:1;min-width:220px" class="mono"><button class="btn pri" id="paKaydet">✓ Kesildi olarak kaydet</button></div>
+    </div>
+    <div class="mfoot"><button class="btn" id="paSonra">Sonra (taslak kalsın)</button></div></div>`);
+  $('#modal').style.width = 'min(900px,100%)';
+  $('#paAc').onclick = () => window.open(PORTAL_URL, '_blank', 'noopener');
+  $('#paSonra').onclick = closeModal;
+  $('#paIc').addEventListener('click', async e => {
+    const b = e.target.closest('[data-kop]'); if(!b) return;
+    try{ await navigator.clipboard.writeText(b.dataset.kop); const eski = b.textContent; b.textContent = '✓'; setTimeout(() => { b.textContent = eski; }, 900); }
+    catch(_){ toast('Kopyalanamadı — elle seçip kopyalayın', 'bad'); }
+  });
+  $('#paKaydet').onclick = async () => {
+    const no = $('#paNo').value.trim().toUpperCase();
+    if(!no){ toast('Trendyol fatura numarasını yazın', 'bad'); $('#paNo').focus(); return; }
+    if(no.length !== 16 && !confirm(`Fatura numaraları genelde 16 karakterdir (örn. ABC2026000000001). "${no}" doğru mu?`)) return;
+    await kaydet('fatura', fid, Object.assign({}, f, {durum: 'kesildi', disNo: no, kesimTarih: new Date().toISOString(), kesen: profil.email}));
+    closeModal(); toast('Fatura kesildi olarak kaydedildi', 'ok'); renderAktif();
+  };
+}
+
+// Fatura önizleme (taslak çıktısı — mali değeri yoktur)
+function faturaYazdir(f){
+  const s = fisAyar(), a = f.alici || {}, h = kdvHesap(f.kalemler || []);
+  $('#pageStyle').textContent = '@media print{@page{size:A4;margin:14mm} #printArea{width:auto!important;padding:0!important;font-family:Arial,sans-serif!important;font-size:11pt!important}}';
+  $('#printArea').innerHTML = `
+    <div style="display:flex;justify-content:space-between;gap:20px;align-items:flex-start">
+      <div><div class="b lg">${esc(s.isletme)}</div><div>${esc(s.adres)}</div>${s.tel ? `<div>Tel: ${esc(s.tel)}</div>` : ''}</div>
+      <div style="text-align:right"><div class="b lg">${f.durum === 'kesildi' ? 'FATURA BİLGİSİ' : 'FATURA TASLAĞI'}</div><div>${f.tip === 'EFATURA' ? 'e-Fatura' : 'e-Arşiv'}</div><div>Kayıt: ${esc(f.no)}${f.disNo ? '<br>Fatura No: ' + esc(f.disNo) : ''}</div><div>Tarih: ${f.tarih ? new Date(f.tarih + 'T12:00').toLocaleDateString('tr-TR') : ''}</div></div>
+    </div><hr>
+    <div><span class="b">SAYIN</span><br>${esc(a.ad)}<br>${esc(a.adres)} ${esc([a.ilce, a.il].filter(Boolean).join(' / '))}<br>${a.vkn && a.vkn.length === 10 ? 'VKN' : 'TCKN'}: ${esc(a.vkn)}${a.vergiDairesi ? ' · V.D.: ' + esc(a.vergiDairesi) : ''}</div><hr>
+    <table style="width:100%"><tr class="b"><td>Ürün / hizmet</td><td class="r">Miktar</td><td class="r">Birim fiyat</td><td class="r">KDV</td><td class="r">Tutar (KDV hariç)</td></tr>
+      ${(f.kalemler || []).map(k => { const b = r2(k.adet * k.fiyat), n = r2(b / (1 + k.kdv / 100)); return `<tr><td>${esc(k.ad)}</td><td class="r">${k.adet}</td><td class="r">${kdvHaric(k.fiyat, k.kdv).toLocaleString('tr-TR', {minimumFractionDigits: 2, maximumFractionDigits: 4})}</td><td class="r">%${k.kdv}</td><td class="r">${num2(n)}</td></tr>`; }).join('')}
+    </table><hr>
+    <table style="width:auto;margin-left:auto"><tr><td>Mal/hizmet toplamı&nbsp;&nbsp;</td><td class="r">${num2(h.matrah)}</td></tr>
+      ${h.kdvler.map(([o, t]) => `<tr><td>Hesaplanan KDV (%${o})</td><td class="r">${num2(t)}</td></tr>`).join('')}
+      <tr class="b lg"><td>Ödenecek tutar</td><td class="r">${tl(h.toplam)}</td></tr></table>
+    ${f.aciklama ? `<hr><div>Not: ${esc(f.aciklama)}</div>` : ''}
+    <hr><div class="c" style="font-size:9pt">${f.durum === 'kesildi' ? 'Yasal fatura Trendyol e-Faturam üzerinden düzenlenmiştir. Bu çıktı bilgi amaçlıdır.' : 'BU BELGE FATURA DEĞİLDİR — TASLAKTIR, MALİ DEĞERİ YOKTUR.'}</div>`;
+  setTimeout(() => window.print(), 60);
+}
+
+/* ================= PERSONEL ================= */
+// Arvenato Ön Muhasebe'deki personel ekranının aynısı; BRN'nin kendi verileriyle çalışır.
+const AYLAR = ['Ocak', 'Şubat', 'Mart', 'Nisan', 'Mayıs', 'Haziran', 'Temmuz', 'Ağustos', 'Eylül', 'Ekim', 'Kasım', 'Aralık'];
+const ODEME_TIP = ['Maaş', 'Avans', 'Prim', 'SGK primi', 'Diğer'];
+const IZIN_TIP = ['Yıllık izin', 'Ekstra izin', 'Mazeret izni', 'Raporlu', 'Ücretsiz izin'];
+const bugun = () => ymd(new Date());
+const ayK = t => String(t || '').slice(0, 7);
+const trT = t => t ? new Date(String(t).slice(0, 10) + 'T12:00').toLocaleDateString('tr-TR') : '—';
+const gunStr = n => String(n).replace('.', ',') + ' gün';
+const personeller = () => [...D.personel.values()];
+const pOdemeler = id => [...D.personelOdeme.values()].filter(o => o.personelId === id);
+const pEkler = id => [...D.personelEk.values()].filter(e => e.personelId === id);
+const pIzinler = id => [...D.izin.values()].filter(z => z.personelId === id);
+const kpi = (ad, deger, alt, uyari) => `<div class="stat"><div class="muted">${ad}</div><div class="v" style="${uyari ? 'color:var(--out)' : ''}">${deger}</div>${alt ? `<div class="muted" style="font-size:12px;margin-top:2px">${alt}</div>` : ''}</div>`;
+function personelOdenen(id, f){ return r2(pOdemeler(id).filter(o => !f || f(o)).reduce((s, o) => s + (+o.tutar || 0), 0)); }
+function buAyMaasOdenen(id){ const a = ayK(bugun()); return personelOdenen(id, o => ayK(o.tarih) === a && ['Maaş', 'Avans', 'Prim'].includes(o.tip)); }
+const buAyAvans = id => personelOdenen(id, o => ayK(o.tarih) === ayK(bugun()) && o.tip === 'Avans');
+function buAyEk(id, tip){ const a = ayK(bugun()); return r2(pEkler(id).filter(e => ayK(e.tarih) === a && (tip ? e.tip === tip : e.tip !== 'Ürün')).reduce((s, e) => s + (+e.tutar || 0), 0)); }
+const hakEdis = p => r2((+p.maas || 0) + buAyEk(p.id) - buAyEk(p.id, 'Ürün'));
+const kalanMaas = p => r2(Math.max(0, hakEdis(p) - buAyMaasOdenen(p.id)));
+function maasGunuTarih(p){ const g = +p.maasGunu; if(!g) return null; const d = new Date(); return Math.min(g, new Date(d.getFullYear(), d.getMonth() + 1, 0).getDate()); }
+const maasGecikti = p => { const g = maasGunuTarih(p); return !!g && new Date().getDate() > g && kalanMaas(p) > 0; };
+function izinGun(bas, bit){ if(!bas || !bit || bit < bas) return 0; let n = 0; const d = new Date(bas + 'T00:00:00'), e = new Date(bit + 'T00:00:00'); while(d <= e){ if(d.getDay() !== 0) n++; d.setDate(d.getDate() + 1); } return n; }
+function kidemYil(p){ if(!p.baslangic) return 0; const s = new Date(p.baslangic + 'T00:00:00'), t = new Date(); let y = t.getFullYear() - s.getFullYear(); if(t.getMonth() < s.getMonth() || (t.getMonth() === s.getMonth() && t.getDate() < s.getDate())) y--; return Math.max(0, y); }
+const yillikHak = (p, k) => +p.izinHakki > 0 ? +p.izinHakki : k <= 5 ? 14 : k < 15 ? 20 : 26;
+const izinde = id => { const t = bugun(); return pIzinler(id).some(z => z.baslangic <= t && z.bitis >= t); };
+function izinOzet(p){
+  const k = kidemYil(p); let hak = 0; for(let i = 1; i <= k; i++) hak += yillikHak(p, i);
+  const l = pIzinler(p.id), sum = f => r2(l.filter(f).reduce((s, z) => s + (+z.gun || 0), 0));
+  const yil = String(new Date().getFullYear()), by = z => String(z.baslangic || '').startsWith(yil);
+  let sonraki = ''; if(p.baslangic){ const s = new Date(p.baslangic + 'T00:00:00'); s.setFullYear(s.getFullYear() + k + 1); sonraki = ymd(s); }
+  const kullanilan = sum(z => z.dus);
+  const buYil = {}; IZIN_TIP.forEach(t => buYil[t] = sum(z => by(z) && z.tip === t));
+  return {kidem: k, hak, kullanilan, kalan: r2(hak - kullanilan), sonraki, sonrakiHak: yillikHak(p, k + 1), buYil};
+}
+const ayGruplu = (list, tutarF) => { const g = {}; list.forEach(x => { const k = ayK(x.tarih || x.baslangic); (g[k] = g[k] || []).push(x); }); return Object.entries(g).map(([k, l]) => ({baslik: `${AYLAR[+k.slice(5, 7) - 1]} ${k.slice(0, 4)}` + (tutarF ? ' · ' + tl(l.reduce((s, x) => s + tutarF(x), 0)) : ''), l})); };
+const siraTarih = (a, b) => String(b.tarih || b.baslangic || '').localeCompare(String(a.tarih || a.baslangic || '')) || (b.olusturma || 0) - (a.olusturma || 0);
+function silOnay(btn){ if(btn.dataset.ok !== '1'){ btn.dataset.ok = '1'; btn.textContent = 'Onayla'; return false; } return true; }
+function ayIsGunu(){ const d = new Date(), y = d.getFullYear(), m = String(d.getMonth() + 1).padStart(2, '0'), son = new Date(y, d.getMonth() + 1, 0).getDate(); return izinGun(`${y}-${m}-01`, `${y}-${m}-${String(son).padStart(2, '0')}`); }
+
+/* --- Liste --- */
+$('#psDurum').addEventListener('change', renderPersonel);
+$('#psYeni').onclick = () => personelForm(null);
+function renderPersonel(){
+  const tum = personeller().sort((a, b) => a.ad.localeCompare(b.ad, 'tr')), aktif = tum.filter(p => p.durum !== 'ayrildi');
+  const du = $('#psDurum').value, list = du === 'aktif' ? aktif : du === 'ayrildi' ? tum.filter(p => p.durum === 'ayrildi') : tum;
+  const buAy = ayK(bugun()), gun = new Date().getDate(), ayAd = AYLAR[new Date().getMonth()];
+  const aylik = r2(aktif.reduce((s, p) => s + (+p.maas || 0), 0));
+  const odenen = r2([...D.personelOdeme.values()].filter(o => ayK(o.tarih) === buAy).reduce((s, o) => s + (+o.tutar || 0), 0));
+  const kalan = r2(aktif.reduce((s, p) => s + kalanMaas(p), 0)), ekTop = r2(aktif.reduce((s, p) => s + buAyEk(p.id), 0));
+  const yaklasan = aktif.filter(p => { const g = maasGunuTarih(p); return g && kalanMaas(p) > 0 && g >= gun && g - gun <= 5; }).map(p => { const g = maasGunuTarih(p); return `${esc(p.ad)} (${g === gun ? 'bugün' : g + ' ' + ayAd + ', ' + (g - gun) + ' gün sonra'})`; });
+  const geciken = aktif.filter(maasGecikti).map(p => `${esc(p.ad)} (${maasGunuTarih(p)} ${ayAd})`);
+  $('#psUyari').innerHTML = (geciken.length ? `<div class="uyari kirmizi"><b>Maaş günü geçti:</b> ${geciken.join(', ')}</div>` : '') + (yaklasan.length ? `<div class="uyari"><b>Yaklaşan maaş günü:</b> ${yaklasan.join(', ')}</div>` : '');
+  $('#psStats').innerHTML = kpi('Aktif personel', aktif.length, tum.length - aktif.length ? (tum.length - aktif.length) + ' ayrılmış' : '')
+    + kpi('Aylık net maaş', tl(aylik), 'Bu ay mesai + prim ' + tl(ekTop))
+    + kpi('Bu ay ödenen', tl(odenen), 'Maaş, avans, prim, SGK')
+    + kpi('Bu ay kalan maaş', tl(kalan), 'Maaş + mesai + prim − ürün − ödenen', kalan > 0);
+  $('#psBody').innerHTML = list.map(p => {
+    const od = buAyMaasOdenen(p.id), m = +p.maas || 0, hk = hakEdis(p);
+    const durum = p.durum === 'ayrildi' ? '<span class="tag">Ayrıldı</span>' : hk && od >= hk ? '<span class="tag ok">Maaş ödendi</span>' : od > 0 ? '<span class="tag warn">Kısmi</span>' : m ? `<span class="tag bad">${maasGecikti(p) ? 'Maaş günü geçti' : 'Ödenmedi'}</span>` : '';
+    const izinChip = p.durum !== 'ayrildi' && izinde(p.id) ? ' <span class="tag warn">İzinde</span>' : '';
+    const ayrildi = p.durum === 'ayrildi';
+    return `<tr>
+      <td><b>${esc(p.ad)}</b><div style="margin-top:3px">${durum}${izinChip}</div></td>
+      <td class="hide-m">${esc(p.gorev || '—')}</td><td class="hide-m">${trT(p.baslangic)}</td><td class="hide-m mono">${esc(p.telefon || '—')}</td>
+      <td class="r num">${tl(m)}${p.maasGunu ? `<div class="muted" style="font-size:11px;font-family:var(--font-body)">Her ayın ${p.maasGunu}. günü</div>` : ''}</td>
+      <td class="r num hide-m">${tl(buAyEk(p.id))}</td><td class="r num hide-m">${tl(buAyEk(p.id, 'Ürün'))}</td><td class="r num hide-m">${tl(buAyAvans(p.id))}</td>
+      <td class="r num">${tl(od)}</td><td class="r num hide-m">${p.baslangic ? gunStr(izinOzet(p).kalan) : '—'}</td>
+      <td><div class="psAksiyon">${ayrildi ? '' : `<button class="btn sm" data-ps="mesai" data-id="${p.id}">Mesai / Prim</button><button class="btn sm" data-ps="izin" data-id="${p.id}">İzinler</button><button class="btn sm" data-ps="urun" data-id="${p.id}">Ürün alımı</button><button class="btn sm" data-ps="avans" data-id="${p.id}">Avans</button><button class="btn sm pri" data-ps="ode" data-id="${p.id}">Ödeme yap</button>`}<button class="btn sm" data-ps="gecmis" data-id="${p.id}">Geçmiş</button><button class="btn sm" data-ps="duzenle" data-id="${p.id}">Düzenle</button></div></td></tr>`;
+  }).join('') || `<tr><td colspan="11" class="empty">${tum.length ? 'Bu filtrede personel yok.' : 'Henüz personel yok. Personel ekleyip maaş, avans, prim, mesai, izin ve ürün alımlarını buradan takip edebilirsiniz.'}</td></tr>`;
+}
+$('#psBody').addEventListener('click', e => {
+  const b = e.target.closest('[data-ps]'); if(!b) return;
+  const p = D.personel.get(b.dataset.id); if(!p) return;
+  ({mesai: () => mesaiEkrani(p.id), izin: () => izinEkrani(p.id), urun: () => urunAlimEkrani(p.id), avans: () => avansEkrani(p.id), ode: () => maasForm(p), gecmis: () => personelGecmis(p), duzenle: () => personelForm(p)})[b.dataset.ps]();
+});
+
+/* --- Personel kartı --- */
+function personelForm(mevcut){
+  const p = mevcut ? Object.assign({}, mevcut) : {ad: '', gorev: '', telefon: '', tcNo: '', baslangic: bugun(), maas: '', maasGunu: '', izinHakki: '', indirim: '', durum: 'aktif'};
+  const kayitVar = mevcut && (pOdemeler(mevcut.id).length || pEkler(mevcut.id).length || pIzinler(mevcut.id).length);
+  openModal(`<h2>${mevcut ? 'Personeli düzenle' : 'Yeni personel'}</h2>
+    <div class="form">
+      <div class="full"><label>Ad soyad *</label><input id="pfAd" value="${esc(p.ad)}" autofocus></div>
+      <div><label>Görevi</label><input id="pfGorev" value="${esc(p.gorev)}" placeholder="Örn. Satış danışmanı"></div>
+      <div><label>Telefon</label><input id="pfTel" value="${esc(p.telefon)}" inputmode="tel"></div>
+      <div><label>İşe giriş tarihi</label><input id="pfBas" type="date" value="${esc(p.baslangic)}"></div>
+      <div><label>Aylık net maaş (₺)</label><input id="pfMaas" value="${p.maas !== '' && p.maas != null ? num2(p.maas) : ''}" inputmode="decimal" placeholder="0,00"></div>
+      <div><label>Maaş günü (ayın kaçı)</label><select id="pfGun"><option value="">Belirtilmedi</option>${Array.from({length: 31}, (_, i) => i + 1).map(i => `<option value="${i}" ${+p.maasGunu === i ? 'selected' : ''}>${i}${i >= 29 ? ' (ay kısa ise son gün)' : ''}</option>`).join('')}</select></div>
+      <div><label>Yıllık izin hakkı (gün)</label><input id="pfIzin" type="number" min="0" step="1" inputmode="numeric" value="${esc(p.izinHakki)}" placeholder="Boş: kıdeme göre 14 / 20 / 26"></div>
+      <div><label>Personel indirimi (%)</label><input id="pfInd" type="number" min="0" max="100" step="1" inputmode="numeric" value="${esc(p.indirim)}" placeholder="Örn. 10 (ürün alımında otomatik)"></div>
+      <div><label>TC kimlik no (isteğe bağlı)</label><input id="pfTc" value="${esc(p.tcNo)}" inputmode="numeric" maxlength="11" class="mono"></div>
+      <div><label>Durum</label><select id="pfDurum"><option value="aktif" ${p.durum !== 'ayrildi' ? 'selected' : ''}>Çalışıyor</option><option value="ayrildi" ${p.durum === 'ayrildi' ? 'selected' : ''}>Ayrıldı</option></select></div>
+      <div class="err full" id="pfErr"></div>
+    </div>
+    <div class="mfoot">${mevcut ? '<button class="btn bad" id="pfSil" style="margin-right:auto">Sil</button>' : ''}<button class="btn" id="pfVaz">Vazgeç</button><button class="btn pri" id="pfKaydet">Kaydet</button></div>`);
+  $('#pfVaz').onclick = closeModal;
+  if($('#pfSil')) $('#pfSil').onclick = async () => {
+    if(kayitVar){ $('#pfErr').textContent = 'Bu personele ait ödeme, izin veya mesai kayıtları var. Silmek yerine durumu "Ayrıldı" yapın; geçmiş kayıtlar korunur.'; return; }
+    if(!silOnay($('#pfSil'))) return;
+    await kaydet('personel', mevcut.id, Object.assign({}, mevcut, {silindi: true})); closeModal(); toast('Personel silindi'); renderAktif();
+  };
+  $('#pfKaydet').onclick = async () => {
+    const g = id => $('#' + id).value.trim(), er = $('#pfErr');
+    if(!g('pfAd')){ er.textContent = 'Ad soyad girin.'; return; }
+    if(g('pfTc') && !/^\d{11}$/.test(g('pfTc'))){ er.textContent = 'TC kimlik no 11 haneli olmalı.'; return; }
+    const maas = parseNum(g('pfMaas'));
+    const doc = Object.assign({}, mevcut || {olusturma: Date.now()}, {ad: g('pfAd'), gorev: g('pfGorev'), telefon: g('pfTel'), baslangic: g('pfBas'), maas: isNaN(maas) ? 0 : r2(maas), tcNo: g('pfTc'), durum: g('pfDurum'),
+      maasGunu: g('pfGun') ? +g('pfGun') : '', izinHakki: g('pfIzin') ? Math.max(0, Math.round(+g('pfIzin'))) : '', indirim: g('pfInd') ? Math.min(100, Math.max(0, +g('pfInd'))) : ''});
+    $('#pfKaydet').disabled = true;
+    try{ await kaydet('personel', mevcut ? mevcut.id : idUret(), doc); closeModal(); toast('Personel kaydedildi', 'ok'); renderAktif(); }
+    catch(e){ er.textContent = 'Kaydedilemedi: ' + e.message; $('#pfKaydet').disabled = false; }
+  };
+}
+
+/* --- Ödeme yap --- */
+function maasForm(p){
+  const m = +p.maas || 0, kalan = kalanMaas(p);
+  openModal(`<h2>${esc(p.ad)} · ödeme</h2>
+    <div class="form">
+      <div><label>Ödeme türü</label><select id="oTip">${ODEME_TIP.map(t => `<option>${t}</option>`).join('')}</select></div>
+      <div><label>Tarih</label><input id="oTarih" type="date" value="${bugun()}"></div>
+      <div><label>Tutar (₺)</label><input id="oTutar" value="${kalan || m ? num2(kalan || m) : ''}" inputmode="decimal"></div>
+      <div><label>Nereden ödendi</label><select id="oOdeme"><option value="kasa">Kasa (nakit)</option><option value="banka">Banka</option></select></div>
+      <div class="full"><label>Açıklama</label><input id="oAcik" placeholder="Örn. ${AYLAR[new Date().getMonth()]} maaşı"></div>
+    </div>
+    <div class="muted" style="font-size:13px;margin-top:10px">Bu ay ödenecek kalan (maaş ${tl(m)} + mesai/prim/yemek ${tl(buAyEk(p.id))} − ürün ${tl(buAyEk(p.id, 'Ürün'))} − ödenen ${tl(buAyMaasOdenen(p.id))}): <b style="color:var(--fg)">${tl(kalan)}</b>. Kasadan yapılan ödemeler gün sonu raporunda kasadan çıkan nakit olarak görünür.</div>
+    <div class="err" id="oErr"></div>
+    <div class="mfoot"><button class="btn" id="oVaz">Vazgeç</button><button class="btn pri" id="oKaydet">Ödemeyi kaydet</button></div>`);
+  $('#oVaz').onclick = closeModal;
+  $('#oKaydet').onclick = async () => {
+    const g = id => $('#' + id).value.trim(), t = r2(parseNum(g('oTutar'))), tip = g('oTip'), er = $('#oErr');
+    if(!g('oTarih')){ er.textContent = 'Tarih girin.'; return; }
+    if(!(t > 0)){ er.textContent = 'Tutar sıfırdan büyük olmalı.'; return; }
+    $('#oKaydet').disabled = true;
+    try{ await kaydet('personelOdeme', idUret(), {personelId: p.id, personelAd: p.ad, tip, tarih: g('oTarih'), tutar: t, odeme: g('oOdeme'), aciklama: g('oAcik'), kasa: cihaz.kasa, kullanici: profil.email, olusturma: Date.now()}); closeModal(); toast(tip + ' ödemesi kaydedildi', 'ok'); renderAktif(); }
+    catch(e){ er.textContent = 'Kaydedilemedi: ' + e.message; $('#oKaydet').disabled = false; }
+  };
+}
+
+/* --- Avans --- */
+function avansEkrani(pid){
+  const p = D.personel.get(pid); if(!p) return;
+  const buAy = ayK(bugun()), m = +p.maas || 0, yil = String(new Date().getFullYear());
+  const avanslar = pOdemeler(pid).filter(o => o.tip === 'Avans').sort(siraTarih);
+  const ayAvans = buAyAvans(pid), kalan = kalanMaas(p), yilAvans = r2(avanslar.filter(o => String(o.tarih).startsWith(yil)).reduce((s, o) => s + (+o.tutar || 0), 0));
+  const ro = p.durum === 'ayrildi';
+  openModal(`<h2>${esc(p.ad)} · avans</h2>
+    <div class="stats" style="grid-template-columns:repeat(auto-fit,minmax(140px,1fr));margin-top:0">
+      ${kpi('Net maaş', tl(m), AYLAR[new Date().getMonth()] + ' ayı')}${kpi('Bu ay avans', tl(ayAvans), avanslar.filter(o => ayK(o.tarih) === buAy).length + ' ödeme')}${kpi('Ödenecek kalan', tl(kalan), 'Maaş + mesai/prim − ödenen')}
+    </div>
+    ${m && ayAvans > m ? `<div class="uyari kirmizi"><b>Dikkat:</b> Bu ay verilen avans net maaşı ${tl(ayAvans - m)} aşıyor.</div>` : ''}
+    ${ro ? '' : `<div class="kutu"><b>Yeni avans ver</b>
+      <div class="form" style="margin-top:8px">
+        <div><label>Tarih</label><input id="avTarih" type="date" value="${bugun()}"></div>
+        <div><label>Tutar (₺)</label><input id="avTutar" inputmode="decimal" placeholder="0,00"></div>
+        <div><label>Nereden ödendi</label><select id="avOdeme"><option value="kasa">Kasa (nakit)</option><option value="banka">Banka</option></select></div>
+        <div><label>Not</label><input id="avAcik" placeholder="Örn. acil ihtiyaç"></div>
+      </div><div class="err" id="avErr"></div>
+      <div class="mfoot" style="margin-top:8px"><button class="btn pri" id="avKaydet">Avansı kaydet</button></div></div>`}
+    <div class="sumrow"><b>Avans geçmişi</b><span class="muted">${yil} toplamı: ${tl(yilAvans)}</span></div>
+    ${avanslar.length ? `<div class="tblwrap" style="max-height:34vh"><table><thead><tr><th>Tarih</th><th>Not</th><th>Ödeme</th><th class="r">Tutar</th><th></th></tr></thead><tbody>
+      ${ayGruplu(avanslar, o => +o.tutar || 0).map(g => `<tr class="ayBaslik"><td colspan="5">${g.baslik}</td></tr>` + g.l.map(o => `<tr><td>${trT(o.tarih)}</td><td>${esc(o.aciklama) || '<span class="muted">—</span>'}</td><td class="muted">${o.odeme === 'banka' ? 'Banka' : 'Kasa'}</td><td class="r num">${tl(o.tutar)}</td><td class="r"><button class="btn sm bad" data-avsil="${o.id}">Sil</button></td></tr>`).join('')).join('')}
+    </tbody></table></div>` : '<div class="empty">Bu personele henüz avans verilmedi.</div>'}
+    <div class="muted" style="font-size:13px;margin-top:8px">Ay sonunda "Ödeme yap" ekranında maaş tutarı, verilen avans düşülmüş olarak gelir.</div>
+    <div class="mfoot"><button class="btn" id="avKapat">Kapat</button></div>`);
+  $('#modal').style.width = 'min(720px,100%)';
+  $('#avKapat').onclick = closeModal;
+  $('#modal').querySelector('.tblwrap')?.addEventListener('click', async e => { const b = e.target.closest('[data-avsil]'); if(!b || !silOnay(b)) return; const o = D.personelOdeme.get(b.dataset.avsil); await kaydet('personelOdeme', o.id, Object.assign({}, o, {silindi: true})); toast('Avans silindi'); renderAktif(); avansEkrani(pid); });
+  if(!ro) $('#avKaydet').onclick = async () => {
+    const g = id => $('#' + id).value.trim(), t = r2(parseNum(g('avTutar'))), er = $('#avErr');
+    if(!g('avTarih')){ er.textContent = 'Tarih girin.'; return; }
+    if(!(t > 0)){ er.textContent = 'Tutar sıfırdan büyük olmalı.'; return; }
+    $('#avKaydet').disabled = true;
+    await kaydet('personelOdeme', idUret(), {personelId: p.id, personelAd: p.ad, tip: 'Avans', tarih: g('avTarih'), tutar: t, odeme: g('avOdeme'), aciklama: g('avAcik'), kasa: cihaz.kasa, kullanici: profil.email, olusturma: Date.now()});
+    toast('Avans kaydedildi', 'ok'); renderAktif(); avansEkrani(pid);
+  };
+}
+
+/* --- Mesai / Prim / Yemek --- */
+function mesaiEkrani(pid, sekme = 'Mesai'){
+  const p = D.personel.get(pid); if(!p) return;
+  const buAy = ayK(bugun()), m = +p.maas || 0, saatUcret = r2(m / 225);
+  const list = pEkler(pid).filter(e => e.tip !== 'Ürün').sort(siraTarih), ayList = list.filter(e => ayK(e.tarih) === buAy);
+  const ayMesaiSaat = r2(ayList.filter(e => e.tip === 'Mesai').reduce((s, e) => s + (+e.saat || 0), 0));
+  const sonY = list.find(e => e.tip === 'Yemek'), ro = p.durum === 'ayrildi';
+  const form = sekme === 'Mesai' ? `<div class="form">
+      <div><label>Tarih</label><input id="mzTarih" type="date" value="${bugun()}"></div>
+      <div><label>Mesai saati</label><input id="mzSaat" inputmode="decimal" placeholder="Örn. 3"></div>
+      <div><label>Saat ücreti (₺)</label><input id="mzUcret" inputmode="decimal" value="${saatUcret ? num2(saatUcret) : ''}"></div>
+      <div><label>Mesai türü</label><select id="mzKat"><option value="1.5">Fazla mesai (×1,5)</option><option value="2">Resmi tatil / bayram (×2)</option><option value="1">Normal ücret (×1)</option></select></div>
+      <div class="full"><label>Not</label><input id="mzAcik" placeholder="Örn. sayım günü"></div></div>
+      <div class="hesap" id="mzCalc"></div><div class="muted" style="font-size:12px;margin-top:4px">Saat ücreti net maaşın 225 saate bölünmesiyle önerildi; değiştirebilirsiniz.</div>`
+    : sekme === 'Yemek' ? `<div class="form">
+      <div><label>Tarih</label><input id="ymTarih" type="date" value="${bugun()}"></div>
+      <div><label>Gün sayısı</label><input id="ymGun" type="number" step="1" min="0" inputmode="numeric" value="${ayIsGunu()}"></div>
+      <div><label>Günlük yemek ücreti (₺)</label><input id="ymGunluk" inputmode="decimal" value="${sonY ? num2(sonY.gunluk) : ''}" placeholder="0,00"></div>
+      <div><label>Not</label><input id="ymAcik" placeholder="Örn. ${AYLAR[new Date().getMonth()]} yemek ücreti"></div></div>
+      <div class="hesap" id="ymCalc"></div><div class="muted" style="font-size:12px;margin-top:4px">Gün sayısı bu ayın pazar hariç günleri (${ayIsGunu()}) olarak önerildi; izinli günleri düşüp düzeltin.</div>`
+    : `<div class="form">
+      <div><label>Tarih</label><input id="prTarih" type="date" value="${bugun()}"></div>
+      <div><label>Prim tutarı (₺)</label><input id="prTutar" inputmode="decimal" placeholder="0,00"></div>
+      <div class="full"><label>Prim nedeni</label><input id="prAcik" placeholder="Örn. ${AYLAR[new Date().getMonth()]} satış primi"></div></div>`;
+  openModal(`<div class="mdIc"><h2>${esc(p.ad)} · mesai, prim, yemek</h2>
+    <div class="stats" style="grid-template-columns:repeat(auto-fit,minmax(125px,1fr));margin-top:0">
+      ${kpi('Bu ay mesai', gunStr(ayMesaiSaat).replace('gün', 'saat'), tl(buAyEk(pid, 'Mesai')))}${kpi('Bu ay prim', tl(buAyEk(pid, 'Prim')), ayList.filter(e => e.tip === 'Prim').length + ' kayıt')}
+      ${kpi('Bu ay yemek', tl(buAyEk(pid, 'Yemek')), ayList.filter(e => e.tip === 'Yemek').reduce((s, e) => s + (+e.gun || 0), 0) + ' gün')}${kpi('Bu ay hak ediş', tl(hakEdis(p)), 'Maaş + ekler − ürün')}${kpi('Ödenecek kalan', tl(kalanMaas(p)), 'Ödenenler düşüldü')}
+    </div>
+    ${ro ? '' : `<div class="kutu"><div class="sekmeler">${['Mesai', 'Prim', 'Yemek'].map(s => `<button class="btn ${s === sekme ? 'sel' : ''}" data-sekme="${s}">${s === 'Yemek' ? 'Yemek ücreti' : s}</button>`).join('')}</div>
+      ${form}<div class="err" id="mzErr"></div><div class="mfoot" style="margin-top:8px"><button class="btn pri" id="mzKaydet">${sekme} kaydet</button></div></div>`}
+    <b>Geçmiş</b>
+    ${list.length ? `<div class="tblwrap" style="max-height:30vh"><table><thead><tr><th>Tarih</th><th>Tür</th><th>Detay</th><th class="r">Tutar</th><th></th></tr></thead><tbody>
+      ${ayGruplu(list, e => +e.tutar || 0).map(g => `<tr class="ayBaslik"><td colspan="5">${g.baslik}</td></tr>` + g.l.map(e => `<tr><td>${trT(e.tarih)}</td><td><span class="tag ${e.tip === 'Prim' ? 'ok' : ''}" style="font-family:var(--font-body)">${e.tip}</span></td>
+        <td>${e.tip === 'Mesai' ? `${String(e.saat).replace('.', ',')} saat × ${tl(e.saatUcret)} × ${String(e.katsayi).replace('.', ',')}` : e.tip === 'Yemek' ? `${e.gun} gün × ${tl(e.gunluk)}` : ''}${e.aciklama ? `<div class="muted">${esc(e.aciklama)}</div>` : ''}</td>
+        <td class="r num">${tl(e.tutar)}</td><td class="r"><button class="btn sm bad" data-eksil="${e.id}">Sil</button></td></tr>`).join('')).join('')}
+    </tbody></table></div>` : '<div class="empty">Bu personele henüz mesai veya prim girilmedi.</div>'}
+    <div class="muted" style="font-size:13px;margin-top:8px">Mesai, prim ve yemek ücreti o ayın hak edişine eklenir; kasadan para çıkmaz. Ödemeyi "Ödeme yap" ekranından maaşla birlikte yaptığınızda tutar otomatik gelir. Tutarlar nettir; bordro için mali müşavirinize danışın.</div>
+    <div class="mfoot"><button class="btn" id="mzKapat">Kapat</button></div></div>`);
+  $('#modal').style.width = 'min(760px,100%)';
+  $('#mzKapat').onclick = closeModal;
+  $$('#modal [data-sekme]').forEach(b => b.onclick = () => mesaiEkrani(pid, b.dataset.sekme));
+  const v = id => parseNum(($('#' + id) || {}).value);
+  const calc = () => {
+    if($('#mzCalc')){ const s = v('mzSaat') || 0, u = v('mzUcret') || 0, k = +$('#mzKat').value || 1; $('#mzCalc').innerHTML = `<span>${String(s).replace('.', ',')} saat × ${tl(u)} × ${String(k).replace('.', ',')}</span><b>${tl(s * u * k)}</b>`; }
+    if($('#ymCalc')){ const gn = Math.round(v('ymGun') || 0), gl = v('ymGunluk') || 0; $('#ymCalc').innerHTML = `<span>${gn} gün × ${tl(gl)}</span><b>${tl(gn * gl)}</b>`; }
+  };
+  calc(); $('#modal .mdIc').addEventListener('input', calc); $('#modal .mdIc').addEventListener('change', calc);
+  $('#modal').querySelector('.tblwrap')?.addEventListener('click', async e => { const b = e.target.closest('[data-eksil]'); if(!b || !silOnay(b)) return; const x = D.personelEk.get(b.dataset.eksil); await kaydet('personelEk', x.id, Object.assign({}, x, {silindi: true})); toast('Kayıt silindi'); renderAktif(); mesaiEkrani(pid, sekme); });
+  if(!ro) $('#mzKaydet').onclick = async () => {
+    const g = id => $('#' + id).value.trim(), er = $('#mzErr'); let doc;
+    if(sekme === 'Mesai'){
+      const s = r2(v('mzSaat')), u = r2(v('mzUcret')), k = +g('mzKat') || 1;
+      if(!g('mzTarih')){ er.textContent = 'Tarih girin.'; return; } if(!(s > 0)){ er.textContent = 'Mesai saatini girin.'; return; } if(!(u > 0)){ er.textContent = 'Saat ücretini girin.'; return; }
+      doc = {tip: 'Mesai', tarih: g('mzTarih'), saat: s, saatUcret: u, katsayi: k, tutar: r2(s * u * k), aciklama: g('mzAcik')};
+    } else if(sekme === 'Yemek'){
+      const gn = Math.round(v('ymGun') || 0), gl = r2(v('ymGunluk'));
+      if(!g('ymTarih')){ er.textContent = 'Tarih girin.'; return; } if(!(gn > 0)){ er.textContent = 'Gün sayısını girin.'; return; } if(!(gl > 0)){ er.textContent = 'Günlük yemek ücretini girin.'; return; }
+      doc = {tip: 'Yemek', tarih: g('ymTarih'), gun: gn, gunluk: gl, tutar: r2(gn * gl), aciklama: g('ymAcik')};
+    } else {
+      const t = r2(v('prTutar'));
+      if(!g('prTarih')){ er.textContent = 'Tarih girin.'; return; } if(!(t > 0)){ er.textContent = 'Prim tutarı sıfırdan büyük olmalı.'; return; }
+      doc = {tip: 'Prim', tarih: g('prTarih'), tutar: t, aciklama: g('prAcik')};
+    }
+    $('#mzKaydet').disabled = true;
+    await kaydet('personelEk', idUret(), Object.assign(doc, {personelId: p.id, olusturma: Date.now()}));
+    toast(sekme + ' kaydedildi', 'ok'); renderAktif(); mesaiEkrani(pid, sekme);
+  };
+}
+
+/* --- İzinler --- */
+function izinEkrani(pid){
+  const p = D.personel.get(pid); if(!p) return;
+  const o = izinOzet(p), list = pIzinler(pid).sort(siraTarih), ro = p.durum === 'ayrildi';
+  openModal(`<h2>${esc(p.ad)} · izinler</h2>
+    ${p.baslangic ? '' : '<div class="uyari"><b>İşe giriş tarihi yok:</b> Yıllık izin hakkını hesaplamak için personeli düzenleyip işe giriş tarihini girin.</div>'}
+    <div class="stats" style="grid-template-columns:repeat(auto-fit,minmax(130px,1fr));margin-top:0">
+      ${kpi('Kıdem', o.kidem + ' yıl', p.baslangic ? 'Giriş ' + trT(p.baslangic) : '')}${kpi('Toplam hak', gunStr(o.hak), o.sonraki ? trT(o.sonraki) + ' tarihinde +' + o.sonrakiHak : '')}
+      ${kpi('Kullanılan', gunStr(o.kullanilan), 'Yıllık izinden düşenler')}${kpi('Kalan yıllık izin', gunStr(o.kalan), o.kalan < 0 ? 'Hakkından fazla kullandı' : '', o.kalan < 0)}
+    </div>
+    <div class="muted" style="font-size:13px;display:flex;gap:14px;flex-wrap:wrap"><b style="color:var(--fg)">${new Date().getFullYear()}:</b>${Object.entries(o.buYil).map(([k, n]) => `<span>${k}: <b style="color:var(--fg)">${gunStr(n)}</b></span>`).join('')}</div>
+    ${ro ? '' : `<div class="kutu"><b>İzin ekle</b>
+      <div class="form" style="margin-top:8px">
+        <div><label>İzin türü</label><select id="izTip">${IZIN_TIP.map(t => `<option>${t}</option>`).join('')}</select></div>
+        <div><label>Gün sayısı</label><input id="izGun" inputmode="decimal" value="1"></div>
+        <div><label>Başlangıç</label><input id="izBas" type="date" value="${bugun()}"></div>
+        <div><label>Bitiş</label><input id="izBit" type="date" value="${bugun()}"></div>
+        <div class="full" id="izDusSatir" hidden><label style="display:flex;gap:8px;align-items:center;margin:0;color:var(--fg);font-size:14px"><input id="izDus" type="checkbox"> Yıllık izin hakkından düşülsün</label></div>
+        <div class="full"><label>Not</label><input id="izAcik" placeholder="Örn. düğün izni, yarım gün"></div>
+      </div>
+      <div class="muted" style="font-size:12px;margin-top:4px">Gün sayısı tarihlere göre pazar günleri hariç hesaplanır; resmi tatil veya yarım gün varsa elle düzeltin.</div>
+      <div class="err" id="izErr"></div><div class="mfoot" style="margin-top:8px"><button class="btn pri" id="izKaydet">İzni kaydet</button></div></div>`}
+    <b>İzin geçmişi</b>
+    ${list.length ? `<div class="tblwrap" style="max-height:30vh"><table><thead><tr><th>Tarih</th><th>Tür</th><th class="r">Gün</th><th>Not</th><th></th></tr></thead><tbody>
+      ${list.map(z => `<tr><td>${trT(z.baslangic)}${z.bitis && z.bitis !== z.baslangic ? ' – ' + trT(z.bitis) : ''}</td><td><span class="tag ${z.tip === 'Yıllık izin' ? 'ok' : z.tip === 'Ücretsiz izin' ? 'bad' : z.tip === 'Ekstra izin' ? 'warn' : ''}" style="font-family:var(--font-body)">${esc(z.tip)}</span>${z.dus && z.tip !== 'Yıllık izin' ? '<div class="muted" style="font-size:11px">yıllıktan düştü</div>' : ''}</td>
+        <td class="r num">${String(z.gun).replace('.', ',')}</td><td>${esc(z.aciklama || '') || '<span class="muted">—</span>'}</td><td class="r"><button class="btn sm bad" data-izsil="${z.id}">Sil</button></td></tr>`).join('')}
+    </tbody></table></div>` : '<div class="empty">Bu personele henüz izin girilmedi.</div>'}
+    <div class="muted" style="font-size:13px;margin-top:8px">Yıllık izin hakkı kıdeme göre hesaplanır: 1–5 yıl 14, 5–15 yıl 20, 15 yıl ve üzeri 26 gün. Personel kartında farklı bir gün girdiyseniz o kullanılır.</div>
+    <div class="mfoot"><button class="btn" id="izKapat">Kapat</button></div>`);
+  $('#modal').style.width = 'min(760px,100%)';
+  $('#izKapat').onclick = closeModal;
+  $('#modal').querySelector('.tblwrap')?.addEventListener('click', async e => { const b = e.target.closest('[data-izsil]'); if(!b || !silOnay(b)) return; const z = D.izin.get(b.dataset.izsil); await kaydet('izin', z.id, Object.assign({}, z, {silindi: true})); toast('İzin silindi'); renderAktif(); izinEkrani(pid); });
+  if(ro) return;
+  const tipSenk = () => { const t = $('#izTip').value, gizle = !(t === 'Ekstra izin' || t === 'Mazeret izni'); $('#izDusSatir').hidden = gizle; if(gizle) $('#izDus').checked = false; };
+  $('#izTip').onchange = tipSenk;
+  ['#izBas', '#izBit'].forEach(s => $(s).addEventListener('change', e => { if(e.target.id === 'izBas' && $('#izBit').value < $('#izBas').value) $('#izBit').value = $('#izBas').value; $('#izGun').value = izinGun($('#izBas').value, $('#izBit').value); }));
+  $('#izKaydet').onclick = async () => {
+    const g = id => $('#' + id).value.trim(), er = $('#izErr'), tip = g('izTip'), bas = g('izBas'), bit = g('izBit'), gun = r2(parseNum(g('izGun')));
+    if(!bas || !bit){ er.textContent = 'Başlangıç ve bitiş tarihini girin.'; return; }
+    if(bit < bas){ er.textContent = 'Bitiş tarihi başlangıçtan önce olamaz.'; return; }
+    if(!(gun > 0)){ er.textContent = 'Gün sayısı sıfırdan büyük olmalı.'; return; }
+    const dus = tip === 'Yıllık izin' || ((tip === 'Ekstra izin' || tip === 'Mazeret izni') && $('#izDus').checked);
+    $('#izKaydet').disabled = true;
+    await kaydet('izin', idUret(), {personelId: p.id, tip, baslangic: bas, bitis: bit, gun, dus, aciklama: g('izAcik'), olusturma: Date.now()});
+    toast(tip + ' kaydedildi', 'ok'); renderAktif(); izinEkrani(pid);
+  };
+}
+
+/* --- Ürün alımı (maaştan düşülür) --- */
+async function fisNoUret(){
+  let enBuyuk = (await metaAl('fisSayac')) || 0;
+  for(const s of D.satis.values()) if(s.kasa === cihaz.kasa){ const n = parseInt(String(s.no).split('-').pop(), 10); if(n > enBuyuk) enBuyuk = n; }
+  await metaYaz('fisSayac', enBuyuk + 1);
+  return cihaz.kasa + '-' + String(enBuyuk + 1).padStart(5, '0');
+}
+function urunAlimEkrani(pid){
+  const p = D.personel.get(pid); if(!p) return;
+  const buAy = ayK(bugun()), list = pEkler(pid).filter(e => e.tip === 'Ürün').sort(siraTarih), ayUrun = buAyEk(pid, 'Ürün'), ro = p.durum === 'ayrildi';
+  let secili = null;
+  openModal(`<div class="mdIc"><h2>${esc(p.ad)} · ürün alımı</h2>
+    <div class="stats" style="grid-template-columns:repeat(auto-fit,minmax(130px,1fr));margin-top:0">
+      ${kpi('Bu ay ürün', tl(ayUrun), list.filter(e => ayK(e.tarih) === buAy).length + ' kayıt')}${kpi('Bu ay hak ediş', tl(hakEdis(p)), 'Maaş + mesai + prim − ürün')}${kpi('Ödenecek kalan', tl(kalanMaas(p)), 'Ödenenler düşüldü')}
+    </div>
+    ${(+p.maas || 0) && ayUrun > (+p.maas || 0) ? '<div class="uyari kirmizi"><b>Dikkat:</b> Bu ayki ürün alımları net maaşı aşıyor.</div>' : ''}
+    ${ro ? '' : `<div class="kutu"><b>Ürün ekle</b>
+      <div style="position:relative;margin-top:8px"><input id="uaAra" placeholder="📷 Barkod okutun veya stoktan ürün arayın (isteğe bağlı)" style="width:100%" autocomplete="off"><div id="uaSonuc" class="acilir"></div></div>
+      <div class="form" style="margin-top:8px">
+        <div class="full"><label>Ürün</label><input id="uaAd" placeholder="Örn. Akıllı boya seti"><div id="uaStokBilgi" class="muted" style="font-size:12px"></div></div>
+        <div><label>Tarih</label><input id="uaTarih" type="date" value="${bugun()}"></div>
+        <div><label>Adet</label><input id="uaAdet" type="number" min="1" step="1" inputmode="numeric" value="1"></div>
+        <div class="full"><label>Birim fiyat, KDV dahil (₺)</label><input id="uaFiyat" inputmode="decimal" placeholder="0,00"></div>
+      </div>
+      <div style="margin-top:10px"><b style="font-size:14px">İndirim</b>
+        <div class="row" style="margin-top:6px"><select id="uaIndTip"><option value="%">Yüzde (%)</option><option value="tl">Tutar (₺)</option></select><input id="uaInd" inputmode="decimal" value="${esc(p.indirim || '')}" placeholder="0" style="width:90px">
+        ${[0, 5, 10, 15, 20, 25].map(x => `<button type="button" class="btn sm" data-indh="${x}">${x ? '%' + x : 'İndirimsiz'}</button>`).join('')}</div>
+        <div class="muted" style="font-size:12px;margin-top:4px">${p.indirim ? `Personel kartındaki %${p.indirim} indirim otomatik uygulandı.` : 'Sürekli indirim için personel kartına "Personel indirimi (%)" girebilirsiniz.'}</div>
+      </div>
+      <label style="display:flex;gap:8px;align-items:flex-start;margin:10px 0 0;color:var(--fg);font-size:14px"><input id="uaSatis" type="checkbox" checked style="margin-top:3px"> <span>Satış olarak da kaydet <span class="muted">(ciroya ve satış raporuna girer, stoktan düşer, kasaya para girmez)</span></span></label>
+      <div class="hesap" id="uaCalc"></div><div class="err" id="uaErr"></div>
+      <div class="mfoot" style="margin-top:8px"><button class="btn pri" id="uaKaydet">Maaştan düş</button></div></div>`}
+    <b>Alım geçmişi</b>
+    ${list.length ? `<div class="tblwrap" style="max-height:28vh"><table><thead><tr><th>Tarih</th><th>Ürün</th><th class="r">Adet</th><th class="r">Tutar</th><th></th></tr></thead><tbody>
+      ${ayGruplu(list, e => +e.tutar || 0).map(g => `<tr class="ayBaslik"><td colspan="5">${g.baslik}</td></tr>` + g.l.map(e => `<tr><td>${trT(e.tarih)}</td><td>${esc(e.urun || 'Ürün')}${e.satisId ? '<div class="muted" style="font-size:11px">satış olarak kaydedildi</div>' : ''}</td><td class="r num">${e.adet || 1} × ${tl(e.birimFiyat || e.tutar)}</td>
+        <td class="r num">${e.indirim ? `<div class="muted" style="font-size:11px;text-decoration:line-through">${tl(e.listeTutar)}</div>` : ''}${tl(e.tutar)}${e.indirim ? `<div style="font-size:11px;color:var(--in);font-family:var(--font-body)">${e.indirimTip === '%' ? '%' + e.indirimDeger + ' ' : ''}indirim</div>` : ''}</td>
+        <td class="r"><button class="btn sm bad" data-uasil="${e.id}">Sil</button></td></tr>`).join('')).join('')}
+    </tbody></table></div>` : '<div class="empty">Bu personelin henüz ürün alımı yok.</div>'}
+    <div class="muted" style="font-size:13px;margin-top:8px">Alınan ürünler o ayın hak edişinden düşer. "Ödeme yap" ekranında maaş tutarı ürün bedeli düşülmüş olarak gelir. Bir kaydı silerseniz bağlı satış iptal edilir ve ürün stoğa geri döner.</div>
+    <div class="mfoot"><button class="btn" id="uaKapat">Kapat</button></div></div>`);
+  $('#modal').style.width = 'min(760px,100%)';
+  $('#uaKapat').onclick = closeModal;
+  $('#modal').querySelector('.tblwrap')?.addEventListener('click', async e => {
+    const b = e.target.closest('[data-uasil]'); if(!b || !silOnay(b)) return;
+    const x = D.personelEk.get(b.dataset.uasil), isl = [['personelEk', x.id, Object.assign({}, x, {silindi: true})]];
+    if(x.satisId && D.satis.has(x.satisId)){ const s = D.satis.get(x.satisId); isl.push(['satis', s.id, Object.assign({}, s, {iptal: true, iptalTarih: new Date().toISOString(), iptalEden: profil.email})]); }
+    if(x.stokGirisId && D.stokgiris.has(x.stokGirisId)){ const sg = D.stokgiris.get(x.stokGirisId); isl.push(['stokgiris', sg.id, Object.assign({}, sg, {silindi: true})]); }
+    await kaydetCok(isl); toast('Kayıt silindi, ürün stoğa döndü'); renderAktif(); urunAlimEkrani(pid);
+  });
+  if(ro) return;
+  const hesapla = () => {
+    const adet = Math.max(0, Math.round(+$('#uaAdet').value || 0)), fiyat = r2(parseNum($('#uaFiyat').value) || 0), liste = r2(adet * fiyat);
+    const tip = $('#uaIndTip').value, v = Math.max(0, parseNum($('#uaInd').value) || 0);
+    const ind = tip === '%' ? r2(liste * Math.min(v, 100) / 100) : r2(Math.min(v, liste));
+    return {adet, fiyat, liste, tip, v, ind, t: r2(liste - ind)};
+  };
+  const calc = () => { const o = hesapla(); $('#uaCalc').innerHTML = `<span>${o.adet} × ${tl(o.fiyat)} = ${tl(o.liste)}</span>${o.ind ? `<span style="color:var(--in)">İndirim ${o.tip === '%' ? '%' + o.v + ' ' : ''}−${tl(o.ind)}</span>` : ''}<b>Maaştan düşülecek ${tl(o.t)}</b>`; };
+  calc(); $('#modal .mdIc').addEventListener('input', calc); $('#modal .mdIc').addEventListener('change', calc);
+  $$('#modal [data-indh]').forEach(b => b.onclick = () => { $('#uaIndTip').value = '%'; $('#uaInd').value = b.dataset.indh === '0' ? '' : b.dataset.indh; calc(); });
+  const urunSec = u => { secili = u; $('#uaAd').value = u.ad; $('#uaFiyat').value = num2(u.satis); $('#uaStokBilgi').textContent = `Stoktan: ${u.barkod || 'barkodsuz'} · stok ${stok(u.id)}`; $('#uaAra').value = ''; $('#uaSonuc').style.display = 'none'; calc(); beep(true); };
+  $('#uaAd').addEventListener('input', () => { if(secili && $('#uaAd').value !== secili.ad){ secili = null; $('#uaStokBilgi').textContent = ''; } });
+  $('#uaAra').addEventListener('input', () => {
+    const raw = $('#uaAra').value.trim(), box = $('#uaSonuc');
+    if(raw.length < 2 || /^\d+$/.test(raw)){ box.style.display = 'none'; return; }
+    const l = searchProducts(raw).slice(0, 10);
+    box.innerHTML = l.length ? l.map(u => `<button data-uau="${u.id}"><span>${esc(u.ad)}</span><b class="num">${tl(u.satis)}</b></button>`).join('') : '<div class="empty">Ürün bulunamadı</div>'; box.style.display = 'block';
+  });
+  $('#uaAra').addEventListener('keydown', e => { if(e.key !== 'Enter') return; e.preventDefault(); const raw = $('#uaAra').value.trim(); const u = urunByBarkod(raw) || (searchProducts(raw).length === 1 ? searchProducts(raw)[0] : null); if(u) urunSec(u); else { beep(false); toast('Ürün bulunamadı', 'bad'); } });
+  $('#uaSonuc').addEventListener('mousedown', e => { const b = e.target.closest('[data-uau]'); if(!b) return; e.preventDefault(); const u = urunById(b.dataset.uau); if(u) urunSec(u); });
+  $('#uaAra').addEventListener('blur', () => setTimeout(() => { const b = $('#uaSonuc'); if(b) b.style.display = 'none'; }, 200));
+  $('#uaKaydet').onclick = async () => {
+    const er = $('#uaErr'), o = hesapla(), urun = $('#uaAd').value.trim(), tarih = $('#uaTarih').value;
+    if(o.liste > 0 && o.ind >= o.liste){ er.textContent = 'İndirim ürün tutarından küçük olmalı.'; return; }
+    if(!urun){ er.textContent = 'Ürün adını girin ya da stoktan seçin.'; return; }
+    if(!tarih){ er.textContent = 'Tarih girin.'; return; }
+    if(!(o.adet > 0)){ er.textContent = 'Adet en az 1 olmalı.'; return; }
+    if(!(o.t > 0)){ er.textContent = 'Birim fiyatı girin.'; return; }
+    $('#uaKaydet').disabled = true;
+    const isl = [], ekId = idUret(); let satisId = '', stokGirisId = '';
+    const zaman = tarih === bugun() ? new Date().toISOString() : new Date(tarih + 'T12:00').toISOString();
+    if($('#uaSatis').checked){
+      satisId = idUret();
+      isl.push(['satis', satisId, {no: await fisNoUret(), kasa: cihaz.kasa, tarih: zaman, kalemler: [{urunId: secili ? secili.id : null, barkod: secili ? secili.barkod || '' : '', ad: urun, adet: o.adet, fiyat: o.fiyat, alis: secili ? r2(secili.alis || 0) : 0}],
+        araToplam: o.liste, indirim: o.ind, toplam: o.t, odeme: 'personel', alinan: 0, paraUstu: 0, iptal: false, kullanici: profil.email, personelId: p.id, personelAd: p.ad}]);
+    } else if(secili){
+      stokGirisId = idUret();
+      isl.push(['stokgiris', stokGirisId, {urunId: secili.id, miktar: -o.adet, tip: 'Personel', tarih: zaman, aciklama: 'Personel alımı · ' + p.ad, kasa: cihaz.kasa}]);
+    }
+    isl.push(['personelEk', ekId, {personelId: p.id, tip: 'Ürün', tarih, urun, urunId: secili ? secili.id : null, adet: o.adet, birimFiyat: o.fiyat, listeTutar: o.liste, indirimTip: o.tip, indirimDeger: o.v, indirim: o.ind, tutar: o.t, satisId, stokGirisId, olusturma: Date.now()}]);
+    try{ await kaydetCok(isl); toast(tl(o.t) + ' maaştan düşüldü', 'ok'); renderAktif(); urunAlimEkrani(pid); }
+    catch(e){ er.textContent = 'Kaydedilemedi: ' + e.message; $('#uaKaydet').disabled = false; }
+  };
+}
+
+/* --- Ödeme geçmişi --- */
+function personelGecmis(p){
+  const list = pOdemeler(p.id).sort(siraTarih), top = r2(list.reduce((s, o) => s + (+o.tutar || 0), 0));
+  openModal(`<h2>${esc(p.ad)} · ödeme geçmişi</h2>
+    ${list.length ? `<div class="tblwrap" style="max-height:55vh"><table><thead><tr><th>Tarih</th><th>Tür</th><th>Açıklama</th><th>Ödeme</th><th class="r">Tutar</th><th></th></tr></thead><tbody>
+      ${ayGruplu(list, o => +o.tutar || 0).map(g => `<tr class="ayBaslik"><td colspan="6">${g.baslik}</td></tr>` + g.l.map(o => `<tr><td>${trT(o.tarih)}</td><td>${esc(o.tip)}</td><td>${esc(o.aciklama || '')}</td><td class="muted">${o.odeme === 'banka' ? 'Banka' : 'Kasa'}</td><td class="r num">${tl(o.tutar)}</td><td class="r"><button class="btn sm bad" data-odsil="${o.id}">Sil</button></td></tr>`).join('')).join('')}
+      <tr><td colspan="4"><b>Toplam</b></td><td class="r num"><b>${tl(top)}</b></td><td></td></tr>
+    </tbody></table></div>` : '<div class="empty">Bu personele henüz ödeme yapılmadı.</div>'}
+    <div class="mfoot"><button class="btn" id="pgKapat">Kapat</button></div>`);
+  $('#modal').style.width = 'min(760px,100%)';
+  $('#pgKapat').onclick = closeModal;
+  $('#modal').querySelector('.tblwrap')?.addEventListener('click', async e => { const b = e.target.closest('[data-odsil]'); if(!b || !silOnay(b)) return; const o = D.personelOdeme.get(b.dataset.odsil); await kaydet('personelOdeme', o.id, Object.assign({}, o, {silindi: true})); toast('Ödeme silindi'); renderAktif(); personelGecmis(D.personel.get(p.id)); });
+}
 
 /* ================= CSV / YEDEK ================= */
 function download(name, content, type){ const a = document.createElement('a'); a.href = URL.createObjectURL(new Blob([content], {type})); a.download = name; document.body.appendChild(a); a.click(); a.remove(); setTimeout(() => URL.revokeObjectURL(a.href), 1500); }
@@ -1038,7 +2660,7 @@ function parseCsv(text){
 }
 $('#exportSalesBtn').onclick = () => {
   const rows = [['Fiş No','Kasa','Tarih','Ödeme','Durum','Barkod','Ürün','Adet','Birim Fiyat','Tutar','Fiş İndirim','Fiş Toplam','Kullanıcı']];
-  salesInRange().sort((a, b) => a.tarih.localeCompare(b.tarih)).forEach(s => s.kalemler.forEach((i, x) => rows.push([s.no, s.kasa, fmtDate(s.tarih), s.odeme === 'nakit' ? 'Nakit' : 'Kart', s.iptal ? 'İptal' : 'Tamam', i.barkod, i.ad, i.adet, num2(i.fiyat), num2(i.adet * i.fiyat), x === 0 ? num2(s.indirim) : '', x === 0 ? num2(s.toplam) : '', s.kullanici || ''])));
+  salesInRange().sort((a, b) => a.tarih.localeCompare(b.tarih)).forEach(s => s.kalemler.forEach((i, x) => rows.push([s.no, s.kasa, fmtDate(s.tarih), odemeAd(s.odeme) + (s.cariAd ? ' (' + s.cariAd + ')' : ''), s.iptal ? 'İptal' : 'Tamam', i.barkod, i.ad, i.adet, num2(i.fiyat), num2(i.adet * i.fiyat), x === 0 ? num2(s.indirim) : '', x === 0 ? num2(s.toplam) : '', s.kullanici || ''])));
   download(`satislar_${$('#rFrom').value}_${$('#rTo').value}.csv`, toCsv(rows), 'text/csv;charset=utf-8');
 };
 $('#exportProdBtn').onclick = () => {
@@ -1116,6 +2738,7 @@ function loadSettingsForm(){
   const f = fisAyar();
   $('#sName').value = f.isletme; $('#sAddr').value = f.adres; $('#sPhone').value = f.tel; $('#sFooter').value = f.altYazi;
   $('#sKasa').value = cihaz.kasa; $('#sPaper').value = cihaz.kagit; $('#sAuto').checked = !!cihaz.otoYazdir;
+  $('#sKdv').value = String(faturaAyar().varsayilanKdv);
   $('#hesapBilgi').innerHTML = profil ? `${esc(profil.email)}<br>${esc(profil.firmaAd || '')} · ${profil.rol === 'sahip' ? 'Sahip' : 'Kullanıcı'}` : '';
   durumCiz();
 }
@@ -1126,10 +2749,24 @@ async function uyeleriYukle(){
   const {data, error} = await sb.rpc('brn_uyeleri_listele', {p_firma: firmaId});
   if(error){ kutu.innerHTML = `<span class="err">${esc(sbMesaj(error))}</span>`; form.style.display = 'none'; return; }
   const sahip = profil && profil.rol === 'sahip';
-  kutu.innerHTML = `<table><tbody>${data.map(u => `<tr><td style="word-break:break-all">${esc(u.eposta)}</td><td>${u.rol === 'sahip' ? '<span class="tag ok">Sahip</span>' : '<span class="tag">Kullanıcı</span>'}</td><td class="r">${sahip && u.rol !== 'sahip' ? `<button class="btn sm bad" data-cikar="${esc(u.user_id)}" data-ep="${esc(u.eposta)}">Çıkar</button>` : ''}</td></tr>`).join('')}</tbody></table>`;
+  kutu.innerHTML = `<table><tbody>${data.map(u => `<tr><td style="word-break:break-all">${esc(u.eposta)}</td><td>${u.rol === 'sahip' ? '<span class="tag ok">Sahip</span>' : '<span class="tag">Kullanıcı</span>'}</td><td class="r" style="white-space:nowrap">${sahip && u.rol !== 'sahip' ? `<button class="btn sm" data-yetki="${esc(u.user_id)}" data-ep="${esc(u.eposta)}">Yetkiler</button> <button class="btn sm bad" data-cikar="${esc(u.user_id)}" data-ep="${esc(u.eposta)}">Çıkar</button>` : ''}</td></tr>`).join('')}</tbody></table>`;
   form.style.display = sahip ? 'flex' : 'none';
 }
+function yetkiForm(uid, ep){
+  const y = D.yetki.get(uid) || {};
+  openModal(`<h2>Yetkiler</h2><div class="muted">${esc(ep)}</div>
+    <div style="display:grid;gap:12px;margin-top:16px">${YETKILER.map(([k, ad, v]) => `<label style="display:flex;gap:10px;align-items:center;color:var(--fg);font-size:15px;margin:0;cursor:pointer"><input type="checkbox" data-yk="${k}" ${(k in y ? y[k] : v) ? 'checked' : ''} style="width:20px;height:20px;flex:none"> ${ad}</label>`).join('')}</div>
+    <p class="muted">Satış yapma, ürün arama, etiket yazdırma ve fiyat sorgulama her kullanıcıya açıktır. Firma sahibinin tüm yetkileri vardır.</p>
+    <div class="mfoot"><button class="btn" id="ykVaz">Vazgeç</button><button class="btn pri" id="ykKaydet">Kaydet</button></div>`);
+  $('#ykVaz').onclick = closeModal;
+  $('#ykKaydet').onclick = async () => {
+    const doc = {eposta: ep}; $$('#modal [data-yk]').forEach(c => doc[c.dataset.yk] = c.checked);
+    try{ await kaydet('yetki', uid, doc); closeModal(); toast('Yetkiler kaydedildi', 'ok'); }
+    catch(e){ toast('Kaydedilemedi: ' + e.message, 'bad'); }
+  };
+}
 $('#uyeKutu').addEventListener('click', async e => {
+  const yb = e.target.closest('[data-yetki]'); if(yb){ yetkiForm(yb.dataset.yetki, yb.dataset.ep); return; }
   const b = e.target.closest('[data-cikar]'); if(!b) return;
   if(!confirm(b.dataset.ep + ' firmadan çıkarılsın mı?\nBu kişi artık programa bu firmayla giremez.')) return;
   const {error} = await sb.rpc('brn_uye_cikar', {p_firma: firmaId, p_user: b.dataset.cikar});
@@ -1142,6 +2779,7 @@ $('#uyeForm').onsubmit = async e => {
   if(error){ toast(sbMesaj(error), 'bad'); return; }
   $('#uyeEposta').value = ''; toast('Kullanıcı eklendi', 'ok'); uyeleriYukle();
 };
+$('#saveFaturaBtn').onclick = async () => { await kaydet('ayar', 'fatura', Object.assign({}, faturaAyar(), {varsayilanKdv: +$('#sKdv').value})); toast('Fatura ayarı kaydedildi', 'ok'); };
 $('#saveFisBtn').onclick = async () => {
   await kaydet('ayar', 'fis', {isletme: $('#sName').value.trim() || (profil ? profil.firmaAd : ''), adres: $('#sAddr').value.trim(), tel: $('#sPhone').value.trim(), altYazi: $('#sFooter').value.trim()});
   toast('Fiş bilgileri kaydedildi', 'ok');

@@ -66,10 +66,11 @@ create policy brn_uyeler_oku on public.brn_uyeler for select to authenticated us
 
 drop policy if exists brn_kayit_oku on public.brn_kayitlar;
 create policy brn_kayit_oku on public.brn_kayitlar for select to authenticated using (public.brn_uye_mi(firma_id));
+-- Yetkiler ("yetki" kayıtları) yalnızca firma sahibi tarafından yazılabilir
 drop policy if exists brn_kayit_ekle on public.brn_kayitlar;
-create policy brn_kayit_ekle on public.brn_kayitlar for insert to authenticated with check (public.brn_uye_mi(firma_id));
+create policy brn_kayit_ekle on public.brn_kayitlar for insert to authenticated with check (public.brn_uye_mi(firma_id) and (koleksiyon <> 'yetki' or public.brn_sahip_mi(firma_id)));
 drop policy if exists brn_kayit_guncelle on public.brn_kayitlar;
-create policy brn_kayit_guncelle on public.brn_kayitlar for update to authenticated using (public.brn_uye_mi(firma_id)) with check (public.brn_uye_mi(firma_id));
+create policy brn_kayit_guncelle on public.brn_kayitlar for update to authenticated using (public.brn_uye_mi(firma_id)) with check (public.brn_uye_mi(firma_id) and (koleksiyon <> 'yetki' or public.brn_sahip_mi(firma_id)));
 -- Silme yok: kayıtlar "silindi" / "iptal" işaretiyle gizlenir, böylece tüm cihazlara yansır.
 
 -- Firma oluşturma (oluşturan kişi firmanın sahibi olur)

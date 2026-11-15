@@ -2,11 +2,12 @@
 // Sayfa internet varsa en güncel sürümü alır; internet yoksa kayıtlı sürüm açılır.
 // Kayıtlar (Supabase) önbelleğe alınmaz; onları program kendi yerel veritabanında tutar.
 // Önbellek adı "brn-" ile başlar ve yalnızca kendi eski önbelleklerini siler.
-const SURUM = "brn-v1";
+const SURUM = "brn-v2";
 const KABUK = ["./", "./index.html", "./config.js", "./manifest.webmanifest", "./icon-192.png", "./icon-512.png", "./favicon-32.png"];
 const KUTUPHANELER = [
   "https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.js",
-  "https://cdn.jsdelivr.net/npm/html5-qrcode@2.3.8/html5-qrcode.min.js"
+  "https://cdn.jsdelivr.net/npm/html5-qrcode@2.3.8/html5-qrcode.min.js",
+  "https://cdn.jsdelivr.net/npm/jsbarcode@3.11.6/dist/JsBarcode.all.min.js"
 ];
 self.addEventListener("install", e => {
   e.waitUntil(caches.open(SURUM).then(c => Promise.all([...KABUK, ...KUTUPHANELER].map(u => c.add(u).catch(() => {})))).then(() => self.skipWaiting()));
