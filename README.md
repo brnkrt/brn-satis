@@ -65,6 +65,16 @@ Programı açın, **Hesap oluştur** ile kaydolun ve e-postanızdaki onay bağla
 - Satış ekranının altındaki **⚡ Hızlı Ürünler** düğmeleri tek tıkla sepete ekler. Hangi ürünlerin görüneceği **⚙ Düzenle** ile seçilir.
 - Bir düğmeye **sağ tıklayınca** (telefonda **basılı tutunca**) menü açılır: **Düzenle** (ad, fiyat, barkod, stok, KDV), varyantlı ürünlerde **Tüm varyantlar**, **Sepete ekle**, **Etiket yazdır**, **Sola / Sağa taşı** ve **Hızlı ürünlerden çıkar**. Düzenleme satış ekranından çıkmadan yapılır.
 
+## Toplu düzenleme
+
+- Ürünler listesinde her satırın başındaki kutuyla ürün seçilir. Başlıktaki kutu görünen tüm ürünleri seçer (önce arama veya *Kritik stok* ile süzebilirsiniz). **Shift** basılıyken tıklamak aradaki tüm ürünleri seçer.
+- Seçim yapılınca üstte işlem çubuğu çıkar: **✏️ Toplu düzenle**, **🏷 Etiket**, **⚡ Hızlı ürün yap / çıkar**, **🗑 Sil**, **Seçimi temizle**.
+- **Toplu düzenle** ile değiştirilebilenler:
+  - **Satış fiyatı** ve **alış fiyatı:** yeni fiyat, % artır, % azalt, ₺ artır, ₺ azalt. Satış fiyatı 0,25 / 0,50 / 1 / 5'e yuvarlanabilir.
+  - **Kategori**, **KDV oranı**, **kritik stok**, **hızlı ürün**
+  - **Stok:** stoğa ekle ya da sayımla eşitle
+- Kaydetmeden önce **önizleme** her ürünün eski ve yeni değerini gösterir. Varyantlı ürünlerde fiyat, aynı kalmaları için o ürünün tüm varyantlarına uygulanır.
+
 ## Ürün listesini sıralama
 
 Ürünler ekranındaki **↕ Sırala** seçicisiyle liste ada, stoğa (azdan çoğa / çoktan aza), fiyata, en çok / en az satanlara, son eklenenlere, kategoriye ya da barkoda göre sıralanır. Bilgisayarda sütun başlıklarına tıklayarak da sıralanabilir; aynı başlığa ikinci tıklama yönü değiştirir (▲ / ▼). Seçim her cihazda hatırlanır.

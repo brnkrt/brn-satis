@@ -150,6 +150,16 @@ th.sirali{color:var(--accent)}
 .kutu{background:var(--surface-2);border-radius:10px;padding:12px;margin:12px 0}
 .ayBaslik td{background:var(--surface-2);font-weight:600;font-size:13px}
 .psAksiyon{display:flex;gap:4px;flex-wrap:wrap;justify-content:flex-end}
+#pTopluBar{position:sticky;top:0;z-index:3;align-items:center;gap:8px;flex-wrap:wrap;background:var(--accent-soft);border:1px solid var(--accent);border-radius:10px;padding:8px 12px;margin-bottom:8px}
+#pBody tr.secili td{background:var(--accent-soft)}
+.tdForm{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.tdForm .full{grid-column:1/-1}
+.tdForm .row{flex-wrap:wrap}
+.tdForm select{min-width:150px}
+.tdForm input{width:110px}
+.tdForm input[list]{width:auto;flex:1;min-width:120px}
+.tdForm > div > select{width:100%}
+@media (max-width:820px){.tdForm{grid-template-columns:1fr}}
 kbd{background:var(--surface-2);border:1px solid var(--line);border-radius:4px;padding:0 5px;font-size:11px;font-family:var(--font-num);color:var(--fg)}
 /* Raporlar */
 .stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(165px,1fr));gap:12px;margin:14px 0}
@@ -311,9 +321,10 @@ tr.cancel td:last-child{text-decoration:none}
         </select>
       </label>
     </div>
+    <div id="pTopluBar" style="display:none"></div>
     <div class="tblwrap" style="max-height:calc(100vh - 220px)">
       <table>
-        <thead id="pBaslik"><tr><th class="hide-m siralanir" data-sira="barkod">Barkod</th><th class="siralanir" data-sira="ad">Ürün</th><th class="hide-m siralanir" data-sira="kategori">Kategori</th><th class="r hide-m siralanir" data-sira="alis">Alış</th><th class="r siralanir" data-sira="satis">Satış</th><th class="r siralanir" data-sira="stok">Stok</th><th class="r hide-m siralanir" data-sira="satilan" title="Toplam satılan adet">Satılan</th><th></th></tr></thead>
+        <thead id="pBaslik"><tr><th id="pSecTh" style="width:34px"><input type="checkbox" id="pSecTum" title="Görünen tüm ürünleri seç" style="width:18px;height:18px"></th><th class="hide-m siralanir" data-sira="barkod">Barkod</th><th class="siralanir" data-sira="ad">Ürün</th><th class="hide-m siralanir" data-sira="kategori">Kategori</th><th class="r hide-m siralanir" data-sira="alis">Alış</th><th class="r siralanir" data-sira="satis">Satış</th><th class="r siralanir" data-sira="stok">Stok</th><th class="r hide-m siralanir" data-sira="satilan" title="Toplam satılan adet">Satılan</th><th></th></tr></thead>
         <tbody id="pBody"></tbody>
       </table>
     </div>
@@ -562,7 +573,7 @@ function yetkiUygula(){
   g('nav [data-tab="personel"]', yetkili('personel'));
   g('.methods [data-m="veresiye"]', yetkili('veresiye'));
   $('.methods').style.gridTemplateColumns = yetkili('veresiye') ? '' : '1fr 1fr';
-  g('#newProdBtn', yetkili('urunDuzenle')); g('#newVarBtn', yetkili('urunDuzenle')); g('#hizliDuzenBtn', yetkili('urunDuzenle')); g('#ayarExcel', yetkili('urunDuzenle'));
+  g('#newProdBtn', yetkili('urunDuzenle')); g('#newVarBtn', yetkili('urunDuzenle')); g('#pSecTh', yetkili('urunDuzenle')); g('#hizliDuzenBtn', yetkili('urunDuzenle')); g('#ayarExcel', yetkili('urunDuzenle'));
   g('#stockInBtn', yetkili('stokGiris'));
   g('#ayarFis', yetkili('ayar')); g('.ayarFisYok', !yetkili('ayar')); g('#ayarFatura', yetkili('ayar') && yetkili('fatura')); g('#backupBtn', yetkili('ayar')); g('#restoreBtn', yetkili('ayar'));
   const ind = $('#discount'); ind.disabled = !yetkili('indirim'); if(ind.disabled) ind.value = '';
@@ -1385,9 +1396,15 @@ function renderProducts(){
   siraSecici();
   const critCount = all.filter(p => stok(p.id) <= (+p.kritik || 0)).length;
   $('#pCount').innerHTML = `${all.length} ürün` + (critCount ? ` · <span style="color:var(--out)">${critCount} ürün kritik stokta</span>` : '') + (list.length > 400 ? ' · ilk 400 gösteriliyor, aramayı daraltın' : '');
-  if(!all.length){ $('#pBody').innerHTML = `<tr><td colspan="8" class="empty">Henüz ürün yok.<br><br><button class="btn pri" onclick="openProductForm(null)">+ İlk ürünü ekle</button> <button class="btn" onclick="showTab('ayarlar')">Excel'den aktar</button></td></tr>`; return; }
+  // Toplu seçim: silinen ürünleri seçimden çıkar, görünen listeyi hatırla
+  for(const id of [...seciliU]) if(!urunById(id)) seciliU.delete(id);
+  const secilebilir = yetkili('urunDuzenle');
+  pGorunen = secilebilir ? list.slice(0, 400).map(p => p.id) : [];
+  topluBarCiz();
+  if(!all.length){ $('#pBody').innerHTML = `<tr><td colspan="9" class="empty">Henüz ürün yok.<br><br><button class="btn pri" onclick="openProductForm(null)">+ İlk ürünü ekle</button> <button class="btn" onclick="showTab('ayarlar')">Excel'den aktar</button></td></tr>`; return; }
   $('#pBody').innerHTML = list.slice(0, 400).map(p => { const s = stok(p.id); return `
-    <tr>
+    <tr class="${seciliU.has(p.id) ? 'secili' : ''}">
+      ${secilebilir ? `<td><input type="checkbox" data-sec="${p.id}" ${seciliU.has(p.id) ? 'checked' : ''} style="width:18px;height:18px"></td>` : ''}
       <td class="muted mono hide-m">${esc(p.barkod || '—')}</td>
       <td>${p.grupId ? `<b>${esc(p.grupAd)}</b> <span class="tag" style="font-family:var(--font-body);background:var(--accent-soft);color:var(--accent)">${p.varyant ? esc(p.varyant) : '🎨 varyant'}</span>` : `<b>${esc(p.ad)}</b>`}${p.hizli ? ' <span title="Hızlı ürün">⚡</span>' : ''}</td>
       <td class="hide-m">${p.kategori ? `<span class="tag" style="font-family:var(--font-body)">${esc(p.kategori)}</span>` : ''}</td>
@@ -1396,7 +1413,166 @@ function renderProducts(){
       <td class="r"><span class="tag ${s <= 0 ? 'bad' : s <= (+p.kritik || 0) ? 'warn' : 'ok'}">${s}</span></td>
       <td class="r num muted hide-m">${satilan.get(p.id) || 0}</td>
       <td class="r"><button class="btn sm" data-edit="${p.id}">${yetkili('urunDuzenle') ? 'Düzenle' : 'Bilgi'}</button></td>
-    </tr>`; }).join('') || '<tr><td colspan="8" class="empty">Eşleşen ürün yok</td></tr>';
+    </tr>`; }).join('') || '<tr><td colspan="9" class="empty">Eşleşen ürün yok</td></tr>';
+  const tum = $('#pSecTum'); const gorSecili = pGorunen.filter(id => seciliU.has(id)).length;
+  tum.checked = pGorunen.length > 0 && gorSecili === pGorunen.length; tum.indeterminate = gorSecili > 0 && gorSecili < pGorunen.length;
+}
+
+/* ================= TOPLU DÜZENLEME ================= */
+const seciliU = new Set();
+let pGorunen = [], sonSecilen = null;
+function topluBarCiz(){
+  const bar = $('#pTopluBar'), n = seciliU.size;
+  if(!n || !yetkili('urunDuzenle')){ bar.style.display = 'none'; return; }
+  const sec = [...seciliU].map(urunById).filter(Boolean), hepsiHizli = sec.every(p => p.hizli);
+  bar.style.display = 'flex';
+  bar.innerHTML = `<b>${n} ürün seçildi</b>
+    <button class="btn sm pri" data-tb="duzenle">✏️ Toplu düzenle</button>
+    <button class="btn sm" data-tb="etiket">🏷 Etiket</button>
+    <button class="btn sm" data-tb="hizli">${hepsiHizli ? '⚡ Hızlı üründen çıkar' : '⚡ Hızlı ürün yap'}</button>
+    <button class="btn sm bad" data-tb="sil">🗑 Sil</button>
+    <button class="btn sm" data-tb="temizle" style="margin-left:auto">Seçimi temizle</button>`;
+}
+$('#pTopluBar').addEventListener('click', async e => {
+  const b = e.target.closest('[data-tb]'); if(!b) return;
+  const sec = [...seciliU].map(urunById).filter(Boolean);
+  if(b.dataset.tb === 'temizle'){ seciliU.clear(); renderProducts(); }
+  if(b.dataset.tb === 'duzenle') topluDuzenle();
+  if(b.dataset.tb === 'etiket') etiketPenceresi(sec.map(p => p.id));
+  if(b.dataset.tb === 'hizli'){
+    const ekle = !sec.every(p => p.hizli); let sira = Math.max(0, ...hizliListe().map(p => +p.hizliSira || 0));
+    await kaydetCok(sec.filter(p => !!p.hizli !== ekle).map(p => ['urun', p.id, Object.assign({}, p, {hizli: ekle, hizliSira: ekle ? ++sira : null})]));
+    toast(`${sec.length} ürün ${ekle ? 'hızlı ürünlere eklendi' : 'hızlı ürünlerden çıkarıldı'}`, 'ok'); renderAktif();
+  }
+  if(b.dataset.tb === 'sil'){
+    if(!confirm(`${sec.length} ürün silinsin mi?\n\n${sec.slice(0, 8).map(p => '• ' + p.ad).join('\n')}${sec.length > 8 ? `\n… ve ${sec.length - 8} ürün daha` : ''}\n\nGeçmiş satış kayıtları korunur.`)) return;
+    const isl = sec.map(p => ['urun', p.id, Object.assign({}, p, {silindi: true})]);
+    for(let i = 0; i < isl.length; i += 300) await kaydetCok(isl.slice(i, i + 300));
+    seciliU.clear(); toast(`${sec.length} ürün silindi`); renderAktif();
+  }
+});
+$('#pSecTum').addEventListener('change', e => {
+  if(e.target.checked) pGorunen.forEach(id => seciliU.add(id)); else pGorunen.forEach(id => seciliU.delete(id));
+  renderProducts();
+});
+$('#pBody').addEventListener('click', e => {
+  const c = e.target.closest('[data-sec]'); if(!c) return;
+  const id = c.dataset.sec;
+  // Shift ile aralık seçimi
+  if(e.shiftKey && sonSecilen && pGorunen.includes(sonSecilen)){
+    const a = pGorunen.indexOf(sonSecilen), b = pGorunen.indexOf(id);
+    pGorunen.slice(Math.min(a, b), Math.max(a, b) + 1).forEach(x => c.checked ? seciliU.add(x) : seciliU.delete(x));
+  } else c.checked ? seciliU.add(id) : seciliU.delete(id);
+  sonSecilen = id; renderProducts();
+});
+
+function topluDuzenle(){
+  const sec = [...seciliU].map(urunById).filter(Boolean); if(!sec.length) return;
+  const cats = [...new Set(urunler().map(x => x.kategori).filter(Boolean))].sort((a, b) => a.localeCompare(b, 'tr'));
+  const grupSayisi = new Set(sec.filter(p => p.grupId).map(p => p.grupId)).size;
+  const fiyatSecenek = id => `<select id="${id}M"><option value="">Değiştirme</option><option value="yeni">Yeni fiyat</option><option value="yuzdeArt">% artır</option><option value="yuzdeAz">% azalt</option><option value="tlArt">₺ artır</option><option value="tlAz">₺ azalt</option></select><input id="${id}V" inputmode="decimal" placeholder="değer" style="width:110px" disabled>`;
+  openModal(`<div class="mdIc"><h2>✏️ Toplu düzenle · ${sec.length} ürün</h2>
+    <p class="muted" style="margin-top:0">Yalnızca değiştirmek istediğiniz alanları seçin; "Değiştirme" olanlar aynen kalır.${grupSayisi ? ` Varyantlı ürünlerde fiyat değişikliği, aynı fiyatta kalmaları için o ürünün <b>tüm varyantlarına</b> uygulanır.` : ''}</p>
+    <div class="tdForm">
+      <div class="full"><label>Satış fiyatı</label><div class="row">${fiyatSecenek('tdSatis')}
+        <select id="tdYuv" title="Yeni fiyatı yuvarla"><option value="0">Yuvarlama yok</option><option value="0.25">0,25'e yuvarla</option><option value="0.5">0,50'ye yuvarla</option><option value="1">Tam liraya yuvarla</option><option value="5">5'in katına yuvarla</option></select></div></div>
+      <div class="full"><label>Alış fiyatı</label><div class="row">${fiyatSecenek('tdAlis')}</div></div>
+      <div><label>Kategori</label><div class="row" style="flex-wrap:nowrap"><select id="tdKatM"><option value="">Değiştirme</option><option value="yeni">Şuna değiştir</option></select><input id="tdKatV" list="tdKatList" placeholder="Kategori" disabled style="flex:1"><datalist id="tdKatList">${cats.map(c => `<option value="${esc(c)}">`).join('')}</datalist></div></div>
+      <div><label>KDV oranı</label><select id="tdKdv"><option value="">Değiştirme</option>${KDV_ORANLARI.map(o => `<option value="${o}">%${o}</option>`).join('')}</select></div>
+      <div><label>Kritik stok</label><div class="row" style="flex-wrap:nowrap"><select id="tdKritM"><option value="">Değiştirme</option><option value="yeni">Şuna değiştir</option></select><input id="tdKritV" type="number" min="0" step="1" inputmode="numeric" disabled style="width:90px"></div></div>
+      <div><label>Hızlı ürün</label><select id="tdHizli"><option value="">Değiştirme</option><option value="ekle">Hızlı ürün yap</option><option value="cikar">Hızlı üründen çıkar</option></select></div>
+      <div class="full"><label>Stok</label><div class="row"><select id="tdStokM"><option value="">Değiştirme</option><option value="ekle">Stoğa ekle (+)</option><option value="esitle">Stoğu şuna eşitle (sayım)</option></select><input id="tdStokV" type="number" step="1" inputmode="numeric" disabled style="width:110px" placeholder="adet"></div></div>
+    </div>
+    <h3 style="font-size:15px;margin:16px 0 6px">Önizleme</h3>
+    <div id="tdOnizleme" class="tblwrap" style="max-height:30vh"></div>
+    <div class="err" id="tdErr"></div>
+    <div class="mfoot"><button class="btn" id="tdVaz">Vazgeç</button><button class="btn pri" id="tdKaydet">Uygula</button></div></div>`);
+  $('#modal').style.width = 'min(820px,100%)';
+  $('#tdVaz').onclick = closeModal;
+  const ic = $('#modal .mdIc');
+  // Seçenek "Değiştirme" ise değer kutusu kapalı
+  [['tdSatisM', 'tdSatisV'], ['tdAlisM', 'tdAlisV'], ['tdKatM', 'tdKatV'], ['tdKritM', 'tdKritV'], ['tdStokM', 'tdStokV']].forEach(([m, v]) =>
+    $('#' + m).addEventListener('change', () => { $('#' + v).disabled = !$('#' + m).value; if($('#' + m).value) $('#' + v).focus(); }));
+
+  const fiyatUygula = (eski, mod, deger) => {
+    eski = +eski || 0;
+    if(mod === 'yeni') return deger; if(mod === 'yuzdeArt') return eski * (1 + deger / 100); if(mod === 'yuzdeAz') return eski * (1 - deger / 100);
+    if(mod === 'tlArt') return eski + deger; if(mod === 'tlAz') return eski - deger; return eski;
+  };
+  const yuvarla = (v, adim) => adim > 0 ? Math.round(v / adim) * adim : v;
+  // Değişiklikleri hesapla: [{p, doc, stokFark, eskiStok}]
+  const hesapla = () => {
+    const sM = $('#tdSatisM').value, sV = parseNum($('#tdSatisV').value), aM = $('#tdAlisM').value, aV = parseNum($('#tdAlisV').value);
+    const yuv = +$('#tdYuv').value, katM = $('#tdKatM').value, katV = $('#tdKatV').value.trim(), kdv = $('#tdKdv').value;
+    const kritM = $('#tdKritM').value, kritV = Math.max(0, Math.floor(+$('#tdKritV').value || 0)), hz = $('#tdHizli').value;
+    const stM = $('#tdStokM').value, stV = Math.floor(+$('#tdStokV').value || 0);
+    if(sM && isNaN(sV)) return {hata: 'Satış fiyatı için bir değer girin.'};
+    if(aM && isNaN(aV)) return {hata: 'Alış fiyatı için bir değer girin.'};
+    if(katM && !katV) return {hata: 'Yeni kategoriyi yazın.'};
+    if(stM && $('#tdStokV').value.trim() === '') return {hata: 'Stok için adet girin.'};
+    // Varyantlar: seçili olmayan kardeşleri de fiyat için listeye kat
+    const hedef = new Map(sec.map(p => [p.id, p]));
+    const grupFiyat = new Map();   // grupId → {satis, alis}
+    const sonuc = [];
+    let hizliSira = Math.max(0, ...hizliListe().map(p => +p.hizliSira || 0));
+    for(const p of sec){
+      const doc = Object.assign({}, p);
+      if(sM){ let f = r2(yuvarla(fiyatUygula(p.satis, sM, sV), yuv)); if(f < 0) return {hata: `"${p.ad}" için fiyat eksiye düşüyor.`}; doc.satis = f; }
+      if(aM){ let f = r2(fiyatUygula(p.alis, aM, aV)); if(f < 0) return {hata: `"${p.ad}" için alış fiyatı eksiye düşüyor.`}; doc.alis = f; }
+      if(katM) doc.kategori = katV;
+      if(kdv !== '') doc.kdv = +kdv;
+      if(kritM) doc.kritik = kritV;
+      if(hz === 'ekle' && !p.hizli){ doc.hizli = true; doc.hizliSira = ++hizliSira; }
+      if(hz === 'cikar'){ doc.hizli = false; doc.hizliSira = null; }
+      if(p.grupId && (sM || aM) && !grupFiyat.has(p.grupId)) grupFiyat.set(p.grupId, {satis: doc.satis, alis: doc.alis});
+      const s = stok(p.id), fark = stM === 'ekle' ? stV : stM === 'esitle' ? stV - s : 0;
+      sonuc.push({p, doc, eskiStok: s, stokFark: fark});
+    }
+    // Varyant gruplarında fiyatı eşitle (seçili olmayan kardeşler dahil)
+    for(const [gid, f] of grupFiyat){
+      for(const v of varyantlar(gid)){
+        const r = sonuc.find(x => x.p.id === v.id);
+        if(r){ if(sM) r.doc.satis = f.satis; if(aM) r.doc.alis = f.alis; }
+        else if(!hedef.has(v.id)) sonuc.push({p: v, doc: Object.assign({}, v, sM ? {satis: f.satis} : {}, aM ? {alis: f.alis} : {}), eskiStok: stok(v.id), stokFark: 0, kardes: true});
+      }
+    }
+    const degisen = sonuc.filter(r => r.stokFark || ['satis', 'alis', 'kategori', 'kdv', 'kritik', 'hizli'].some(k => (r.doc[k] ?? null) !== (r.p[k] ?? null)));
+    return {sonuc: degisen};
+  };
+  const onizle = () => {
+    const h = hesapla(), el = $('#tdOnizleme'); $('#tdErr').textContent = '';
+    if(h.hata){ el.innerHTML = `<div class="muted" style="padding:10px">${esc(h.hata)}</div>`; return; }
+    if(!h.sonuc.length){ el.innerHTML = '<div class="muted" style="padding:10px">Henüz bir değişiklik seçilmedi.</div>'; $('#tdKaydet').textContent = 'Uygula'; return; }
+    const ok = (a, b, f = x => x) => (a ?? '') === (b ?? '') ? `<span class="muted">${f(a)}</span>` : `<span class="muted" style="text-decoration:line-through">${f(a)}</span> → <b>${f(b)}</b>`;
+    el.innerHTML = `<table><thead><tr><th>Ürün</th><th class="r">Satış</th><th class="r hide-m">Alış</th><th class="hide-m">Kategori</th><th class="r">Stok</th><th class="hide-m">Diğer</th></tr></thead><tbody>
+      ${h.sonuc.slice(0, 100).map(r => { const d = r.doc, p = r.p, diger = [];
+        if((d.kdv ?? null) !== (p.kdv ?? null)) diger.push('KDV %' + d.kdv);
+        if((d.kritik ?? null) !== (p.kritik ?? null)) diger.push('kritik ' + d.kritik);
+        if(!!d.hizli !== !!p.hizli) diger.push(d.hizli ? '⚡ hızlı' : 'hızlıdan çıktı');
+        return `<tr><td>${esc(p.ad)}${r.kardes ? ' <span class="tag" style="font-family:var(--font-body)">varyant</span>' : ''}</td>
+          <td class="r num">${ok(+p.satis || 0, +d.satis || 0, num2)}</td><td class="r num hide-m">${ok(+p.alis || 0, +d.alis || 0, num2)}</td>
+          <td class="hide-m">${ok(p.kategori || '—', d.kategori || '—', esc)}</td>
+          <td class="r num">${r.stokFark ? `<span class="muted" style="text-decoration:line-through">${r.eskiStok}</span> → <b>${r.eskiStok + r.stokFark}</b>` : `<span class="muted">${r.eskiStok}</span>`}</td>
+          <td class="hide-m">${diger.join(', ')}</td></tr>`; }).join('')}
+      ${h.sonuc.length > 100 ? `<tr><td colspan="6" class="muted">… ve ${h.sonuc.length - 100} ürün daha</td></tr>` : ''}</tbody></table>`;
+    $('#tdKaydet').textContent = `${h.sonuc.length} ürüne uygula`;
+  };
+  onizle(); ic.addEventListener('input', onizle); ic.addEventListener('change', onizle);
+  $('#tdKaydet').onclick = async () => {
+    const h = hesapla();
+    if(h.hata){ $('#tdErr').textContent = h.hata; return; }
+    if(!h.sonuc.length){ $('#tdErr').textContent = 'Değiştirilecek bir alan seçin.'; return; }
+    const isl = [], zaman = new Date().toISOString(), stokModu = $('#tdStokM').value;
+    for(const r of h.sonuc){
+      const {stokFark, doc, p} = r;
+      if(['satis', 'alis', 'kategori', 'kdv', 'kritik', 'hizli'].some(k => (doc[k] ?? null) !== (p[k] ?? null))) isl.push(['urun', p.id, Object.assign(doc, (doc.satis !== p.satis) ? {fiyatDegisim: zaman} : {})]);
+      if(stokFark) isl.push(['stokgiris', idUret(), {urunId: p.id, miktar: stokFark, tip: stokModu === 'esitle' ? 'Sayım' : 'Giriş', tarih: zaman, aciklama: 'Toplu düzenleme', kasa: cihaz.kasa}]);
+    }
+    $('#tdKaydet').disabled = true;
+    try{ for(let i = 0; i < isl.length; i += 300) await kaydetCok(isl.slice(i, i + 300)); }
+    catch(e){ $('#tdErr').textContent = 'Kaydedilemedi: ' + e.message; $('#tdKaydet').disabled = false; return; }
+    closeModal(); toast(`${h.sonuc.length} ürün güncellendi`, 'ok'); renderAktif();
+  };
 }
 $('#pBody').addEventListener('click', e => {
   const ed = e.target.closest('[data-edit]'); if(!ed) return;
