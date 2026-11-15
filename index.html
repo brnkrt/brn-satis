@@ -1,0 +1,1188 @@
+<!doctype html>
+<html lang="tr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>BRN Satış Programı</title>
+<meta name="description" content="Barkodlu satış, stok ve kasa raporları">
+<meta name="theme-color" content="#14315a">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="favicon-32.png" sizes="32x32">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="BRN Satış">
+<script src="config.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.js"></script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,700&family=Public+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap">
+<style>
+:root{
+  --bg:#f3f5f8; --surface:#fff; --surface-2:#e9edf3; --line:#d3dae4;
+  --fg:#141b26; --muted:#5a6577;
+  --accent:#1d4f91; --accent-ink:#fff; --accent-soft:#dde7f5;
+  --in:#13724f; --in-soft:#dcf1e6; --out:#b23a2e; --out-soft:#f8e1de; --warn:#9a6a00; --warn-soft:#fbf0d3;
+  --hdr:#14315a; --hdr-ink:#eaf0f8; --hdr-muted:#a9bfdf;
+  --font-display:"Bricolage Grotesque","Segoe UI",system-ui,sans-serif;
+  --font-body:"Public Sans","Segoe UI",system-ui,sans-serif;
+  --font-num:"IBM Plex Mono",ui-monospace,Menlo,monospace;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg:#0f131a; --surface:#171c25; --surface-2:#1f2633; --line:#2c3545; --fg:#e5e9f0; --muted:#95a0b3;
+  --accent:#7fb0f0; --accent-ink:#08192f; --accent-soft:#1c2b44;
+  --in:#5cc7a2; --in-soft:#1b3a2e; --out:#f08a7e; --out-soft:#3d2320; --warn:#e6bb57; --warn-soft:#3a3018;
+  --hdr:#0b1220; --hdr-ink:#e5e9f0; --hdr-muted:#8fa3c4; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#0f131a; --surface:#171c25; --surface-2:#1f2633; --line:#2c3545; --fg:#e5e9f0; --muted:#95a0b3;
+  --accent:#7fb0f0; --accent-ink:#08192f; --accent-soft:#1c2b44;
+  --in:#5cc7a2; --in-soft:#1b3a2e; --out:#f08a7e; --out-soft:#3d2320; --warn:#e6bb57; --warn-soft:#3a3018;
+  --hdr:#0b1220; --hdr-ink:#e5e9f0; --hdr-muted:#8fa3c4; color-scheme:dark}
+*{box-sizing:border-box}
+html,body{margin:0}
+body{background:var(--bg);color:var(--fg);font-family:var(--font-body);font-size:15px;line-height:1.45;-webkit-tap-highlight-color:transparent}
+h1,h2,h3{font-family:var(--font-display);font-weight:700;letter-spacing:-.01em}
+.num,.mono{font-family:var(--font-num);font-variant-numeric:tabular-nums}
+header{position:sticky;top:0;z-index:10;display:flex;align-items:center;gap:16px;background:var(--hdr);color:var(--hdr-ink);padding:0 16px;height:56px;padding-top:env(safe-area-inset-top)}
+header h1{font-size:19px;margin:0;white-space:nowrap}
+header h1 small{font-family:var(--font-body);font-weight:500;font-size:12px;color:var(--hdr-muted);margin-left:6px}
+nav{display:flex;gap:4px}
+nav button{background:none;border:0;color:var(--hdr-muted);padding:9px 14px;font:inherit;font-weight:600;cursor:pointer;border-radius:8px;display:flex;align-items:center;gap:6px}
+nav button:hover{color:var(--hdr-ink)}
+nav button.active{background:rgba(255,255,255,.12);color:var(--hdr-ink)}
+nav .ic{font-size:17px}
+#hdrRight{margin-left:auto;display:flex;align-items:center;gap:10px}
+#durum{display:flex;align-items:center;gap:7px;font-size:13px;background:rgba(255,255,255,.1);border:0;color:var(--hdr-ink);padding:6px 11px;border-radius:20px;cursor:pointer;font-family:inherit;white-space:nowrap}
+#durum i{width:9px;height:9px;border-radius:50%;background:#7fd6b2;display:inline-block}
+#durum.cevrimdisi i{background:#f2c14e}#durum.hata i{background:#ff8a7a}#durum.esit i{animation:nabiz 1s infinite}
+@keyframes nabiz{50%{opacity:.3}}
+#hesapBtn{background:none;border:1px solid rgba(255,255,255,.25);color:var(--hdr-ink);border-radius:8px;padding:6px 10px;font:inherit;font-size:13px;cursor:pointer;max-width:140px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+main{padding:16px;max-width:1500px;margin:0 auto}
+.tab{display:none}.tab.active{display:block}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:16px}
+.card h2{font-size:17px;margin:0 0 12px}
+.row{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.btn{font:inherit;font-weight:600;border:1px solid var(--line);background:var(--surface);color:var(--fg);padding:9px 14px;border-radius:9px;cursor:pointer;white-space:nowrap;touch-action:manipulation}
+.btn:hover{background:var(--surface-2)}
+.btn.pri{background:var(--accent);border-color:var(--accent);color:var(--accent-ink)}.btn.pri:hover{filter:brightness(1.08)}
+.btn.bad{color:var(--out)}.btn.sm{padding:5px 10px;font-size:13px;font-weight:500}
+.btn:disabled{opacity:.45;cursor:default}
+input,select{font:inherit;padding:9px 11px;border:1px solid var(--line);border-radius:9px;background:var(--surface);color:var(--fg);min-width:0}
+input:focus,select:focus{outline:2px solid var(--accent);outline-offset:-1px}
+label{font-size:13px;color:var(--muted);display:block;margin-bottom:4px;font-weight:500}
+table{width:100%;border-collapse:collapse}
+th,td{padding:9px 8px;border-bottom:1px solid var(--line);text-align:left;vertical-align:middle}
+th{font-size:12px;color:var(--muted);font-weight:600;text-transform:uppercase;letter-spacing:.04em;background:var(--surface);position:sticky;top:0;z-index:1}
+td.r,th.r{text-align:right;white-space:nowrap}
+.muted{color:var(--muted);font-size:13px}
+.tag{display:inline-block;font-size:12px;font-weight:600;padding:2px 8px;border-radius:20px;background:var(--surface-2);color:var(--muted);font-family:var(--font-num)}
+.tag.bad{background:var(--out-soft);color:var(--out)}.tag.ok{background:var(--in-soft);color:var(--in)}.tag.warn{background:var(--warn-soft);color:var(--warn)}
+.empty{padding:28px;text-align:center;color:var(--muted)}
+.err{color:var(--out);font-size:14px;min-height:1px}
+.tblwrap{overflow:auto}
+/* Satış */
+#salesGrid{display:grid;grid-template-columns:1fr 390px;gap:16px;align-items:start}
+#scanRow{display:flex;gap:8px;position:relative}
+#scan{flex:1;font-size:21px;padding:12px 14px;border-width:2px;border-color:var(--accent)}
+#camBtn{font-size:22px;padding:0 16px}
+#results{position:absolute;left:0;right:0;top:100%;margin-top:4px;background:var(--surface);border:1px solid var(--line);border-radius:10px;box-shadow:0 10px 30px rgba(0,0,0,.18);z-index:6;max-height:380px;overflow:auto;display:none}
+#results button{display:flex;width:100%;justify-content:space-between;align-items:center;gap:10px;border:0;background:none;color:var(--fg);padding:11px 14px;font:inherit;text-align:left;cursor:pointer;border-bottom:1px solid var(--line)}
+#results button:hover,#results button:focus{background:var(--accent-soft);outline:none}
+#cartBox{margin-top:12px;padding:0;overflow:auto;max-height:calc(100vh - 230px)}
+#cartBox tr.last td{background:var(--accent-soft)}
+.qty{display:inline-flex;align-items:center;gap:4px}
+.qty input{width:56px;text-align:center;padding:6px;font-family:var(--font-num)}
+.qty .btn{width:32px;height:34px;padding:0;font-size:17px}
+#payCard .big{font-family:var(--font-num);font-size:40px;font-weight:600;text-align:right;letter-spacing:-1px;line-height:1.1}
+.sumrow{display:flex;justify-content:space-between;align-items:center;gap:8px;margin:6px 0}
+.methods{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin:14px 0}
+.methods .btn{padding:13px;font-size:16px}
+.methods .btn.sel{background:var(--fg);color:var(--bg);border-color:var(--fg)}
+.bills{display:grid;grid-template-columns:repeat(6,1fr);gap:6px;margin:8px 0}
+.bills .btn{padding:7px 2px;font-size:13px}
+#changeBox{font-size:20px;font-weight:700;text-align:right;margin:8px 0;font-family:var(--font-num)}
+#completeBtn{width:100%;padding:16px;font-size:19px;margin-top:6px}
+#lastSale{margin-top:12px;display:none;background:var(--in-soft);color:var(--in);border-radius:10px;padding:12px}
+#lastSale .chg{font-size:26px;font-weight:700;font-family:var(--font-num)}
+.keys{margin-top:10px;font-size:12px;color:var(--muted);line-height:1.8}
+kbd{background:var(--surface-2);border:1px solid var(--line);border-radius:4px;padding:0 5px;font-size:11px;font-family:var(--font-num);color:var(--fg)}
+/* Raporlar */
+.stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(165px,1fr));gap:12px;margin:14px 0}
+.stat{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:14px}
+.stat .v{font-size:21px;font-weight:600;margin-top:4px;font-family:var(--font-num)}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+.scroll{max-height:470px;overflow:auto}
+tr.cancel td{color:var(--muted);text-decoration:line-through}
+tr.cancel td:last-child{text-decoration:none}
+.form{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.form .full{grid-column:1/-1}
+.form input,.form select{width:100%}
+.form input[type=checkbox]{width:auto;margin:0}
+/* Modal ve giriş */
+#modalBg{position:fixed;inset:0;background:rgba(8,16,13,.5);display:none;align-items:flex-start;justify-content:center;padding:7vh 12px 12px;z-index:40}
+#modal{background:var(--surface);border-radius:14px;width:min(580px,100%);padding:20px;box-shadow:0 20px 50px rgba(0,0,0,.3);max-height:86vh;overflow:auto}
+#modal h2{margin:0 0 14px;font-size:19px}
+.mfoot{display:flex;justify-content:flex-end;gap:8px;margin-top:16px;flex-wrap:wrap}
+#kapi{position:fixed;inset:0;z-index:50;background:var(--bg);display:none;align-items:center;justify-content:center;padding:16px}
+#kapiIc{background:var(--surface);border:1px solid var(--line);border-radius:16px;padding:26px;width:min(420px,100%);display:flex;flex-direction:column;gap:12px}
+#kapiIc h2{margin:0;font-size:21px}
+#kapiIc .logo{font-family:var(--font-display);font-weight:700;font-size:15px;color:var(--accent)}
+#kapiIc input{width:100%}
+#toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%);background:var(--fg);color:var(--bg);padding:10px 18px;border-radius:10px;display:none;z-index:60;font-size:15px;max-width:92vw;text-align:center}
+#toast.bad{background:var(--out);color:#fff}#toast.ok{background:var(--in);color:#fff}
+#printArea{display:none}
+#kamKutu video{width:100%!important;border-radius:8px}
+@media (max-width:1000px){#salesGrid{grid-template-columns:1fr 340px}}
+@media (max-width:820px){
+  header{gap:10px;padding:0 12px}
+  header h1 small{display:none}
+  nav{position:fixed;left:0;right:0;bottom:0;z-index:20;background:var(--surface);border-top:1px solid var(--line);justify-content:space-around;padding:6px 4px calc(6px + env(safe-area-inset-bottom))}
+  nav button{flex-direction:column;gap:1px;font-size:11px;color:var(--muted);padding:5px 8px;flex:1}
+  nav button.active{background:var(--accent-soft);color:var(--accent)}
+  nav .ic{font-size:21px}
+  main{padding:12px 10px 90px}
+  #salesGrid,.grid2,.form{grid-template-columns:1fr}
+  #cartBox{max-height:none}
+  #payCard .big{font-size:34px}
+  #scan{font-size:18px}
+  .keys,.hide-m{display:none}
+  .card{padding:12px}
+}
+@media print{
+  body{background:#fff}
+  body>*:not(#printArea){display:none!important}
+  #printArea{display:block;font-family:"Courier New",monospace;font-size:12px;color:#000;padding:2mm}
+  #printArea table{width:100%;border-collapse:collapse}
+  #printArea td{padding:1px 0;border:0;font-size:inherit;color:#000}
+  #printArea .c{text-align:center}#printArea .r{text-align:right}
+  #printArea hr{border:0;border-top:1px dashed #000;margin:4px 0}
+  #printArea .b{font-weight:bold}#printArea .lg{font-size:1.25em}
+}
+</style>
+<style id="pageStyle"></style>
+</head>
+<body>
+<header>
+  <h1>BRN Satış<small id="firmaAdi"></small></h1>
+  <nav>
+    <button data-tab="satis" class="active"><span class="ic">🛒</span>Satış</button>
+    <button data-tab="urunler"><span class="ic">📦</span>Ürünler</button>
+    <button data-tab="raporlar"><span class="ic">📊</span>Raporlar</button>
+    <button data-tab="ayarlar"><span class="ic">⚙️</span>Ayarlar</button>
+  </nav>
+  <div id="hdrRight">
+    <button id="durum" title="Eşitleme durumu"><i></i><span>Başlatılıyor…</span></button>
+    <button id="hesapBtn" class="hide-m"></button>
+  </div>
+</header>
+
+<main>
+<!-- SATIŞ -->
+<section class="tab active" id="tab-satis">
+  <div id="salesGrid">
+    <div>
+      <div id="scanRow">
+        <input id="scan" placeholder="Barkod okutun veya ürün adı yazın…" autocomplete="off" enterkeyhint="go">
+        <button class="btn" id="camBtn" title="Kamerayla barkod okut">📷</button>
+        <div id="results"></div>
+      </div>
+      <div class="card" id="cartBox">
+        <table>
+          <thead><tr><th style="width:30px" class="hide-m">#</th><th>Ürün</th><th class="r hide-m">Fiyat</th><th style="text-align:center">Adet</th><th class="r">Tutar</th><th style="width:40px"></th></tr></thead>
+          <tbody id="cartBody"></tbody>
+        </table>
+      </div>
+    </div>
+    <div class="card" id="payCard">
+      <div class="sumrow muted"><span>Ara toplam</span><span id="subTotal" class="num">0,00 ₺</span></div>
+      <div class="sumrow"><span class="muted">İndirim (₺)</span><input id="discount" style="width:120px;text-align:right" placeholder="0,00" inputmode="decimal"></div>
+      <div class="sumrow muted" style="margin-top:12px"><span>TOPLAM</span><span id="itemCount"></span></div>
+      <div class="big" id="grandTotal">0,00 ₺</div>
+      <div class="methods">
+        <button class="btn sel" data-m="nakit">💵 Nakit <kbd class="hide-m">F2</kbd></button>
+        <button class="btn" data-m="kart">💳 Kart <kbd class="hide-m">F3</kbd></button>
+      </div>
+      <div id="cashBox">
+        <div class="sumrow"><span class="muted">Alınan para <kbd class="hide-m">F4</kbd></span><input id="received" style="width:150px;text-align:right;font-size:18px" placeholder="0,00" inputmode="decimal"></div>
+        <div class="bills">
+          <button class="btn" data-bill="tam">Tam</button><button class="btn" data-bill="20">20</button><button class="btn" data-bill="50">50</button>
+          <button class="btn" data-bill="100">100</button><button class="btn" data-bill="200">200</button><button class="btn" data-bill="500">500</button>
+        </div>
+        <div id="changeBox"></div>
+      </div>
+      <button class="btn pri" id="completeBtn">✔ Satışı Tamamla <kbd class="hide-m">F9</kbd></button>
+      <div class="row" style="margin-top:8px">
+        <button class="btn sm" id="clearCartBtn">Sepeti Temizle <kbd class="hide-m">F7</kbd></button>
+        <button class="btn sm" id="reprintBtn" disabled>Son Fişi Yazdır</button>
+      </div>
+      <div id="lastSale"></div>
+      <div class="keys"><kbd>Enter</kbd> ekle · <kbd>5*barkod</kbd> 5 adet · <kbd>↓</kbd> arama sonuçları · <kbd>Esc</kbd> temizle</div>
+    </div>
+  </div>
+</section>
+
+<!-- ÜRÜNLER -->
+<section class="tab" id="tab-urunler">
+  <div class="card">
+    <div class="row" style="margin-bottom:12px">
+      <input id="pSearch" placeholder="Ürün adı, barkod veya kategori…" style="flex:1;min-width:200px" type="search">
+      <button class="btn" id="pCam" title="Kamerayla fiyat/stok sorgula">📷</button>
+      <label style="display:flex;align-items:center;gap:6px;margin:0;font-size:14px;color:var(--fg)"><input type="checkbox" id="pCrit"> Kritik stok</label>
+      <button class="btn" id="stockInBtn">📥 Stok Girişi</button>
+      <button class="btn pri" id="newProdBtn">+ Yeni Ürün</button>
+    </div>
+    <div class="muted" id="pCount" style="margin-bottom:8px"></div>
+    <div class="tblwrap" style="max-height:calc(100vh - 220px)">
+      <table>
+        <thead><tr><th class="hide-m">Barkod</th><th>Ürün</th><th class="hide-m">Kategori</th><th class="r hide-m">Alış</th><th class="r">Satış</th><th class="r">Stok</th><th></th></tr></thead>
+        <tbody id="pBody"></tbody>
+      </table>
+    </div>
+  </div>
+</section>
+
+<!-- RAPORLAR -->
+<section class="tab" id="tab-raporlar">
+  <div class="card">
+    <div class="row">
+      <div><label>Başlangıç</label><input type="date" id="rFrom"></div>
+      <div><label>Bitiş</label><input type="date" id="rTo"></div>
+      <div><label>Kasa</label><select id="rKasa"><option value="">Tümü</option></select></div>
+      <div style="align-self:flex-end" class="row">
+        <button class="btn sm" data-range="today">Bugün</button><button class="btn sm" data-range="yesterday">Dün</button>
+        <button class="btn sm" data-range="week">Bu Hafta</button><button class="btn sm" data-range="month">Bu Ay</button><button class="btn sm" data-range="year">Bu Yıl</button>
+      </div>
+      <div style="margin-left:auto;align-self:flex-end" class="row">
+        <button class="btn sm" id="zRaporBtn">🖨 Gün Sonu Raporu</button>
+        <button class="btn sm" id="exportSalesBtn">⬇ Excel (CSV)</button>
+      </div>
+    </div>
+  </div>
+  <div class="stats" id="stats"></div>
+  <div class="grid2">
+    <div class="card"><h2>Satışlar</h2><div class="scroll"><table><thead><tr><th>Fiş</th><th>Tarih</th><th>Ödeme</th><th class="r">Tutar</th><th></th></tr></thead><tbody id="rSales"></tbody></table></div></div>
+    <div class="card"><h2>En Çok Satanlar</h2><div class="scroll"><table><thead><tr><th>Ürün</th><th class="r">Adet</th><th class="r">Ciro</th></tr></thead><tbody id="rTop"></tbody></table></div></div>
+  </div>
+</section>
+
+<!-- AYARLAR -->
+<section class="tab" id="tab-ayarlar">
+  <div class="grid2">
+    <div class="card">
+      <h2>Fiş Bilgileri <span class="muted">(tüm kasalarda ortak)</span></h2>
+      <div class="form">
+        <div class="full"><label>İşletme adı</label><input id="sName"></div>
+        <div class="full"><label>Adres</label><input id="sAddr"></div>
+        <div><label>Telefon</label><input id="sPhone" inputmode="tel"></div>
+        <div><label>Fiş alt yazısı</label><input id="sFooter"></div>
+        <div class="full"><button class="btn pri" id="saveFisBtn">Kaydet</button></div>
+      </div>
+      <h2 style="margin-top:24px">Bu Cihaz</h2>
+      <div class="form">
+        <div><label>Kasa adı (fiş numarasının başına yazılır)</label><input id="sKasa" maxlength="8" style="text-transform:uppercase"></div>
+        <div><label>Fiş kağıdı</label><select id="sPaper"><option value="80">80 mm termal</option><option value="58">58 mm termal</option><option value="a4">A4 / normal yazıcı</option></select></div>
+        <div class="full"><label style="display:flex;align-items:center;gap:8px;color:var(--fg);font-size:14px;margin:0"><input type="checkbox" id="sAuto"> Satış bitince fişi otomatik yazdır</label></div>
+        <div class="full row"><button class="btn pri" id="saveCihazBtn">Kaydet</button><button class="btn" id="testPrintBtn">Deneme fişi</button><button class="btn" id="installBtn" style="display:none">⬇ Uygulama olarak yükle</button></div>
+      </div>
+    </div>
+    <div class="card">
+      <h2>Veriler ve Eşitleme</h2>
+      <p class="muted" style="margin-top:0">Tüm kayıtlar bulut veritabanında saklanır. İnternet yokken satışlar bu cihazda bekler, bağlantı gelince otomatik gönderilir. Bilgisayar bozulsa ya da tarayıcı temizlense bile buluttaki kayıtlar kaybolmaz.</p>
+      <div id="esitBilgi" class="muted" style="margin-bottom:10px"></div>
+      <div class="row"><button class="btn" id="syncNowBtn">↻ Şimdi eşitle</button><button class="btn" id="backupBtn">⬇ Ek yedek indir (.json)</button><button class="btn" onclick="$('#restoreFile').click()">⬆ Yedekten yükle</button><input type="file" id="restoreFile" accept=".json,application/json" hidden></div>
+      <h2 style="margin-top:24px">Ürün Listesi (Excel)</h2>
+      <p class="muted" style="margin-top:0">CSV sütun sırası: <b>Barkod; Ürün Adı; Kategori; Alış Fiyatı; Satış Fiyatı; Stok; Kritik Stok</b>. Aynı barkodlu ürün varsa güncellenir, yoksa eklenir. Excel'de <i>Farklı Kaydet → CSV (noktalı virgülle ayrılmış)</i> ile oluşturabilirsiniz.</p>
+      <div class="row"><button class="btn" id="exportProdBtn">⬇ Ürünleri dışa aktar</button><button class="btn" onclick="$('#importFile').click()">⬆ Ürünleri içe aktar</button><input type="file" id="importFile" accept=".csv,.txt,text/csv" hidden></div>
+      <h2 style="margin-top:24px">Hesap</h2>
+      <div id="hesapBilgi" class="muted" style="margin-bottom:10px"></div>
+      <div class="row"><button class="btn" id="firmaDegBtn">Firma değiştir</button><button class="btn bad" id="cikisBtn">Çıkış yap</button></div>
+      <h2 style="margin-top:24px">Kullanıcılar</h2>
+      <p class="muted" style="margin-top:0">Çalışan önce programda <i>Hesap oluştur</i> ile kaydolur, sonra firma sahibi e-postasını buradan ekler.</p>
+      <div id="uyeKutu" class="muted">Yükleniyor…</div>
+      <form id="uyeForm" class="row" style="margin-top:8px;display:none"><input id="uyeEposta" type="email" placeholder="calisan@ornek.com" style="flex:1;min-width:180px"><button class="btn pri" type="submit">Kullanıcı ekle</button></form>
+      <p class="muted" style="margin-bottom:0">Yazdırılan fiş <b>bilgi fişidir, mali değeri yoktur</b>. Yasal satış belgesi için yazar kasa (ÖKC) / e-Arşiv kullanılmalıdır.</p>
+    </div>
+  </div>
+</section>
+</main>
+
+<div id="modalBg"><div id="modal"></div></div>
+<div id="kapi"><div id="kapiIc"></div></div>
+<div id="toast"></div>
+<div id="printArea"></div>
+
+<script>
+"use strict";
+const $ = s => document.querySelector(s);
+const $$ = s => document.querySelectorAll(s);
+const TABLO = 'brn_kayitlar';
+const QR_URL = 'https://cdn.jsdelivr.net/npm/html5-qrcode@2.3.8/html5-qrcode.min.js';
+const AYAR = window.BRN_AYAR || {};
+const ayarEksik = !AYAR.supabaseUrl || /BURAYA/i.test(AYAR.supabaseUrl + AYAR.supabaseKey);
+let sb = null;
+// Oturum kendi anahtarıyla saklanır: aynı adreste başka bir program olsa da girişler birbirini etkilemez
+try{ if(window.supabase && !ayarEksik) sb = window.supabase.createClient(AYAR.supabaseUrl, AYAR.supabaseKey, {auth: {storageKey: 'brn-satis-oturum'}}); }catch(e){ console.warn(e); }
+
+/* ---------- Yardımcılar ---------- */
+const r2 = n => Math.round((+n || 0) * 100) / 100;
+function parseNum(s){ s = String(s ?? '').trim().replace(/\s|₺|TL/gi,''); if(!s) return NaN; if(s.includes(',')) s = s.replace(/\./g,'').replace(',','.'); return parseFloat(s); }
+const nf = new Intl.NumberFormat('tr-TR',{minimumFractionDigits:2,maximumFractionDigits:2});
+const tl = n => nf.format(r2(n)) + ' ₺';
+const num2 = n => nf.format(r2(n));
+const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const low = s => String(s || '').toLocaleLowerCase('tr-TR');
+const fmtDate = iso => { const d = new Date(iso); return d.toLocaleDateString('tr-TR') + ' ' + d.toLocaleTimeString('tr-TR',{hour:'2-digit',minute:'2-digit'}); };
+const ymd = d => d.getFullYear() + '-' + String(d.getMonth()+1).padStart(2,'0') + '-' + String(d.getDate()).padStart(2,'0');
+function idUret(){ const a = 'abcdefghijklmnopqrstuvwxyz0123456789'; let s = ''; for(const x of crypto.getRandomValues(new Uint8Array(20))) s += a[x % 36]; return s; }
+let toastT;
+function toast(msg, type=''){ const t = $('#toast'); t.textContent = msg; t.className = type; t.style.display = 'block'; clearTimeout(toastT); toastT = setTimeout(() => t.style.display = 'none', 2800); }
+let actx;
+function beep(ok=true){ try{ actx = actx || new (window.AudioContext || window.webkitAudioContext)(); const o = actx.createOscillator(), g = actx.createGain(); o.frequency.value = ok ? 1500 : 300; o.type = ok ? 'sine' : 'square'; g.gain.value = .08; o.connect(g); g.connect(actx.destination); o.start(); o.stop(actx.currentTime + (ok ? .07 : .25)); }catch(e){} }
+function lsAl(k, d){ try{ const v = localStorage.getItem(k); return v ? JSON.parse(v) : d; }catch(e){ return d; } }
+function lsYaz(k, v){ try{ localStorage.setItem(k, JSON.stringify(v)); }catch(e){} }
+
+/* ---------- Bu cihazın ayarları ---------- */
+let cihaz = Object.assign({kasa: 'K' + idUret().slice(0,3).toUpperCase(), kagit: '80', otoYazdir: true}, lsAl('brn-cihaz', {}));
+lsYaz('brn-cihaz', cihaz);
+
+/* ================= YEREL VERİTABANI (IndexedDB) ================= */
+let idb = null;
+const idbReq = r => new Promise((res, rej) => { r.onsuccess = () => res(r.result); r.onerror = () => rej(r.error); });
+function idbAc(ad){
+  return new Promise((res, rej) => {
+    const r = indexedDB.open(ad, 1);
+    r.onupgradeneeded = () => { const d = r.result; d.createObjectStore('kayit', {keyPath:'k'}); d.createObjectStore('bekleyen', {keyPath:'k'}); d.createObjectStore('meta'); };
+    r.onsuccess = () => res(r.result); r.onerror = () => rej(r.error);
+  });
+}
+const idbHepsi = store => idbReq(idb.transaction(store).objectStore(store).getAll());
+const idbSay = store => idbReq(idb.transaction(store).objectStore(store).count());
+const metaAl = k => idbReq(idb.transaction('meta').objectStore('meta').get(k));
+function metaYaz(k, v){ return new Promise((res, rej) => { const t = idb.transaction('meta','readwrite'); t.objectStore('meta').put(v, k); t.oncomplete = res; t.onerror = () => rej(t.error); }); }
+function idbKayitYaz(recs){ return new Promise((res, rej) => { const t = idb.transaction('kayit','readwrite'); const s = t.objectStore('kayit'); recs.forEach(r => s.put(r)); t.oncomplete = res; t.onerror = () => rej(t.error); }); }
+// Yerel değişiklik: kayıt + gönderilecekler listesi tek işlemde yazılır (yarım kalmaz)
+function idbYerelKaydet(recs){
+  return new Promise((res, rej) => {
+    const t = idb.transaction(['kayit','bekleyen'],'readwrite');
+    const k = t.objectStore('kayit'), b = t.objectStore('bekleyen'); const z = Date.now();
+    recs.forEach((r, i) => { k.put(r); b.put({k:r.k, koleksiyon:r.koleksiyon, id:r.id, veri:r.veri, zaman:z + i / 1000}); });
+    t.oncomplete = res; t.onerror = () => rej(t.error); t.onabort = () => rej(t.error || new Error('Kayıt yazılamadı'));
+  });
+}
+// Gönderilenleri listeden çıkar (bu arada yeniden değişmiş olanlar kalır)
+function idbBekleyenSil(list){
+  return new Promise((res, rej) => {
+    const t = idb.transaction('bekleyen','readwrite'); const s = t.objectStore('bekleyen');
+    list.forEach(it => { const g = s.get(it.k); g.onsuccess = () => { if(g.result && g.result.zaman === it.zaman) s.delete(it.k); }; });
+    t.oncomplete = res; t.onerror = () => rej(t.error);
+  });
+}
+
+/* ================= BELLEKTEKİ VERİ ================= */
+const D = {urun: new Map(), stokgiris: new Map(), satis: new Map(), ayar: new Map()};
+let stokKirli = true, stokMap = new Map(), barkodMap = new Map();
+function uygulaBellek(col, id, veri){
+  const m = D[col]; if(!m) return;
+  if(!veri || veri.silindi) m.delete(id); else m.set(id, Object.assign({}, veri, {id}));
+  stokKirli = true;
+}
+function stoklar(){
+  if(!stokKirli) return stokMap;
+  const m = new Map(); barkodMap = new Map();
+  for(const u of D.urun.values()){ m.set(u.id, +u.acilis || 0); if(u.barkod) barkodMap.set(String(u.barkod), u); }
+  for(const g of D.stokgiris.values()) m.set(g.urunId, (m.get(g.urunId) || 0) + (+g.miktar || 0));
+  for(const s of D.satis.values()) if(!s.iptal) for(const k of (s.kalemler || [])) m.set(k.urunId, (m.get(k.urunId) || 0) - (+k.adet || 0));
+  stokMap = m; stokKirli = false; return m;
+}
+const stok = id => r2(stoklar().get(id) || 0);
+const urunById = id => D.urun.get(id);
+const urunByBarkod = b => { b = String(b || '').trim(); if(!b) return null; stoklar(); return barkodMap.get(b) || null; };
+const urunler = () => [...D.urun.values()];
+const fisAyar = () => Object.assign({isletme: profil ? profil.firmaAd : 'KIRTASİYE', adres:'', tel:'', altYazi:'Bizi tercih ettiğiniz için teşekkür ederiz.'}, D.ayar.get('fis') || {});
+
+async function kaydet(col, id, veri){ return kaydetCok([[col, id, veri]]); }
+async function kaydetCok(list){
+  const recs = list.map(([col, id, veri]) => {
+    veri = Object.assign({}, veri); delete veri.id;
+    veri.degistiren = profil ? profil.email : ''; veri.degisim = Date.now();
+    return {k: col + '/' + id, koleksiyon: col, id, veri, guncelleme: null};
+  });
+  await idbYerelKaydet(recs);
+  recs.forEach(r => uygulaBellek(r.koleksiyon, r.id, r.veri));
+  bekleyenGuncelle(); esitleSonra();
+}
+
+/* ================= BULUT EŞİTLEME ================= */
+let oturum = null, profil = null, firmaId = null, kanal = null;
+let esitleniyor = false, esitleTekrar = false, sonHata = null, sonEsitleme = null, bekleyenSayi = 0;
+const bulut = {
+  async cek(since){
+    const out = [], N = 1000;
+    for(let from = 0; ; from += N){
+      const {data, error} = await sb.from(TABLO).select('koleksiyon,id,veri,guncelleme').eq('firma_id', firmaId).gt('guncelleme', since).order('guncelleme').order('id').range(from, from + N - 1);
+      if(error) throw error; out.push(...data); if(data.length < N) break;
+    }
+    return out;
+  },
+  async gonder(rows){ const {error} = await sb.from(TABLO).upsert(rows); if(error) throw error; }
+};
+async function gonder(){
+  for(;;){
+    const list = (await idbHepsi('bekleyen')).sort((a, b) => a.zaman - b.zaman).slice(0, 200);
+    if(!list.length) return;
+    await bulut.gonder(list.map(b => ({firma_id: firmaId, koleksiyon: b.koleksiyon, id: b.id, veri: b.veri})));
+    await idbBekleyenSil(list);
+  }
+}
+async function uzaktanGeldi(rows){
+  if(!rows.length) return 0;
+  const bek = new Set((await idbHepsi('bekleyen')).map(b => b.k)); const recs = [];
+  for(const r of rows){
+    const k = r.koleksiyon + '/' + r.id; if(bek.has(k)) continue;
+    recs.push({k, koleksiyon: r.koleksiyon, id: r.id, veri: r.veri, guncelleme: r.guncelleme});
+    uygulaBellek(r.koleksiyon, r.id, r.veri);
+  }
+  if(recs.length){ await idbKayitYaz(recs); renderSonra(); }
+  return recs.length;
+}
+async function cek(){
+  const since = (await metaAl('sonCekim')) || '1970-01-01T00:00:00.000Z';
+  const bas = new Date(new Date(since).getTime() - 120000).toISOString(); // 2 dk örtüşme: gecikmeli kayıtlar kaçmasın
+  const rows = await bulut.cek(bas);
+  let enSon = since;
+  for(const r of rows) if(new Date(r.guncelleme) > new Date(enSon)) enSon = r.guncelleme;
+  await uzaktanGeldi(rows);
+  await metaYaz('sonCekim', enSon);
+}
+async function esitle(){
+  if(!firmaId || !idb){ return; }
+  if(!sb || !oturum){ durumCiz(); return; }
+  if(esitleniyor){ esitleTekrar = true; return; }
+  esitleniyor = true; durumCiz();
+  try{ await gonder(); await cek(); sonHata = null; sonEsitleme = Date.now(); }
+  catch(e){ sonHata = e; console.warn('Eşitleme:', e); }
+  esitleniyor = false; await bekleyenGuncelle();
+  if(esitleTekrar){ esitleTekrar = false; esitle(); }
+}
+let esitT; function esitleSonra(){ clearTimeout(esitT); esitT = setTimeout(esitle, 400); }
+async function bekleyenGuncelle(){ if(idb){ try{ bekleyenSayi = await idbSay('bekleyen'); }catch(e){} } durumCiz(); }
+function abone(){
+  if(!sb || !oturum || !firmaId) return;
+  if(kanal) try{ sb.removeChannel(kanal); }catch(e){}
+  kanal = sb.channel('brn-' + firmaId)
+    .on('postgres_changes', {event:'*', schema:'public', table:TABLO, filter:'firma_id=eq.' + firmaId}, p => { const r = p.new; if(r && r.koleksiyon) uzaktanGeldi([r]); })
+    .subscribe();
+}
+function durumCiz(){
+  const b = $('#durum'), s = b.querySelector('span'); b.className = '';
+  const ag = /fetch|network|Failed|ERR_|timeout/i.test(sonHata ? (sonHata.message || '') : '');
+  let t;
+  if(!navigator.onLine || ag){ b.className = 'cevrimdisi'; t = 'Çevrimdışı' + (bekleyenSayi ? ` · ${bekleyenSayi} bekliyor` : ''); }
+  else if(!oturum){ b.className = 'hata'; t = 'Giriş gerekli' + (bekleyenSayi ? ` · ${bekleyenSayi} bekliyor` : ''); }
+  else if(sonHata){ b.className = 'hata'; t = 'Eşitleme hatası'; }
+  else if(esitleniyor){ b.className = 'esit'; t = 'Eşitleniyor…'; }
+  else t = bekleyenSayi ? `${bekleyenSayi} kayıt gönderiliyor` : 'Eşitlendi';
+  s.textContent = t;
+  b.title = sonHata ? sbMesaj(sonHata) : (sonEsitleme ? 'Son eşitleme: ' + fmtDate(new Date(sonEsitleme).toISOString()) : '');
+  const eb = $('#esitBilgi');
+  if(eb) eb.innerHTML = `Durum: <b>${esc(t)}</b>` + (sonEsitleme ? ` · son eşitleme ${esc(fmtDate(new Date(sonEsitleme).toISOString()))}` : '') + (sonHata ? `<br><span class="err">${esc(sbMesaj(sonHata))}</span>` : '');
+}
+$('#durum').onclick = () => { if(!oturum && sb) girisEkrani('giris'); else { esitle(); toast(bekleyenSayi ? bekleyenSayi + ' kayıt gönderilmeyi bekliyor' : 'Eşitleniyor…'); } };
+window.addEventListener('online', () => { durumCiz(); esitle(); });
+window.addEventListener('offline', durumCiz);
+document.addEventListener('visibilitychange', () => { if(document.visibilityState === 'visible') esitle(); });
+setInterval(esitle, 30000);
+
+/* ================= GİRİŞ ================= */
+function sbMesaj(e){
+  const m = (e && (e.message || e.error_description || String(e))) || '';
+  if(/Invalid login credentials/i.test(m)) return 'E-posta veya şifre hatalı.';
+  if(/Email not confirmed/i.test(m)) return 'E-postanız henüz onaylanmamış. Gelen kutunuzdaki onay bağlantısına tıklayın.';
+  if(/User already registered/i.test(m)) return 'Bu e-postayla zaten bir hesap var. Giriş yapın.';
+  if(/Password should be at least/i.test(m)) return 'Şifre en az 6 karakter olmalı.';
+  if(/rate limit|too many/i.test(m)) return 'Çok fazla deneme yapıldı. Birkaç dakika bekleyin.';
+  if(/Failed to fetch|NetworkError|network/i.test(m)) return 'Sunucuya ulaşılamadı. İnternet bağlantınızı kontrol edin.';
+  if(/brn_|relation .* does not exist|function .* does not exist|schema cache/i.test(m)) return 'Veritabanı kurulumu eksik: brn-schema.sql dosyasını Supabase SQL Editor\'da çalıştırın.';
+  if(/JWT|token/i.test(m)) return 'Oturum süresi doldu, tekrar giriş yapın.';
+  if(/row-level security|permission/i.test(m)) return 'Bu firmaya kayıt yetkiniz yok.';
+  return m || 'Bir hata oluştu.';
+}
+function kapiGoster(html){ $('#kapiIc').innerHTML = '<div class="logo">BRN SATIŞ PROGRAMI</div>' + html; $('#kapi').style.display = 'flex'; const f = $('#kapiIc input'); if(f) setTimeout(() => f.focus(), 50); }
+function kapiKapat(){ $('#kapi').style.display = 'none'; $('#kapiIc').innerHTML = ''; }
+function girisEkrani(mod='giris'){
+  const p = lsAl('brn-profil', null);
+  if(ayarEksik){ kapiGoster(`<h2>Kurulum tamamlanmamış</h2><div class="muted"><b>config.js</b> dosyasına Supabase projesinin adresini ve yayınlanabilir anahtarını yazın. Ayrıntılar README.md dosyasında.</div>`); return; }
+  if(!sb){ kapiGoster(`<h2>Bağlantı kurulamadı</h2><div class="muted">Program bileşenleri yüklenemedi. İnternet bağlantısını kontrol edip sayfayı yenileyin.</div>${p ? `<button class="btn pri" id="gOff">Çevrimdışı devam et (${esc(p.email)})</button>` : ''}<button class="btn" onclick="location.reload()">Yenile</button>`); if(p) $('#gOff').onclick = () => uygulamaAc(p); return; }
+  const baslik = {giris:'Giriş yap', kayit:'Hesap oluştur', unuttum:'Şifremi unuttum'}[mod];
+  kapiGoster(`<h2>${baslik}</h2>
+    <form id="gForm" style="display:flex;flex-direction:column;gap:10px" novalidate>
+      <div><label for="gEposta">E-posta</label><input id="gEposta" type="email" autocomplete="email" value="${esc(p ? p.email : '')}"></div>
+      ${mod !== 'unuttum' ? `<div><label for="gSifre">Şifre</label><input id="gSifre" type="password" autocomplete="${mod === 'kayit' ? 'new-password' : 'current-password'}"></div>` : ''}
+      <div class="err" id="gErr"></div><div class="muted" id="gBilgi"></div>
+      <button class="btn pri" type="submit" id="gBtn">${mod === 'giris' ? 'Giriş yap' : mod === 'kayit' ? 'Hesap oluştur' : 'Sıfırlama bağlantısı gönder'}</button>
+    </form>
+    <div class="row" style="justify-content:space-between">${mod !== 'giris' ? '<button class="btn sm" data-g="giris">Girişe dön</button>' : '<button class="btn sm" data-g="kayit">Hesap oluştur</button><button class="btn sm" data-g="unuttum">Şifremi unuttum</button>'}</div>
+    ${p && mod === 'giris' ? `<button class="btn sm" id="gOff">İnternet yok — çevrimdışı devam et</button>` : ''}`);
+  $$('#kapiIc [data-g]').forEach(b => b.onclick = () => girisEkrani(b.dataset.g));
+  if($('#gOff')) $('#gOff').onclick = () => uygulamaAc(p);
+  if(p && mod === 'giris' && $('#gSifre')) setTimeout(() => $('#gSifre').focus(), 60);
+  $('#gForm').onsubmit = async e => {
+    e.preventDefault(); const er = $('#gErr'), bi = $('#gBilgi'), btn = $('#gBtn'); er.textContent = ''; bi.textContent = '';
+    const ep = $('#gEposta').value.trim(), sf = $('#gSifre') ? $('#gSifre').value : '';
+    if(!/^\S+@\S+\.\S+$/.test(ep)){ er.textContent = 'Geçerli bir e-posta girin.'; return; }
+    if(mod !== 'unuttum' && sf.length < 6){ er.textContent = 'Şifre en az 6 karakter olmalı.'; return; }
+    btn.disabled = true;
+    try{
+      const yon = location.origin + location.pathname;
+      if(mod === 'giris'){ const {data, error} = await sb.auth.signInWithPassword({email: ep, password: sf}); if(error) throw error; oturum = data.session; await girisSonrasi(); }
+      else if(mod === 'kayit'){ const {data, error} = await sb.auth.signUp({email: ep, password: sf, options: {emailRedirectTo: yon}}); if(error) throw error; if(data.session){ oturum = data.session; await girisSonrasi(); } else { bi.textContent = 'Hesabınız oluşturuldu. E-postanıza gelen onay bağlantısına tıklayın, sonra giriş yapın.'; btn.disabled = false; } }
+      else { const {error} = await sb.auth.resetPasswordForEmail(ep, {redirectTo: yon}); if(error) throw error; bi.textContent = 'Şifre sıfırlama bağlantısı e-postanıza gönderildi.'; btn.disabled = false; }
+    }catch(err){ er.textContent = sbMesaj(err); btn.disabled = false; }
+  };
+}
+async function girisSonrasi(){
+  // Aynı kullanıcı ve firma ile zaten açıksa sadece eşitlemeyi sürdür
+  if(profil && firmaId && profil.userId === oturum.user.id){ kapiKapat(); abone(); esitle(); return; }
+  await firmaSec();
+}
+function sifreYenileEkrani(){
+  kapiGoster(`<h2>Yeni şifre belirleyin</h2><form id="ySForm" style="display:flex;flex-direction:column;gap:10px"><div><label>Yeni şifre</label><input id="ySifre" type="password" autocomplete="new-password"></div><div class="err" id="yErr"></div><button class="btn pri" type="submit">Şifreyi kaydet</button></form>`);
+  $('#ySForm').onsubmit = async e => { e.preventDefault(); const s = $('#ySifre').value; if(s.length < 6){ $('#yErr').textContent = 'Şifre en az 6 karakter olmalı.'; return; }
+    const {error} = await sb.auth.updateUser({password: s}); if(error){ $('#yErr').textContent = sbMesaj(error); return; } toast('Şifreniz güncellendi', 'ok'); history.replaceState(null, '', location.pathname); await girisSonrasi(); };
+}
+async function firmaSec(zorla=false){
+  kapiGoster('<div class="empty">Firma bilgileri yükleniyor…</div>');
+  const {data, error} = await sb.from('brn_uyeler').select('firma_id,rol,brn_firmalar(ad)').eq('user_id', oturum.user.id);
+  if(error){ kapiGoster(`<h2>Bağlantı sorunu</h2><div class="err">${esc(sbMesaj(error))}</div><button class="btn pri" id="tk">Tekrar dene</button><button class="btn" id="cx">Çıkış yap</button>`); $('#tk').onclick = () => firmaSec(zorla); $('#cx').onclick = cikisYap; return; }
+  if(!data.length) return firmaOlusturEkrani();
+  const ac = d => uygulamaAc({userId: oturum.user.id, email: oturum.user.email, firmaId: d.firma_id, firmaAd: d.brn_firmalar ? d.brn_firmalar.ad : 'Firma', rol: d.rol});
+  const onceki = lsAl('brn-profil', null), bul = onceki && data.find(d => d.firma_id === onceki.firmaId);
+  if(!zorla && (data.length === 1 || bul)) return ac(bul || data[0]);
+  kapiGoster(`<h2>Firma seçin</h2><div style="display:grid;gap:8px">${data.map((d, i) => `<button class="btn" data-i="${i}" style="text-align:left;white-space:normal">${esc(d.brn_firmalar ? d.brn_firmalar.ad : 'Firma')}<div class="muted">${d.rol === 'sahip' ? 'Sahip' : 'Kullanıcı'}</div></button>`).join('')}</div>`);
+  $$('#kapiIc [data-i]').forEach(b => b.onclick = () => ac(data[+b.dataset.i]));
+}
+function firmaOlusturEkrani(){
+  kapiGoster(`<h2>Firmanızı oluşturun</h2><div class="muted">Bu hesap henüz bir firmaya bağlı değil. Bir çalışan iseniz firma sahibinden programda <i>Ayarlar › Kullanıcılar</i> bölümünden sizi eklemesini isteyin.</div>
+    <form id="fOl" style="display:flex;flex-direction:column;gap:10px"><div><label>Firma ünvanı</label><input id="fOlAd"></div><div class="err" id="fOlErr"></div><button class="btn pri" type="submit">Firmayı oluştur</button></form>
+    <div class="row"><button class="btn sm" id="fOlY">Beni eklediler, tekrar kontrol et</button><button class="btn sm" id="fOlC">Çıkış yap</button></div>`);
+  $('#fOlY').onclick = () => firmaSec(); $('#fOlC').onclick = cikisYap;
+  $('#fOl').onsubmit = async e => { e.preventDefault(); const ad = $('#fOlAd').value.trim(); if(!ad){ $('#fOlErr').textContent = 'Firma ünvanını yazın.'; return; }
+    const {error} = await sb.rpc('brn_firma_olustur', {p_ad: ad}); if(error){ $('#fOlErr').textContent = sbMesaj(error); return; } await firmaSec(); };
+}
+async function cikisYap(){
+  if(bekleyenSayi && !confirm(`${bekleyenSayi} kayıt henüz buluta gönderilmedi.\nBu kayıtlar cihazda kalır ve aynı firmayla tekrar giriş yapıldığında gönderilir.\n\nYine de çıkış yapılsın mı?`)) return;
+  try{ if(kanal) sb.removeChannel(kanal); kanal = null; await sb.auth.signOut(); }catch(e){}
+  oturum = null; profil = null; firmaId = null; try{ localStorage.removeItem('brn-profil'); }catch(e){}
+  if(idb){ idb.close(); idb = null; }
+  Object.values(D).forEach(m => m.clear()); stokKirli = true; cart = [];
+  girisEkrani('giris');
+}
+async function uygulamaAc(p){
+  const ayniFirma = firmaId === p.firmaId && idb;
+  profil = p; firmaId = p.firmaId; lsYaz('brn-profil', p);
+  kapiKapat();
+  $('#hesapBtn').textContent = p.email.split('@')[0];
+  $('#firmaAdi').textContent = p.firmaAd ? '· ' + p.firmaAd.split(' ').slice(0, 2).join(' ') : '';
+  if(!ayniFirma){
+    if(idb) idb.close();
+    try{ idb = await idbAc('brn_' + firmaId); }
+    catch(e){ alert('Yerel veritabanı açılamadı: ' + e.message); return; }
+    Object.values(D).forEach(m => m.clear());
+    for(const r of await idbHepsi('kayit')) uygulaBellek(r.koleksiyon, r.id, r.veri);
+    stokKirli = true; cart = [];
+  }
+  await bekleyenGuncelle();
+  showTab(curTab);
+  abone(); esitle();
+}
+$('#hesapBtn').onclick = () => showTab('ayarlar');
+$('#cikisBtn').onclick = cikisYap;
+$('#firmaDegBtn').onclick = () => { if(!oturum){ toast('Firma değiştirmek için internet ve giriş gerekir', 'bad'); return; } firmaSec(true); };
+
+/* ---------- Modal ---------- */
+let modalKapaninca = null;
+function openModal(html, onClose){ $('#modal').innerHTML = html; $('#modalBg').style.display = 'flex'; modalKapaninca = onClose || null; const f = $('#modal [autofocus]') || $('#modal input:not([type=checkbox])'); if(f && matchMedia('(pointer:fine)').matches) setTimeout(() => f.focus(), 0); }
+function closeModal(){ const cb = modalKapaninca; modalKapaninca = null; $('#modalBg').style.display = 'none'; $('#modal').innerHTML = ''; if(cb) cb(); if(curTab === 'satis') focusScan(); }
+const modalOpen = () => $('#modalBg').style.display === 'flex';
+$('#modalBg').addEventListener('mousedown', e => { if(e.target.id === 'modalBg') closeModal(); });
+
+/* ---------- Sekmeler ---------- */
+let curTab = 'satis';
+$$('nav button').forEach(b => b.onclick = () => showTab(b.dataset.tab));
+function showTab(t){
+  curTab = t;
+  $$('nav button').forEach(b => b.classList.toggle('active', b.dataset.tab === t));
+  $$('.tab').forEach(s => s.classList.toggle('active', s.id === 'tab-' + t));
+  renderAktif();
+  if(t === 'satis') focusScan();
+  if(t === 'ayarlar') uyeleriYukle();
+}
+function renderAktif(){
+  if(curTab === 'satis'){ if(!$('#cartBody').contains(document.activeElement)) renderCart(); }
+  if(curTab === 'urunler') renderProducts();
+  if(curTab === 'raporlar') renderReport();
+  if(curTab === 'ayarlar') loadSettingsForm();
+}
+let renderT; function renderSonra(){ clearTimeout(renderT); renderT = setTimeout(renderAktif, 150); }
+
+/* ================= KAMERA ================= */
+let kamera = null;
+function scriptYukle(src){ return new Promise((res, rej) => { if(window.Html5Qrcode) return res(); const s = document.createElement('script'); s.src = src; s.onload = res; s.onerror = () => rej(new Error('yüklenemedi')); document.head.appendChild(s); }); }
+async function kameraAc(cb, {surekli=false, baslik='Barkod okut'} = {}){
+  openModal(`<h2>📷 ${esc(baslik)}</h2><div id="kamKutu" style="width:100%;min-height:220px;background:#000;border-radius:10px;overflow:hidden"></div>
+    <div id="kamBilgi" class="muted" style="margin-top:8px">Kamera açılıyor… Barkodu çerçevenin içine tutun.</div>
+    <div class="mfoot"><button class="btn ${surekli ? 'pri' : ''}" id="kamKapat">${surekli ? 'Bitti' : 'Vazgeç'}</button></div>`, kameraDurdur);
+  $('#kamKapat').onclick = closeModal;
+  try{ await scriptYukle(QR_URL); }catch(e){ $('#kamBilgi').textContent = 'Kamera bileşeni yüklenemedi. İlk kullanımda internet bağlantısı gerekir.'; return; }
+  if(!modalOpen() || !$('#kamKutu')) return;
+  const F = window.Html5QrcodeSupportedFormats;
+  try{
+    kamera = new Html5Qrcode('kamKutu', {formatsToSupport: [F.EAN_13, F.EAN_8, F.UPC_A, F.UPC_E, F.CODE_128, F.CODE_39, F.ITF, F.QR_CODE], experimentalFeatures: {useBarCodeDetectorIfSupported: true}, verbose: false});
+    let son = '', sonZ = 0;
+    await kamera.start({facingMode: 'environment'}, {fps: 12, qrbox: (w, h) => ({width: Math.max(120, Math.min(w * .85, 380)), height: Math.max(80, Math.min(h * .45, 170))})}, txt => {
+      const z = Date.now(); if(txt === son && z - sonZ < 2000) return; son = txt; sonZ = z;
+      if(surekli){ cb(txt); const bi = $('#kamBilgi'); if(bi) bi.innerHTML = 'Okundu: <b class="mono">' + esc(txt) + '</b> — sıradakini okutun'; }
+      else { closeModal(); cb(txt); }
+    }, () => {});
+    const bi = $('#kamBilgi'); if(bi) bi.textContent = surekli ? 'Ürünleri sırayla okutun. Bitince "Bitti"ye basın.' : 'Barkodu çerçevenin içine tutun.';
+  }catch(e){ const bi = $('#kamBilgi'); if(bi) bi.textContent = 'Kamera açılamadı: ' + (e.message || e) + ' — Tarayıcı ayarlarından kamera izni verin.'; kamera = null; }
+}
+async function kameraDurdur(){ const k = kamera; kamera = null; if(k){ try{ if(k.isScanning) await k.stop(); k.clear(); }catch(e){} } }
+
+/* ================= SATIŞ ================= */
+let cart = [];          // {pid, qty}
+let lastPid = null, payMethod = 'nakit', lastSaleObj = null;
+const scan = $('#scan');
+const dokunmatik = () => !matchMedia('(pointer:fine)').matches;
+function focusScan(){ if(!modalOpen() && curTab === 'satis' && !dokunmatik() && $('#kapi').style.display !== 'flex') setTimeout(() => scan.focus(), 0); }
+function parseQtyTerm(raw){ let term = String(raw).trim(), qty = 1; const m = term.match(/^(\d{1,4})\s*[*xX]\s*(.+)$/); if(m){ qty = parseInt(m[1], 10) || 1; term = m[2].trim(); } return {qty, term}; }
+function searchProducts(term){
+  const t = low(term); if(!t) return [];
+  return urunler().filter(p => low(p.ad).includes(t) || String(p.barkod || '').includes(term) || low(p.kategori).includes(t)).sort((a, b) => a.ad.localeCompare(b.ad, 'tr')).slice(0, 30);
+}
+function hideResults(){ $('#results').style.display = 'none'; $('#results').innerHTML = ''; }
+function showResults(raw, force=false){
+  const {qty, term} = parseQtyTerm(raw);
+  if(!force && (term.length < 2 || /^\d+$/.test(term))){ hideResults(); return; }
+  const list = searchProducts(term), box = $('#results');
+  box.innerHTML = list.length ? list.map(p => { const s = stok(p.id); return `<button data-pid="${p.id}" data-qty="${qty}"><span>${esc(p.ad)} <span class="muted mono">${esc(p.barkod || '')}</span></span><span style="white-space:nowrap"><span class="tag ${s <= 0 ? 'bad' : ''}">${s}</span> <b class="num">${tl(p.satis)}</b></span></button>`; }).join('') : '<div class="empty">Ürün bulunamadı</div>';
+  box.style.display = 'block';
+}
+$('#results').addEventListener('click', e => { const b = e.target.closest('button[data-pid]'); if(!b) return; scan.value = ''; hideResults(); addToCart(b.dataset.pid, +b.dataset.qty || 1); });
+$('#results').addEventListener('keydown', e => {
+  const btns = [...$$('#results button')], i = btns.indexOf(document.activeElement);
+  if(e.key === 'ArrowDown'){ e.preventDefault(); (btns[i + 1] || btns[i]).focus(); }
+  else if(e.key === 'ArrowUp'){ e.preventDefault(); i <= 0 ? scan.focus() : btns[i - 1].focus(); }
+  else if(e.key === 'Escape'){ hideResults(); scan.focus(); }
+});
+scan.addEventListener('input', () => showResults(scan.value));
+scan.addEventListener('keydown', e => {
+  if(e.key === 'Enter'){ e.preventDefault(); handleScan(scan.value); }
+  else if(e.key === 'ArrowDown'){ const f = $('#results button'); if(f){ e.preventDefault(); f.focus(); } }
+  else if(e.key === 'Escape'){ scan.value = ''; hideResults(); }
+});
+document.addEventListener('click', e => { if(!e.target.closest('#scanRow')) hideResults(); });
+$('#camBtn').onclick = () => kameraAc(kod => handleScan(kod, true), {surekli: true, baslik: 'Satış — barkod okut'});
+
+function handleScan(raw, kameradan=false){
+  const {qty, term} = parseQtyTerm(raw); if(!term) return;
+  const p = urunByBarkod(term);
+  if(p){ scan.value = ''; hideResults(); addToCart(p.id, qty); return; }
+  const list = kameradan ? [] : searchProducts(term);
+  if(list.length === 1){ scan.value = ''; hideResults(); addToCart(list[0].id, qty); return; }
+  if(list.length > 1){ showResults(raw, true); const f = $('#results button'); if(f && !dokunmatik()) f.focus(); return; }
+  beep(false); scan.value = ''; hideResults();
+  if(/^\d{4,}$/.test(term)){
+    if(kameradan) closeModal();
+    if(confirm(`"${term}" barkodlu ürün kayıtlı değil.\n\nYeni ürün olarak eklemek ister misiniz?`)) openProductForm(null, {barkod: term}, np => addToCart(np.id, qty));
+    else focusScan();
+  } else toast('Ürün bulunamadı: ' + term, 'bad');
+}
+function addToCart(pid, qty=1){
+  const p = urunById(pid); if(!p) return;
+  const line = cart.find(l => l.pid === pid);
+  if(line) line.qty += qty; else cart.push({pid, qty});
+  lastPid = pid; beep(true);
+  const inCart = cart.find(l => l.pid === pid).qty, s = stok(pid);
+  if(s < inCart) toast(`Uyarı: "${p.ad}" stokta ${s} adet var`, 'bad');
+  $('#lastSale').style.display = 'none';
+  renderCart(); focusScan();
+}
+function setQty(pid, q){ q = Math.floor(+q); if(!(q > 0)) cart = cart.filter(l => l.pid !== pid); else { const l = cart.find(l => l.pid === pid); if(l) l.qty = q; } renderCart(); }
+function getTotals(){
+  let sub = 0, count = 0;
+  cart.forEach(l => { const p = urunById(l.pid); if(p){ sub += (+p.satis || 0) * l.qty; count += l.qty; } });
+  sub = r2(sub); let disc = parseNum($('#discount').value); disc = isNaN(disc) || disc < 0 ? 0 : r2(disc);
+  return {sub, disc, total: r2(sub - disc), count};
+}
+function renderCart(){
+  cart = cart.filter(l => urunById(l.pid));
+  const body = $('#cartBody');
+  if(!cart.length) body.innerHTML = '<tr><td colspan="6" class="empty">Sepet boş — barkod okutarak başlayın</td></tr>';
+  else body.innerHTML = cart.map((l, i) => { const p = urunById(l.pid), s = stok(p.id); return `
+    <tr class="${l.pid === lastPid ? 'last' : ''}">
+      <td class="muted hide-m">${i + 1}</td>
+      <td><b>${esc(p.ad)}</b><div class="muted mono">${esc(p.barkod || '')} <span class="hide-m">${s < l.qty ? '<span class="tag bad">stok ' + s + '</span>' : ''}</span></div></td>
+      <td class="r num hide-m">${tl(p.satis)}</td>
+      <td style="text-align:center"><span class="qty"><button class="btn" data-act="dec" data-pid="${p.id}">−</button><input data-act="qty" data-pid="${p.id}" value="${l.qty}" inputmode="numeric"><button class="btn" data-act="inc" data-pid="${p.id}">+</button></span></td>
+      <td class="r num"><b>${tl(p.satis * l.qty)}</b></td>
+      <td><button class="btn sm bad" data-act="del" data-pid="${p.id}" title="Kaldır">✕</button></td>
+    </tr>`; }).join('');
+  updateTotals();
+  const lr = body.querySelector('tr.last'); if(lr) lr.scrollIntoView({block: 'nearest'});
+}
+function updateTotals(){
+  const t = getTotals();
+  $('#subTotal').textContent = tl(t.sub); $('#grandTotal').textContent = tl(t.total);
+  $('#itemCount').textContent = t.count ? t.count + ' ürün' : '';
+  const r = parseNum($('#received').value), cb = $('#changeBox');
+  if(payMethod === 'nakit' && !isNaN(r) && cart.length){ const ch = r2(r - t.total); cb.innerHTML = ch >= 0 ? `Para üstü: <span style="color:var(--in)">${tl(ch)}</span>` : `<span style="color:var(--out)">Eksik: ${tl(-ch)}</span>`; }
+  else cb.innerHTML = '';
+}
+$('#cartBody').addEventListener('click', e => {
+  const b = e.target.closest('button[data-act]'); if(!b) return;
+  const l = cart.find(x => x.pid === b.dataset.pid); if(!l) return;
+  if(b.dataset.act === 'inc') setQty(l.pid, l.qty + 1);
+  if(b.dataset.act === 'dec') setQty(l.pid, l.qty - 1);
+  if(b.dataset.act === 'del') setQty(l.pid, 0);
+  focusScan();
+});
+$('#cartBody').addEventListener('change', e => { if(e.target.dataset.act === 'qty'){ setQty(e.target.dataset.pid, e.target.value); focusScan(); } });
+$('#cartBody').addEventListener('keydown', e => { if(e.target.dataset.act === 'qty' && e.key === 'Enter') e.target.blur(); });
+$('#discount').addEventListener('input', updateTotals);
+$('#received').addEventListener('input', updateTotals);
+$('#received').addEventListener('keydown', e => { if(e.key === 'Enter'){ e.preventDefault(); completeSale(); } });
+$('#discount').addEventListener('keydown', e => { if(e.key === 'Enter'){ e.preventDefault(); focusScan(); } });
+function setMethod(m){ payMethod = m; $$('.methods .btn').forEach(b => b.classList.toggle('sel', b.dataset.m === m)); $('#cashBox').style.display = m === 'nakit' ? 'block' : 'none'; updateTotals(); }
+$$('.methods .btn').forEach(b => b.onclick = () => { setMethod(b.dataset.m); if(b.dataset.m === 'nakit' && !dokunmatik()) $('#received').focus(); else focusScan(); });
+$$('.bills .btn').forEach(b => b.onclick = () => { const t = getTotals(); $('#received').value = b.dataset.bill === 'tam' ? num2(t.total) : b.dataset.bill; updateTotals(); });
+$('#completeBtn').onclick = completeSale;
+$('#clearCartBtn').onclick = clearCart;
+$('#reprintBtn').onclick = () => { if(lastSaleObj) printReceipt(lastSaleObj); };
+function clearCart(){ if(cart.length && !confirm('Sepet temizlensin mi?')) return; cart = []; $('#discount').value = ''; $('#received').value = ''; renderCart(); focusScan(); }
+
+let satisSuruyor = false;
+async function completeSale(){
+  if(satisSuruyor) return;
+  if(!firmaId){ toast('Önce giriş yapın', 'bad'); return; }
+  if(!cart.length){ toast('Sepet boş', 'bad'); focusScan(); return; }
+  const t = getTotals();
+  if(t.total < 0){ toast('İndirim toplamdan büyük olamaz', 'bad'); return; }
+  let alinan = t.total, paraUstu = 0;
+  if(payMethod === 'nakit'){
+    const r = parseNum($('#received').value);
+    if(!isNaN(r)){ if(r2(r) < t.total){ toast('Alınan para tutardan az!', 'bad'); beep(false); $('#received').focus(); return; } alinan = r2(r); paraUstu = r2(r - t.total); }
+  }
+  const eksik = cart.map(l => ({l, p: urunById(l.pid), s: stok(l.pid)})).filter(x => x.s < x.l.qty);
+  if(eksik.length && !confirm('Stokta yeterli olmayan ürünler var:\n\n' + eksik.map(x => `• ${x.p.ad} (stok: ${x.s}, satılan: ${x.l.qty})`).join('\n') + '\n\nYine de satış yapılsın mı?')) return;
+  satisSuruyor = true; $('#completeBtn').disabled = true;
+  try{
+    // Fiş numarası: bu kasanın bilinen en büyük numarasından devam eder (cihaz sıfırlansa da çakışmaz)
+    let enBuyuk = (await metaAl('fisSayac')) || 0;
+    for(const s of D.satis.values()) if(s.kasa === cihaz.kasa){ const n = parseInt(String(s.no).split('-').pop(), 10); if(n > enBuyuk) enBuyuk = n; }
+    const sayac = enBuyuk + 1; await metaYaz('fisSayac', sayac);
+    const id = idUret();
+    const satis = {
+      no: cihaz.kasa + '-' + String(sayac).padStart(5, '0'), kasa: cihaz.kasa, tarih: new Date().toISOString(),
+      kalemler: cart.map(l => { const p = urunById(l.pid); return {urunId: p.id, barkod: p.barkod || '', ad: p.ad, adet: l.qty, fiyat: r2(p.satis), alis: r2(p.alis || 0)}; }),
+      araToplam: t.sub, indirim: t.disc, toplam: t.total, odeme: payMethod, alinan, paraUstu, iptal: false, kullanici: profil.email
+    };
+    await kaydet('satis', id, satis);
+    lastSaleObj = Object.assign({id}, satis); $('#reprintBtn').disabled = false;
+    cart = []; lastPid = null; $('#discount').value = ''; $('#received').value = ''; setMethod('nakit'); renderCart();
+    const ls = $('#lastSale');
+    ls.innerHTML = `<div>Fiş ${esc(satis.no)} kaydedildi — ${tl(satis.toplam)} (${satis.odeme === 'nakit' ? 'Nakit' : 'Kart'})</div>` + (satis.odeme === 'nakit' ? `<div class="chg">Para üstü: ${tl(satis.paraUstu)}</div>` : '');
+    ls.style.display = 'block'; beep(true);
+    if(cihaz.otoYazdir) printReceipt(lastSaleObj);
+  }catch(e){ alert('Satış kaydedilemedi: ' + e.message); }
+  finally{ satisSuruyor = false; $('#completeBtn').disabled = false; focusScan(); }
+}
+document.addEventListener('keydown', e => {
+  if(modalOpen()){ if(e.key === 'Escape') closeModal(); return; }
+  if(curTab !== 'satis' || $('#kapi').style.display === 'flex') return;
+  const k = e.key;
+  if(k === 'F2'){ e.preventDefault(); setMethod('nakit'); $('#received').focus(); }
+  else if(k === 'F3'){ e.preventDefault(); setMethod('kart'); focusScan(); }
+  else if(k === 'F4'){ e.preventDefault(); setMethod('nakit'); $('#received').focus(); $('#received').select(); }
+  else if(k === 'F7'){ e.preventDefault(); clearCart(); }
+  else if(k === 'F9'){ e.preventDefault(); completeSale(); }
+});
+
+/* ================= FİŞ ================= */
+function kagitAyarla(){ const w = cihaz.kagit === '58' ? '48mm' : cihaz.kagit === 'a4' ? '80mm' : '72mm', fs = cihaz.kagit === '58' ? '11px' : '12px'; $('#pageStyle').textContent = `@media print{@page{margin:${cihaz.kagit === 'a4' ? '10mm' : '0'}} #printArea{width:${w};font-size:${fs}}}`; }
+function printReceipt(s){
+  const f = fisAyar(); kagitAyarla();
+  const items = (s.kalemler || []).map(it => `<tr><td colspan="2">${esc(it.ad)}</td></tr><tr><td>&nbsp; ${it.adet} x ${num2(it.fiyat)}</td><td class="r">${num2(it.adet * it.fiyat)}</td></tr>`).join('');
+  $('#printArea').innerHTML = `
+    <div class="c b lg">${esc(f.isletme)}</div>${f.adres ? `<div class="c">${esc(f.adres)}</div>` : ''}${f.tel ? `<div class="c">Tel: ${esc(f.tel)}</div>` : ''}
+    <hr><table><tr><td>Fiş: ${esc(s.no)}</td><td class="r">${fmtDate(s.tarih)}</td></tr></table><hr>
+    <table>${items}</table><hr>
+    <table>${s.indirim ? `<tr><td>Ara Toplam</td><td class="r">${num2(s.araToplam)}</td></tr><tr><td>İndirim</td><td class="r">-${num2(s.indirim)}</td></tr>` : ''}
+      <tr class="b lg"><td>TOPLAM</td><td class="r">${tl(s.toplam)}</td></tr>
+      <tr><td>Ödeme</td><td class="r">${s.odeme === 'nakit' ? 'NAKİT' : 'KREDİ KARTI'}</td></tr>
+      ${s.odeme === 'nakit' ? `<tr><td>Alınan</td><td class="r">${num2(s.alinan)}</td></tr><tr><td>Para Üstü</td><td class="r">${num2(s.paraUstu)}</td></tr>` : ''}</table>
+    ${s.iptal ? '<hr><div class="c b">*** İPTAL EDİLDİ ***</div>' : ''}<hr>
+    ${f.altYazi ? `<div class="c">${esc(f.altYazi)}</div>` : ''}<div class="c" style="font-size:.85em;margin-top:4px">BİLGİ FİŞİDİR - MALİ DEĞERİ YOKTUR</div>`;
+  setTimeout(() => window.print(), 60);
+}
+window.addEventListener('afterprint', focusScan);
+
+/* ================= ÜRÜNLER ================= */
+$('#pSearch').addEventListener('input', renderProducts);
+$('#pCrit').addEventListener('change', renderProducts);
+$('#newProdBtn').onclick = () => openProductForm(null);
+$('#stockInBtn').onclick = openStockIn;
+$('#pCam').onclick = () => kameraAc(kod => { const p = urunByBarkod(kod); if(p) openProductForm(p); else if(confirm(`"${kod}" kayıtlı değil. Yeni ürün olarak eklensin mi?`)) openProductForm(null, {barkod: kod}); }, {baslik: 'Fiyat / stok sorgula'});
+function renderProducts(){
+  const raw = $('#pSearch').value.trim(), q = low(raw), crit = $('#pCrit').checked, all = urunler();
+  const list = all.filter(p => (!q || low(p.ad).includes(q) || String(p.barkod || '').includes(raw) || low(p.kategori).includes(q)) && (!crit || stok(p.id) <= (+p.kritik || 0))).sort((a, b) => a.ad.localeCompare(b.ad, 'tr'));
+  const critCount = all.filter(p => stok(p.id) <= (+p.kritik || 0)).length;
+  $('#pCount').innerHTML = `${all.length} ürün` + (critCount ? ` · <span style="color:var(--out)">${critCount} ürün kritik stokta</span>` : '') + (list.length > 400 ? ' · ilk 400 gösteriliyor, aramayı daraltın' : '');
+  if(!all.length){ $('#pBody').innerHTML = `<tr><td colspan="7" class="empty">Henüz ürün yok.<br><br><button class="btn pri" onclick="openProductForm(null)">+ İlk ürünü ekle</button> <button class="btn" onclick="showTab('ayarlar')">Excel'den aktar</button></td></tr>`; return; }
+  $('#pBody').innerHTML = list.slice(0, 400).map(p => { const s = stok(p.id); return `
+    <tr>
+      <td class="muted mono hide-m">${esc(p.barkod || '—')}</td>
+      <td><b>${esc(p.ad)}</b></td>
+      <td class="hide-m">${p.kategori ? `<span class="tag" style="font-family:var(--font-body)">${esc(p.kategori)}</span>` : ''}</td>
+      <td class="r num muted hide-m">${p.alis ? tl(p.alis) : '—'}</td>
+      <td class="r num"><b>${tl(p.satis)}</b></td>
+      <td class="r"><span class="tag ${s <= 0 ? 'bad' : s <= (+p.kritik || 0) ? 'warn' : 'ok'}">${s}</span></td>
+      <td class="r"><button class="btn sm" data-edit="${p.id}">Düzenle</button></td>
+    </tr>`; }).join('') || '<tr><td colspan="7" class="empty">Eşleşen ürün yok</td></tr>';
+}
+$('#pBody').addEventListener('click', e => { const ed = e.target.closest('[data-edit]'); if(ed) openProductForm(urunById(ed.dataset.edit)); });
+
+function openProductForm(p, preset={}, onSaved){
+  const v = Object.assign({barkod:'', ad:'', kategori:'', alis:'', satis:'', kritik:5, acilis:0}, p || {}, preset);
+  const cats = [...new Set(urunler().map(x => x.kategori).filter(Boolean))].sort((a, b) => a.localeCompare(b, 'tr'));
+  const mevcut = p ? stok(p.id) : 0;
+  openModal(`
+    <h2>${p ? 'Ürünü Düzenle' : 'Yeni Ürün'}</h2>
+    <form id="pForm" class="form" autocomplete="off">
+      <div class="full"><label>Barkod (boş bırakılabilir)</label><div class="row" style="flex-wrap:nowrap"><input id="fBarkod" value="${esc(v.barkod)}" inputmode="numeric" class="mono" style="flex:1" ${v.barkod ? '' : 'autofocus'}><button type="button" class="btn" id="fCam">📷</button></div></div>
+      <div class="full"><label>Ürün adı *</label><input id="fAd" value="${esc(v.ad)}" ${v.barkod && !p ? 'autofocus' : ''}></div>
+      <div class="full"><label>Kategori</label><input id="fKat" list="katList" value="${esc(v.kategori)}" placeholder="örn. Kalem, Defter, Boya…"><datalist id="katList">${cats.map(c => `<option value="${esc(c)}">`).join('')}</datalist></div>
+      <div><label>Alış fiyatı (₺)</label><input id="fAlis" value="${v.alis !== '' && v.alis != null ? num2(v.alis) : ''}" placeholder="0,00" inputmode="decimal"></div>
+      <div><label>Satış fiyatı (₺) *</label><input id="fSatis" value="${v.satis !== '' && v.satis != null ? num2(v.satis) : ''}" placeholder="0,00" inputmode="decimal"></div>
+      ${p ? `<div><label>Mevcut stok: <b class="mono">${mevcut}</b> — sayım yaptıysanız gerçek adedi yazın</label><input id="fSayim" type="number" step="1" placeholder="değiştirmek için yazın" inputmode="numeric"></div>`
+          : `<div><label>Başlangıç stoku</label><input id="fAcilis" type="number" step="1" value="${+v.acilis || 0}" inputmode="numeric"></div>`}
+      <div><label>Kritik stok (uyarı sınırı)</label><input id="fKritik" type="number" step="1" min="0" value="${v.kritik ?? 0}" inputmode="numeric"></div>
+      <div class="err full" id="fErr"></div>
+    </form>
+    <div class="mfoot">${p ? '<button class="btn bad" id="pDel" style="margin-right:auto">Sil</button>' : ''}<button class="btn" id="pVaz">Vazgeç</button><button class="btn pri" id="pSave">Kaydet</button></div>`);
+  $('#pVaz').onclick = closeModal;
+  $('#fBarkod').addEventListener('keydown', e => { if(e.key === 'Enter'){ e.preventDefault(); $('#fAd').focus(); } });
+  $('#fCam').onclick = async () => {
+    // Formu kapatmadan kamerayı ayrı açmak yerine: formdaki değerleri koru, kamerayla barkodu al, formu geri aç
+    const taslak = {barkod: $('#fBarkod').value, ad: $('#fAd').value, kategori: $('#fKat').value, alis: parseNum($('#fAlis').value), satis: parseNum($('#fSatis').value), kritik: +$('#fKritik').value || 0, acilis: $('#fAcilis') ? +$('#fAcilis').value || 0 : 0};
+    ['alis','satis'].forEach(k => { if(isNaN(taslak[k])) taslak[k] = ''; });
+    closeModal();
+    kameraAc(kod => openProductForm(p, Object.assign(taslak, {barkod: kod}), onSaved), {baslik: 'Ürün barkodunu okut'});
+    // kamera vazgeçilirse form kaybolmasın
+    const eski = modalKapaninca; modalKapaninca = async () => { if(eski) await eski(); if(!modalOpen()) setTimeout(() => { if(!modalOpen()) openProductForm(p, taslak, onSaved); }, 50); };
+  };
+  const doSave = async () => {
+    const barkod = $('#fBarkod').value.trim(), ad = $('#fAd').value.trim(), satis = parseNum($('#fSatis').value), alis = parseNum($('#fAlis').value);
+    const er = $('#fErr'); er.textContent = '';
+    if(!ad){ er.textContent = 'Ürün adı gerekli.'; $('#fAd').focus(); return; }
+    if(isNaN(satis) || satis < 0){ er.textContent = 'Geçerli bir satış fiyatı girin.'; $('#fSatis').focus(); return; }
+    const dup = barkod && urunler().find(x => x.barkod === barkod && (!p || x.id !== p.id));
+    if(dup){ er.textContent = `Bu barkod zaten "${dup.ad}" ürününde kayıtlı.`; $('#fBarkod').focus(); return; }
+    const id = p ? p.id : idUret();
+    const doc = Object.assign({}, p || {olusturma: Date.now()}, {barkod, ad, kategori: $('#fKat').value.trim(), alis: isNaN(alis) ? 0 : r2(alis), satis: r2(satis), kritik: Math.max(0, Math.floor(+$('#fKritik').value || 0))});
+    if(!p) doc.acilis = Math.floor(+$('#fAcilis').value || 0);
+    const islemler = [['urun', id, doc]];
+    if(p && $('#fSayim').value.trim() !== ''){
+      const fark = r2(Math.floor(+$('#fSayim').value) - stok(p.id));
+      if(fark) islemler.push(['stokgiris', idUret(), {urunId: id, miktar: fark, tip: 'Sayım', tarih: new Date().toISOString(), aciklama: 'Sayım farkı', kasa: cihaz.kasa}]);
+    }
+    $('#pSave').disabled = true;
+    try{ await kaydetCok(islemler); }catch(e){ er.textContent = 'Kaydedilemedi: ' + e.message; $('#pSave').disabled = false; return; }
+    closeModal(); toast('Ürün kaydedildi', 'ok'); renderAktif();
+    if(onSaved) onSaved(urunById(id));
+  };
+  $('#pSave').onclick = doSave;
+  $('#pForm').addEventListener('submit', e => { e.preventDefault(); doSave(); });
+  $('#pForm').addEventListener('keydown', e => { if(e.key === 'Enter' && e.target.id !== 'fBarkod'){ e.preventDefault(); doSave(); } });
+  if($('#pDel')) $('#pDel').onclick = async () => { if(!confirm(`"${p.ad}" silinsin mi?\n(Geçmiş satış kayıtları korunur.)`)) return; await kaydet('urun', p.id, Object.assign({}, p, {silindi: true})); closeModal(); toast('Ürün silindi'); renderAktif(); };
+}
+
+function openStockIn(){
+  openModal(`
+    <h2>📥 Stok Girişi</h2>
+    <p class="muted" style="margin-top:0">Gelen ürünün barkodunu okutun, adedi girip Enter'a basın.</p>
+    <div class="row" style="flex-wrap:nowrap"><input id="siCode" placeholder="Barkod veya ürün adı" style="flex:1" autofocus><button class="btn" id="siCam">📷</button></div>
+    <div class="row" style="margin-top:8px"><label style="margin:0">Adet</label><input id="siQty" type="number" step="1" value="1" style="width:100px" inputmode="numeric"><button class="btn pri" id="siAdd">Ekle</button></div>
+    <div id="siInfo" class="muted" style="margin:8px 0;min-height:20px"></div>
+    <table><tbody id="siLog"></tbody></table>
+    <div class="mfoot"><button class="btn" id="siKapat">Kapat</button></div>`);
+  let found = null;
+  const bul = () => {
+    const v = $('#siCode').value.trim(); if(!v) return null;
+    let p = urunByBarkod(v);
+    if(!p){ const l = searchProducts(v); if(l.length === 1) p = l[0]; else if(l.length > 1){ $('#siInfo').innerHTML = 'Birden fazla eşleşme: ' + l.slice(0, 5).map(x => esc(x.ad)).join(', ') + '…'; return null; } }
+    $('#siInfo').innerHTML = p ? `<b>${esc(p.ad)}</b> — mevcut stok: <b class="mono">${stok(p.id)}</b>` : '<span style="color:var(--out)">Ürün bulunamadı. Önce "Yeni Ürün" ile ekleyin.</span>';
+    return p;
+  };
+  const uygula = async () => {
+    found = found || bul(); if(!found){ beep(false); return; }
+    const q = Math.floor(+$('#siQty').value); if(!q){ toast('Adet girin', 'bad'); return; }
+    const u = found; found = null;
+    await kaydet('stokgiris', idUret(), {urunId: u.id, miktar: q, tip: 'Giriş', tarih: new Date().toISOString(), aciklama: 'Stok girişi', kasa: cihaz.kasa});
+    beep(true);
+    $('#siLog').insertAdjacentHTML('afterbegin', `<tr><td>${esc(u.ad)}</td><td class="r num">${q > 0 ? '+' : ''}${q}</td><td class="r muted">yeni stok: <span class="mono">${stok(u.id)}</span></td></tr>`);
+    $('#siCode').value = ''; $('#siQty').value = 1; $('#siInfo').textContent = ''; if(!dokunmatik()) $('#siCode').focus();
+  };
+  $('#siCode').addEventListener('input', () => { found = null; });
+  $('#siCode').addEventListener('keydown', e => { if(e.key === 'Enter'){ e.preventDefault(); found = bul(); if(found){ $('#siQty').focus(); $('#siQty').select(); } else beep(false); } });
+  $('#siQty').addEventListener('keydown', e => { if(e.key === 'Enter'){ e.preventDefault(); uygula(); } });
+  $('#siAdd').onclick = uygula;
+  $('#siKapat').onclick = closeModal;
+  $('#siCam').onclick = () => { closeModal(); kameraAc(kod => { openStockIn(); $('#siCode').value = kod; found = null; setTimeout(() => { const ev = new KeyboardEvent('keydown', {key: 'Enter'}); $('#siCode').dispatchEvent(ev); }, 30); }, {baslik: 'Stok girişi — barkod okut'}); };
+}
+
+/* ================= RAPORLAR ================= */
+['#rFrom', '#rTo', '#rKasa'].forEach(s => $(s).addEventListener('change', renderReport));
+$$('[data-range]').forEach(b => b.onclick = () => setRange(b.dataset.range));
+function setRange(r){
+  const now = new Date(); let f = new Date(now), t = new Date(now);
+  if(r === 'yesterday'){ f.setDate(f.getDate() - 1); t = new Date(f); }
+  if(r === 'week'){ f.setDate(now.getDate() - (now.getDay() + 6) % 7); }
+  if(r === 'month') f = new Date(now.getFullYear(), now.getMonth(), 1);
+  if(r === 'year') f = new Date(now.getFullYear(), 0, 1);
+  $('#rFrom').value = ymd(f); $('#rTo').value = ymd(t); renderReport();
+}
+function salesInRange(){
+  if(!$('#rFrom').value || !$('#rTo').value){ const n = ymd(new Date()); $('#rFrom').value = $('#rFrom').value || n; $('#rTo').value = $('#rTo').value || n; }
+  const f = new Date($('#rFrom').value + 'T00:00:00'), t = new Date($('#rTo').value + 'T23:59:59.999'), k = $('#rKasa').value;
+  return [...D.satis.values()].filter(s => { const d = new Date(s.tarih); return d >= f && d <= t && (!k || s.kasa === k); });
+}
+function raporOzet(){
+  const all = salesInRange(), ok = all.filter(s => !s.iptal);
+  const sum = (arr, fn) => r2(arr.reduce((a, x) => a + fn(x), 0));
+  const ciro = sum(ok, s => s.toplam), nakit = sum(ok.filter(s => s.odeme === 'nakit'), s => s.toplam), kart = sum(ok.filter(s => s.odeme === 'kart'), s => s.toplam);
+  const maliyet = sum(ok, s => s.kalemler.reduce((a, i) => a + (i.alis || 0) * i.adet, 0));
+  const maliyetVar = ok.some(s => s.kalemler.some(i => i.alis > 0));
+  const adet = ok.reduce((a, s) => a + s.kalemler.reduce((b, i) => b + i.adet, 0), 0);
+  const indirim = sum(ok, s => s.indirim || 0);
+  return {all, ok, ciro, nakit, kart, maliyet, maliyetVar, adet, indirim, iptal: all.length - ok.length};
+}
+function renderReport(){
+  const kasalar = [...new Set([...D.satis.values()].map(s => s.kasa).filter(Boolean))].sort(), sel = $('#rKasa').value;
+  $('#rKasa').innerHTML = '<option value="">Tümü</option>' + kasalar.map(k => `<option ${k === sel ? 'selected' : ''}>${esc(k)}</option>`).join('');
+  const o = raporOzet();
+  const crit = urunler().filter(p => stok(p.id) <= (+p.kritik || 0)).length;
+  $('#stats').innerHTML = [
+    ['Toplam Ciro', tl(o.ciro)], ['Satış Sayısı', o.ok.length + (o.iptal ? ` <span class="muted">(${o.iptal} iptal)</span>` : '')],
+    ['Nakit', tl(o.nakit)], ['Kredi Kartı', tl(o.kart)],
+    ['Brüt Kâr', o.maliyetVar ? tl(o.ciro - o.maliyet) : '<span class="muted" style="font-size:13px;font-family:var(--font-body)">alış fiyatı girilmemiş</span>'],
+    ['Satılan Ürün', o.adet + ' adet'], ['Ort. Sepet', tl(o.ok.length ? o.ciro / o.ok.length : 0)],
+    ['Kritik Stok', crit ? `<a href="#" id="critLink" style="color:var(--out)">${crit} ürün</a>` : '0 ürün']
+  ].map(([k, v]) => `<div class="stat"><div class="muted">${k}</div><div class="v">${v}</div></div>`).join('');
+  if($('#critLink')) $('#critLink').onclick = e => { e.preventDefault(); $('#pCrit').checked = true; showTab('urunler'); };
+  const rows = [...o.all].sort((a, b) => b.tarih.localeCompare(a.tarih));
+  $('#rSales').innerHTML = rows.slice(0, 500).map(s => `
+    <tr class="${s.iptal ? 'cancel' : ''}"><td class="mono">${esc(s.no)}</td><td>${fmtDate(s.tarih)}</td><td>${s.odeme === 'nakit' ? 'Nakit' : 'Kart'}</td><td class="r num"><b>${tl(s.toplam)}</b></td>
+    <td class="r"><button class="btn sm" data-view="${s.id}">Detay</button></td></tr>`).join('') || '<tr><td colspan="5" class="empty">Bu tarih aralığında satış yok</td></tr>';
+  const agg = {};
+  o.ok.forEach(s => s.kalemler.forEach(i => { const k = i.urunId || i.ad; agg[k] = agg[k] || {ad: i.ad, adet: 0, ciro: 0}; agg[k].adet += i.adet; agg[k].ciro += i.adet * i.fiyat; }));
+  $('#rTop').innerHTML = Object.values(agg).sort((a, b) => b.adet - a.adet || b.ciro - a.ciro).slice(0, 30).map(x => `<tr><td>${esc(x.ad)}</td><td class="r num">${x.adet}</td><td class="r num">${tl(x.ciro)}</td></tr>`).join('') || '<tr><td colspan="3" class="empty">Veri yok</td></tr>';
+}
+$('#rSales').addEventListener('click', e => {
+  const v = e.target.closest('[data-view]'); if(!v) return;
+  const s = D.satis.get(v.dataset.view); if(!s) return;
+  openModal(`
+    <h2>Fiş ${esc(s.no)} ${s.iptal ? '<span class="tag bad">İptal</span>' : ''}</h2>
+    <div class="muted">${fmtDate(s.tarih)} · ${s.odeme === 'nakit' ? 'Nakit' : 'Kredi Kartı'} · ${esc(s.kullanici || '')}</div>
+    <div class="tblwrap"><table style="margin-top:10px"><thead><tr><th>Ürün</th><th class="r">Adet</th><th class="r">Fiyat</th><th class="r">Tutar</th></tr></thead><tbody>
+    ${s.kalemler.map(i => `<tr><td>${esc(i.ad)}</td><td class="r num">${i.adet}</td><td class="r num">${tl(i.fiyat)}</td><td class="r num">${tl(i.adet * i.fiyat)}</td></tr>`).join('')}
+    ${s.indirim ? `<tr><td colspan="3">İndirim</td><td class="r num">-${tl(s.indirim)}</td></tr>` : ''}
+    <tr><td colspan="3"><b>TOPLAM</b></td><td class="r num"><b>${tl(s.toplam)}</b></td></tr></tbody></table></div>
+    <div class="mfoot">${s.iptal ? '' : '<button class="btn bad" id="sIptal" style="margin-right:auto">Satışı İptal Et</button>'}<button class="btn" id="sFis">🖨 Fiş</button><button class="btn" id="sKapat">Kapat</button></div>`);
+  $('#sKapat').onclick = closeModal;
+  $('#sFis').onclick = () => printReceipt(s);
+  if($('#sIptal')) $('#sIptal').onclick = async () => {
+    if(!confirm(`Fiş ${s.no} (${tl(s.toplam)}) iptal edilsin mi?\nSatılan ürünler stoğa geri eklenecek.`)) return;
+    await kaydet('satis', s.id, Object.assign({}, s, {iptal: true, iptalTarih: new Date().toISOString(), iptalEden: profil.email}));
+    closeModal(); renderReport(); toast('Satış iptal edildi, stok geri eklendi');
+  };
+});
+$('#zRaporBtn').onclick = () => {
+  const o = raporOzet(), f = fisAyar(); kagitAyarla();
+  const aralik = $('#rFrom').value === $('#rTo').value ? new Date($('#rFrom').value + 'T12:00').toLocaleDateString('tr-TR') : new Date($('#rFrom').value + 'T12:00').toLocaleDateString('tr-TR') + ' - ' + new Date($('#rTo').value + 'T12:00').toLocaleDateString('tr-TR');
+  $('#printArea').innerHTML = `<div class="c b lg">${esc(f.isletme)}</div><div class="c b">GÜN SONU RAPORU</div><div class="c">${aralik}${$('#rKasa').value ? ' · Kasa ' + esc($('#rKasa').value) : ''}</div><hr>
+    <table><tr><td>Satış sayısı</td><td class="r">${o.ok.length}</td></tr><tr><td>İptal</td><td class="r">${o.iptal}</td></tr><tr><td>Satılan ürün</td><td class="r">${o.adet}</td></tr><tr><td>İndirimler</td><td class="r">${num2(o.indirim)}</td></tr></table><hr>
+    <table><tr><td>Nakit</td><td class="r">${num2(o.nakit)}</td></tr><tr><td>Kredi kartı</td><td class="r">${num2(o.kart)}</td></tr><tr class="b lg"><td>TOPLAM</td><td class="r">${tl(o.ciro)}</td></tr></table><hr>
+    <div class="c" style="font-size:.85em">Yazdırma: ${fmtDate(new Date().toISOString())}</div>`;
+  setTimeout(() => window.print(), 60);
+};
+
+/* ================= CSV / YEDEK ================= */
+function download(name, content, type){ const a = document.createElement('a'); a.href = URL.createObjectURL(new Blob([content], {type})); a.download = name; document.body.appendChild(a); a.click(); a.remove(); setTimeout(() => URL.revokeObjectURL(a.href), 1500); }
+const csvCell = v => { v = String(v ?? ''); return /[;"\n\r]/.test(v) ? '"' + v.replace(/"/g, '""') + '"' : v; };
+const toCsv = rows => '﻿' + rows.map(r => r.map(csvCell).join(';')).join('\r\n');
+function parseCsv(text){
+  text = text.replace(/^﻿/, '');
+  const first = text.split(/\r?\n/)[0] || '';
+  const d = first.includes('\t') && !first.includes(';') ? '\t' : (first.match(/;/g) || []).length >= (first.match(/,/g) || []).length ? ';' : ',';
+  const rows = []; let row = [], cell = '', q = false;
+  for(let i = 0; i < text.length; i++){
+    const c = text[i];
+    if(q){ if(c === '"'){ if(text[i + 1] === '"'){ cell += '"'; i++; } else q = false; } else cell += c; }
+    else if(c === '"') q = true;
+    else if(c === d){ row.push(cell); cell = ''; }
+    else if(c === '\n' || c === '\r'){ if(c === '\r' && text[i + 1] === '\n') i++; row.push(cell); rows.push(row); row = []; cell = ''; }
+    else cell += c;
+  }
+  if(cell || row.length){ row.push(cell); rows.push(row); }
+  return rows.filter(r => r.some(x => x.trim()));
+}
+$('#exportSalesBtn').onclick = () => {
+  const rows = [['Fiş No','Kasa','Tarih','Ödeme','Durum','Barkod','Ürün','Adet','Birim Fiyat','Tutar','Fiş İndirim','Fiş Toplam','Kullanıcı']];
+  salesInRange().sort((a, b) => a.tarih.localeCompare(b.tarih)).forEach(s => s.kalemler.forEach((i, x) => rows.push([s.no, s.kasa, fmtDate(s.tarih), s.odeme === 'nakit' ? 'Nakit' : 'Kart', s.iptal ? 'İptal' : 'Tamam', i.barkod, i.ad, i.adet, num2(i.fiyat), num2(i.adet * i.fiyat), x === 0 ? num2(s.indirim) : '', x === 0 ? num2(s.toplam) : '', s.kullanici || ''])));
+  download(`satislar_${$('#rFrom').value}_${$('#rTo').value}.csv`, toCsv(rows), 'text/csv;charset=utf-8');
+};
+$('#exportProdBtn').onclick = () => {
+  const rows = [['Barkod','Ürün Adı','Kategori','Alış Fiyatı','Satış Fiyatı','Stok','Kritik Stok']];
+  urunler().sort((a, b) => a.ad.localeCompare(b.ad, 'tr')).forEach(p => rows.push([p.barkod, p.ad, p.kategori, num2(p.alis), num2(p.satis), stok(p.id), p.kritik]));
+  download(`urunler_${ymd(new Date())}.csv`, toCsv(rows), 'text/csv;charset=utf-8');
+};
+async function urunleriIceAl(kayitlar, kaynak){
+  // kayitlar: [{barkod, ad, kategori, alis, satis, stok(null=yok), kritik(null=yok)}]
+  const islemler = []; let eklenen = 0, guncellenen = 0;
+  const byB = new Map(urunler().filter(u => u.barkod).map(u => [String(u.barkod), u]));
+  for(const r of kayitlar){
+    const ex = r.barkod && byB.get(r.barkod);
+    if(ex){
+      const doc = Object.assign({}, ex, {ad: r.ad, satis: r.satis}); if(r.kategori) doc.kategori = r.kategori; if(r.alis != null) doc.alis = r.alis; if(r.kritik != null) doc.kritik = r.kritik;
+      islemler.push(['urun', ex.id, doc]);
+      if(r.stok != null){ const fark = r2(r.stok - stok(ex.id)); if(fark) islemler.push(['stokgiris', idUret(), {urunId: ex.id, miktar: fark, tip: 'Sayım', tarih: new Date().toISOString(), aciklama: kaynak, kasa: cihaz.kasa}]); }
+      guncellenen++;
+    } else {
+      const id = idUret();
+      islemler.push(['urun', id, {barkod: r.barkod, ad: r.ad, kategori: r.kategori || '', alis: r.alis || 0, satis: r.satis, kritik: r.kritik ?? 5, acilis: r.stok || 0, olusturma: Date.now()}]);
+      if(r.barkod) byB.set(r.barkod, {id}); eklenen++;
+    }
+  }
+  for(let i = 0; i < islemler.length; i += 300) await kaydetCok(islemler.slice(i, i + 300));
+  return {eklenen, guncellenen};
+}
+$('#importFile').onchange = async e => {
+  const f = e.target.files[0]; e.target.value = ''; if(!f) return;
+  let text = await f.text();
+  if(text.includes('�')){ try{ text = new TextDecoder('windows-1254').decode(await f.arrayBuffer()); }catch(_){} }
+  const rows = parseCsv(text);
+  if(rows.length && /barkod|ürün|urun|ad/i.test(rows[0].join(' ')) && isNaN(parseNum(rows[0][4]))) rows.shift();
+  const list = []; let atlanan = 0;
+  rows.forEach(r => {
+    const [barkod = '', ad = '', kategori = '', alis = '', satis = '', st = '', kritik = ''] = r.map(x => String(x).trim());
+    const sf = parseNum(satis); if(!ad || isNaN(sf)){ atlanan++; return; }
+    list.push({barkod, ad, kategori, alis: isNaN(parseNum(alis)) ? null : r2(parseNum(alis)), satis: r2(sf), stok: st === '' || isNaN(parseNum(st)) ? null : Math.floor(parseNum(st)), kritik: kritik === '' || isNaN(parseNum(kritik)) ? null : Math.floor(parseNum(kritik))});
+  });
+  if(!list.length){ alert('Dosyada geçerli ürün satırı bulunamadı.'); return; }
+  if(!confirm(`${list.length} ürün içe aktarılacak${atlanan ? ` (${atlanan} hatalı satır atlanacak)` : ''}. Devam edilsin mi?`)) return;
+  try{ const s = await urunleriIceAl(list, 'Excel aktarımı (' + f.name + ')'); alert(`İçe aktarma tamamlandı.\n\nEklenen: ${s.eklenen}\nGüncellenen: ${s.guncellenen}\nAtlanan: ${atlanan}`); }
+  catch(err){ alert('İçe aktarma hatası: ' + err.message); }
+  renderAktif();
+};
+$('#backupBtn').onclick = () => {
+  const k = {}; for(const [c, m] of Object.entries(D)) k[c] = [...m.values()];
+  const d = new Date(), stamp = ymd(d) + '_' + String(d.getHours()).padStart(2, '0') + String(d.getMinutes()).padStart(2, '0');
+  download(`brn_satis_yedek_${stamp}.json`, JSON.stringify({uygulama: 'brn-satis', surum: 1, tarih: d.toISOString(), firma: profil && profil.firmaAd, koleksiyonlar: k}), 'application/json');
+  toast('Yedek dosyası indirildi', 'ok');
+};
+$('#restoreFile').onchange = async e => {
+  const f = e.target.files[0]; e.target.value = ''; if(!f) return;
+  try{
+    const j = JSON.parse(await f.text());
+    if(j && j.uygulama === 'brn-satis' && j.koleksiyonlar){
+      const say = Object.entries(j.koleksiyonlar).map(([c, a]) => `${c}: ${a.length}`).join(', ');
+      if(!confirm(`Yedek: ${say}\n\nKayıtlar mevcut verilerle birleştirilecek (aynı kayıtlar yedekteki hâline döner). Devam edilsin mi?`)) return;
+      const isl = []; for(const [c, arr] of Object.entries(j.koleksiyonlar)) if(D[c]) for(const d of arr) if(d && d.id) isl.push([c, d.id, d]);
+      for(let i = 0; i < isl.length; i += 300) await kaydetCok(isl.slice(i, i + 300));
+      toast('Yedek yüklendi', 'ok');
+    } else if(j && Array.isArray(j.products)){
+      // Önceki tek dosyalık "Kırtasiye Satış" programının yedeği
+      if(!confirm(`Eski programın yedeği: ${j.products.length} ürün.\nÜrünler ve stok adetleri aktarılacak (eski satış geçmişi aktarılmaz). Devam edilsin mi?`)) return;
+      const s = await urunleriIceAl(j.products.map(p => ({barkod: String(p.barcode || '').trim(), ad: p.name, kategori: p.category || '', alis: r2(p.buy || 0), satis: r2(p.price || 0), stok: Math.floor(+p.stock || 0), kritik: Math.floor(+p.minStock || 0)})).filter(p => p.ad), 'Eski programdan aktarım');
+      alert(`Aktarım tamamlandı.\nEklenen: ${s.eklenen}\nGüncellenen: ${s.guncellenen}`);
+    } else throw new Error('Tanınan bir yedek dosyası değil');
+    renderAktif();
+  }catch(err){ alert('Yedek yüklenemedi: ' + err.message); }
+};
+$('#syncNowBtn').onclick = () => { esitle(); toast('Eşitleniyor…'); };
+
+/* ================= AYARLAR ================= */
+function loadSettingsForm(){
+  const f = fisAyar();
+  $('#sName').value = f.isletme; $('#sAddr').value = f.adres; $('#sPhone').value = f.tel; $('#sFooter').value = f.altYazi;
+  $('#sKasa').value = cihaz.kasa; $('#sPaper').value = cihaz.kagit; $('#sAuto').checked = !!cihaz.otoYazdir;
+  $('#hesapBilgi').innerHTML = profil ? `${esc(profil.email)}<br>${esc(profil.firmaAd || '')} · ${profil.rol === 'sahip' ? 'Sahip' : 'Kullanıcı'}` : '';
+  durumCiz();
+}
+async function uyeleriYukle(){
+  const kutu = $('#uyeKutu'), form = $('#uyeForm');
+  if(!sb || !oturum || !firmaId || !navigator.onLine){ kutu.textContent = 'Kullanıcı listesi için internet bağlantısı ve giriş gerekir.'; form.style.display = 'none'; return; }
+  kutu.textContent = 'Yükleniyor…';
+  const {data, error} = await sb.rpc('brn_uyeleri_listele', {p_firma: firmaId});
+  if(error){ kutu.innerHTML = `<span class="err">${esc(sbMesaj(error))}</span>`; form.style.display = 'none'; return; }
+  const sahip = profil && profil.rol === 'sahip';
+  kutu.innerHTML = `<table><tbody>${data.map(u => `<tr><td style="word-break:break-all">${esc(u.eposta)}</td><td>${u.rol === 'sahip' ? '<span class="tag ok">Sahip</span>' : '<span class="tag">Kullanıcı</span>'}</td><td class="r">${sahip && u.rol !== 'sahip' ? `<button class="btn sm bad" data-cikar="${esc(u.user_id)}" data-ep="${esc(u.eposta)}">Çıkar</button>` : ''}</td></tr>`).join('')}</tbody></table>`;
+  form.style.display = sahip ? 'flex' : 'none';
+}
+$('#uyeKutu').addEventListener('click', async e => {
+  const b = e.target.closest('[data-cikar]'); if(!b) return;
+  if(!confirm(b.dataset.ep + ' firmadan çıkarılsın mı?\nBu kişi artık programa bu firmayla giremez.')) return;
+  const {error} = await sb.rpc('brn_uye_cikar', {p_firma: firmaId, p_user: b.dataset.cikar});
+  if(error) toast(sbMesaj(error), 'bad'); else { toast('Kullanıcı çıkarıldı'); uyeleriYukle(); }
+});
+$('#uyeForm').onsubmit = async e => {
+  e.preventDefault(); const ep = $('#uyeEposta').value.trim();
+  if(!/^\S+@\S+\.\S+$/.test(ep)){ toast('Geçerli bir e-posta girin', 'bad'); return; }
+  const {error} = await sb.rpc('brn_uye_ekle', {p_firma: firmaId, p_eposta: ep});
+  if(error){ toast(sbMesaj(error), 'bad'); return; }
+  $('#uyeEposta').value = ''; toast('Kullanıcı eklendi', 'ok'); uyeleriYukle();
+};
+$('#saveFisBtn').onclick = async () => {
+  await kaydet('ayar', 'fis', {isletme: $('#sName').value.trim() || (profil ? profil.firmaAd : ''), adres: $('#sAddr').value.trim(), tel: $('#sPhone').value.trim(), altYazi: $('#sFooter').value.trim()});
+  toast('Fiş bilgileri kaydedildi', 'ok');
+};
+$('#saveCihazBtn').onclick = () => {
+  const k = $('#sKasa').value.trim().toUpperCase().replace(/[^A-Z0-9ÇĞİÖŞÜ]/g, '');
+  if(!k){ toast('Kasa adı boş olamaz', 'bad'); return; }
+  cihaz = {kasa: k, kagit: $('#sPaper').value, otoYazdir: $('#sAuto').checked}; lsYaz('brn-cihaz', cihaz);
+  toast('Cihaz ayarları kaydedildi', 'ok');
+};
+$('#testPrintBtn').onclick = () => printReceipt({no: cihaz.kasa + '-DENEME', tarih: new Date().toISOString(), kalemler: [{ad: 'Deneme Ürünü', adet: 2, fiyat: 12.5}], araToplam: 25, indirim: 0, toplam: 25, odeme: 'nakit', alinan: 50, paraUstu: 25});
+let kurulumOlayi = null;
+window.addEventListener('beforeinstallprompt', e => { e.preventDefault(); kurulumOlayi = e; $('#installBtn').style.display = ''; });
+$('#installBtn').onclick = async () => { if(!kurulumOlayi) return; kurulumOlayi.prompt(); await kurulumOlayi.userChoice; kurulumOlayi = null; $('#installBtn').style.display = 'none'; };
+
+/* ================= BAŞLAT ================= */
+async function basla(){
+  if(navigator.storage && navigator.storage.persist) navigator.storage.persist().catch(() => {});
+  const p = lsAl('brn-profil', null);
+  if(sb){
+    sb.auth.onAuthStateChange((ev, s) => {
+      oturum = s;
+      if(ev === 'PASSWORD_RECOVERY') setTimeout(sifreYenileEkrani, 0);
+      if(ev === 'SIGNED_IN' || ev === 'TOKEN_REFRESHED'){ if(firmaId) setTimeout(() => { abone(); esitle(); }, 0); }
+      durumCiz();
+    });
+    // İnternet yokken oturum yenileme uzun sürebilir; 4 sn'den fazla beklemeden son kullanıcıyla açılır
+    try{
+      const r = await Promise.race([sb.auth.getSession(), new Promise(res => setTimeout(() => res('zaman'), 4000))]);
+      if(r === 'zaman'){ if(p) return uygulamaAc(p); const r2_ = await sb.auth.getSession(); oturum = r2_.data.session; }
+      else oturum = r.data.session;
+    }catch(e){}
+  }
+  if(oturum){ if(p && p.userId === oturum.user.id) return uygulamaAc(p); try{ return await firmaSec(); }catch(e){ if(p) return uygulamaAc(p); } }
+  if(p && (!navigator.onLine || !sb)) return uygulamaAc(p);   // internetsiz açılış: son kullanıcıyla devam
+  girisEkrani('giris');
+}
+setRange('today');
+renderCart();
+basla();
+if('serviceWorker' in navigator && location.protocol === 'https:') navigator.serviceWorker.register('sw.js').catch(() => {});
+</script>
+</body>
+</html>
