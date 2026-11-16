@@ -900,26 +900,118 @@ let renderT; function renderSonra(){ clearTimeout(renderT); renderT = setTimeout
 /* ================= KAMERA ================= */
 let kamera = null;
 function scriptYukle(src, ad='Html5Qrcode'){ return new Promise((res, rej) => { if(window[ad]) return res(); const s = document.createElement('script'); s.src = src; s.onload = res; s.onerror = () => rej(new Error('yüklenemedi')); document.head.appendChild(s); }); }
+// Barkod okuma: telefon destekliyorsa (Android Chrome) cihazın kendi hızlı barkod okuyucusu,
+// desteklemiyorsa (iPhone vb.) html5-qrcode kullanılır. Yüksek çözünürlük, sürekli odak,
+// yakınlaştırma ve fener desteği; okununca bip + titreşim. EAN/UPC sağlama haneleri kontrol edilir.
+const KAM_VIDEO = {facingMode: {ideal: 'environment'}, width: {ideal: 1920}, height: {ideal: 1080}, advanced: [{focusMode: 'continuous'}]};
+let kamSes = null;
+function kamBip(){
+  try{ navigator.vibrate && navigator.vibrate(70); }catch(e){}
+  try{
+    kamSes = kamSes || new (window.AudioContext || window.webkitAudioContext)();
+    const o = kamSes.createOscillator(), g = kamSes.createGain(); o.type = 'square'; o.frequency.value = 1800;
+    g.gain.value = .08; o.connect(g); g.connect(kamSes.destination); o.start(); o.stop(kamSes.currentTime + .09);
+  }catch(e){}
+}
+// EAN-13 / UPC-A sağlama hanesi: yanlış okumaları eler
+function barkodGecerli(t){
+  if(!/^\d+$/.test(t) || ![12, 13].includes(t.length)) return true; // 8 haneli (EAN-8/UPC-E) farklı kurallı, olduğu gibi kabul
+  const d = t.split('').map(Number), k = d.pop(); let s = 0;
+  d.reverse().forEach((x, i) => s += x * (i % 2 === 0 ? 3 : 1));
+  return (10 - s % 10) % 10 === k;
+}
+async function yerelOkuyucu(){
+  if(!('BarcodeDetector' in window)) return null;
+  try{
+    const var_ = await BarcodeDetector.getSupportedFormats();
+    const f = ['ean_13', 'ean_8', 'upc_a', 'upc_e', 'code_128', 'code_39', 'qr_code'].filter(x => var_.includes(x));
+    return f.includes('ean_13') ? new BarcodeDetector({formats: f}) : null;
+  }catch(e){ return null; }
+}
 async function kameraAc(cb, {surekli=false, baslik='Barkod okut'} = {}){
-  openModal(`<h2>📷 ${esc(baslik)}</h2><div id="kamKutu" style="width:100%;min-height:220px;background:#000;border-radius:10px;overflow:hidden"></div>
-    <div id="kamBilgi" class="muted" style="margin-top:8px">Kamera açılıyor… Barkodu çerçevenin içine tutun.</div>
-    <div class="mfoot"><button class="btn ${surekli ? 'pri' : ''}" id="kamKapat">${surekli ? 'Bitti' : 'Vazgeç'}</button></div>`, kameraDurdur);
+  openModal(`<h2>📷 ${esc(baslik)}</h2>
+    <div id="kamKutu" style="position:relative;width:100%;min-height:240px;background:#000;border-radius:10px;overflow:hidden;border:4px solid transparent;transition:border-color .15s"></div>
+    <div id="kamBilgi" class="muted" style="margin-top:8px">Kamera açılıyor…</div>
+    <div class="mfoot" style="flex-wrap:wrap">
+      <button class="btn" id="kamFener" style="display:none">🔦 Fener</button>
+      <button class="btn" id="kamZoom" style="display:none">🔍 1x</button>
+      <button class="btn ${surekli ? 'pri' : ''}" id="kamKapat" style="margin-left:auto">${surekli ? 'Bitti' : 'Vazgeç'}</button>
+    </div>`, kameraDurdur);
   $('#kamKapat').onclick = closeModal;
+  const ipucu = surekli ? 'Ürünleri sırayla okutun. Bitince "Bitti"ye basın.' : 'Barkodu kırmızı çizginin üzerine, 10–20 cm uzağa tutun.';
+  let son = '', sonZ = 0;
+  const okundu = txt => {
+    txt = String(txt || '').trim(); if(!txt || !barkodGecerli(txt)) return;
+    const z = Date.now(); if(txt === son && z - sonZ < 1500) return; son = txt; sonZ = z;
+    kamBip();
+    const kutu = $('#kamKutu'); if(kutu){ kutu.style.borderColor = 'var(--ok, #16a34a)'; setTimeout(() => { if($('#kamKutu')) $('#kamKutu').style.borderColor = 'transparent'; }, 350); }
+    if(surekli){ cb(txt); const bi = $('#kamBilgi'); if(bi) bi.innerHTML = 'Okundu: <b class="mono">' + esc(txt) + '</b> — sıradakini okutun'; }
+    else { closeModal(); cb(txt); }
+  };
+  const hata = e => { const bi = $('#kamBilgi'); if(bi) bi.textContent = 'Kamera açılamadı: ' + (e && (e.message || e.name) || e) + ' — Tarayıcı ayarlarından kamera izni verin.'; };
+  const durum = {};
+  kamera = durum;
+  const det = await yerelOkuyucu();
+  if(kamera !== durum || !$('#kamKutu')) return;
+  if(det){
+    // 1) Cihazın kendi barkod okuyucusu: tüm görüntüyü tarar, çok hızlıdır
+    try{
+      const st = await navigator.mediaDevices.getUserMedia({video: KAM_VIDEO, audio: false});
+      durum.stream = st;
+      if(kamera !== durum || !$('#kamKutu')){ st.getTracks().forEach(t => t.stop()); return; }
+      const kutu = $('#kamKutu');
+      kutu.innerHTML = `<video id="kamVideo" playsinline muted autoplay style="width:100%;height:min(55vh,360px);object-fit:cover;display:block"></video>
+        <div style="position:absolute;left:8%;right:8%;top:50%;height:2px;background:#ef4444;box-shadow:0 0 8px #ef4444;pointer-events:none"></div>`;
+      const v = $('#kamVideo'); v.srcObject = st; await v.play().catch(() => {});
+      durum.track = st.getVideoTracks()[0];
+      v.onclick = () => { try{ durum.track.applyConstraints({advanced: [{focusMode: 'continuous'}]}); }catch(e){} };
+      const tara = async () => {
+        if(kamera !== durum) return;
+        if(v.readyState >= 2){ try{ const r = await det.detect(v); if(r && r.length) okundu(r[0].rawValue); }catch(e){} }
+        durum.t = setTimeout(tara, 70);
+      };
+      tara();
+      kamOzellikler(durum, c => durum.track.getCapabilities ? durum.track.getCapabilities() : {}, x => durum.track.applyConstraints({advanced: [x]}), () => durum.track.getSettings ? durum.track.getSettings() : {});
+      $('#kamBilgi').textContent = ipucu;
+    }catch(e){ hata(e); }
+    return;
+  }
+  // 2) Yedek: html5-qrcode (iPhone ve eski telefonlar)
   try{ await scriptYukle(QR_URL); }catch(e){ $('#kamBilgi').textContent = 'Kamera bileşeni yüklenemedi. İlk kullanımda internet bağlantısı gerekir.'; return; }
-  if(!modalOpen() || !$('#kamKutu')) return;
+  if(kamera !== durum || !$('#kamKutu')) return;
   const F = window.Html5QrcodeSupportedFormats;
   try{
-    kamera = new Html5Qrcode('kamKutu', {formatsToSupport: [F.EAN_13, F.EAN_8, F.UPC_A, F.UPC_E, F.CODE_128, F.CODE_39, F.ITF, F.QR_CODE], experimentalFeatures: {useBarCodeDetectorIfSupported: true}, verbose: false});
-    let son = '', sonZ = 0;
-    await kamera.start({facingMode: 'environment'}, {fps: 12, qrbox: (w, h) => ({width: Math.max(120, Math.min(w * .85, 380)), height: Math.max(80, Math.min(h * .45, 170))})}, txt => {
-      const z = Date.now(); if(txt === son && z - sonZ < 2000) return; son = txt; sonZ = z;
-      if(surekli){ cb(txt); const bi = $('#kamBilgi'); if(bi) bi.innerHTML = 'Okundu: <b class="mono">' + esc(txt) + '</b> — sıradakini okutun'; }
-      else { closeModal(); cb(txt); }
-    }, () => {});
-    const bi = $('#kamBilgi'); if(bi) bi.textContent = surekli ? 'Ürünleri sırayla okutun. Bitince "Bitti"ye basın.' : 'Barkodu çerçevenin içine tutun.';
-  }catch(e){ const bi = $('#kamBilgi'); if(bi) bi.textContent = 'Kamera açılamadı: ' + (e.message || e) + ' — Tarayıcı ayarlarından kamera izni verin.'; kamera = null; }
+    const h = new Html5Qrcode('kamKutu', {formatsToSupport: [F.EAN_13, F.EAN_8, F.UPC_A, F.UPC_E, F.CODE_128, F.CODE_39, F.QR_CODE], experimentalFeatures: {useBarCodeDetectorIfSupported: true}, verbose: false});
+    durum.h = h;
+    await h.start({facingMode: 'environment'}, {fps: 20, disableFlip: true, videoConstraints: KAM_VIDEO,
+      qrbox: (w, hh) => ({width: Math.max(160, Math.floor(w * .92)), height: Math.max(100, Math.floor(Math.min(hh * .6, w * .6)))})}, okundu, () => {});
+    if(kamera !== durum){ try{ await h.stop(); h.clear(); }catch(e){} return; }
+    kamOzellikler(durum, () => { try{ const t = h.getRunningTrackSettings && h.getRunningTrackCapabilities(); return t || {}; }catch(e){ return {}; } }, x => h.applyVideoConstraints({advanced: [x]}), () => { try{ return h.getRunningTrackSettings(); }catch(e){ return {}; } });
+    $('#kamBilgi').textContent = ipucu;
+  }catch(e){ hata(e); }
 }
-async function kameraDurdur(){ const k = kamera; kamera = null; if(k){ try{ if(k.isScanning) await k.stop(); k.clear(); }catch(e){} } }
+// Fener ve yakınlaştırma düğmeleri (telefon destekliyorsa görünür)
+function kamOzellikler(durum, yetenek, uygula, ayar){
+  let c = {}; try{ c = yetenek() || {}; }catch(e){}
+  if(c.torch){
+    const b = $('#kamFener'); b.style.display = ''; let acik = false;
+    b.onclick = async () => { acik = !acik; try{ await uygula({torch: acik}); b.classList.toggle('pri', acik); }catch(e){ toast('Fener açılamadı', 'bad'); } };
+  }
+  if(c.zoom && c.zoom.max > 1){
+    const b = $('#kamZoom'), min = c.zoom.min || 1, max = c.zoom.max;
+    const seviyeler = [1, 1.5, 2, 3].filter(z => z >= min && z <= max);
+    let i = seviyeler.indexOf(1.5) >= 0 ? seviyeler.indexOf(1.5) : 0; // biraz yakınlaştırma yakın odaklamayı kolaylaştırır
+    const yaz = async () => { try{ await uygula({zoom: seviyeler[i]}); }catch(e){} b.textContent = '🔍 ' + seviyeler[i] + 'x'; };
+    if(seviyeler.length > 1){ b.style.display = ''; b.onclick = () => { i = (i + 1) % seviyeler.length; yaz(); }; }
+    yaz();
+  }
+}
+async function kameraDurdur(){
+  const d = kamera; kamera = null; if(!d) return;
+  clearTimeout(d.t);
+  if(d.stream) d.stream.getTracks().forEach(t => { try{ t.stop(); }catch(e){} });
+  if(d.h){ try{ if(d.h.isScanning) await d.h.stop(); d.h.clear(); }catch(e){} }
+}
 
 /* ================= SATIŞ ================= */
 let cart = [];          // {pid, qty} — etkin müşteri sekmesinin sepeti
