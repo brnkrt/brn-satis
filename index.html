@@ -536,6 +536,16 @@ function idbAc(ad){
   });
 }
 const idbHepsi = store => idbReq(idb.transaction(store).objectStore(store).getAll());
+// Büyük listelerde hepsini okumadan yalnızca ilk N kaydı al
+const idbIlk = (store, n) => idbReq(idb.transaction(store).objectStore(store).getAll(null, n));
+// Verilen anahtarlardan hangileri gönderilmeyi bekliyor? (tüm listeyi okumadan)
+function idbBekleyenler(keys){
+  return new Promise((res, rej) => {
+    const t = idb.transaction('bekleyen'), s = t.objectStore('bekleyen'), var_ = new Set();
+    keys.forEach(k => { const q = s.count(k); q.onsuccess = () => { if(q.result) var_.add(k); }; });
+    t.oncomplete = () => res(var_); t.onerror = () => rej(t.error);
+  });
+}
 const idbSay = store => idbReq(idb.transaction(store).objectStore(store).count());
 const metaAl = k => idbReq(idb.transaction('meta').objectStore('meta').get(k));
 function metaYaz(k, v){ return new Promise((res, rej) => { const t = idb.transaction('meta','readwrite'); t.objectStore('meta').put(v, k); t.oncomplete = res; t.onerror = () => rej(t.error); }); }
@@ -646,13 +656,12 @@ async function kaydetCok(list){
 let oturum = null, profil = null, firmaId = null, kanal = null;
 let esitleniyor = false, esitleTekrar = false, sonHata = null, sonEsitleme = null, bekleyenSayi = 0;
 const bulut = {
-  async cek(since){
-    const out = [], N = 1000;
-    for(let from = 0; ; from += N){
-      const {data, error} = await sb.from(TABLO).select('koleksiyon,id,veri,guncelleme').eq('firma_id', firmaId).gt('guncelleme', since).order('guncelleme').order('id').range(from, from + N - 1);
-      if(error) throw error; out.push(...data); if(data.length < N) break;
-    }
-    return out;
+  // Sayfa sayfa çekim: (guncelleme, id) sırasıyla kaldığı yerden devam eder (büyük veride yavaşlamaz)
+  async sayfa(t, id, N){
+    let q = sb.from(TABLO).select('koleksiyon,id,veri,guncelleme').eq('firma_id', firmaId);
+    q = id ? q.or(`guncelleme.gt."${t}",and(guncelleme.eq."${t}",id.gt."${id}")`) : q.gt('guncelleme', t);
+    const {data, error} = await q.order('guncelleme').order('id').limit(N);
+    if(error) throw error; return data;
   },
   async gonder(rows){ const {error} = await sb.from(TABLO).upsert(rows); if(error) throw error; },
   async tek(col, id){ const {data, error} = await sb.from(TABLO).select('koleksiyon,id,veri,guncelleme').eq('firma_id', firmaId).eq('koleksiyon', col).eq('id', id).maybeSingle(); if(error) throw error; return data; }
@@ -660,7 +669,7 @@ const bulut = {
 function idbKayitSil(keys){ return new Promise((res, rej) => { const t = idb.transaction('kayit', 'readwrite'); const s = t.objectStore('kayit'); keys.forEach(k => s.delete(k)); t.oncomplete = res; t.onerror = () => rej(t.error); }); }
 async function gonder(){
   for(;;){
-    const list = (await idbHepsi('bekleyen')).sort((a, b) => a.zaman - b.zaman).slice(0, 200);
+    const list = await idbIlk('bekleyen', 500);
     if(!list.length) return;
     const satir = b => ({firma_id: firmaId, koleksiyon: b.koleksiyon, id: b.id, veri: b.veri});
     try{ await bulut.gonder(list.map(satir)); }
@@ -681,12 +690,12 @@ async function gonder(){
       }
       continue;
     }
-    await idbBekleyenSil(list);
+    await idbBekleyenSil(list); await bekleyenGuncelle();
   }
 }
 async function uzaktanGeldi(rows){
   if(!rows.length) return 0;
-  const bek = new Set((await idbHepsi('bekleyen')).map(b => b.k)); const recs = [];
+  const bek = await idbBekleyenler(rows.map(r => r.koleksiyon + '/' + r.id)); const recs = [];
   for(const r of rows){
     const k = r.koleksiyon + '/' + r.id; if(bek.has(k)) continue;
     recs.push({k, koleksiyon: r.koleksiyon, id: r.id, veri: r.veri, guncelleme: r.guncelleme});
@@ -697,12 +706,16 @@ async function uzaktanGeldi(rows){
 }
 async function cek(){
   const since = (await metaAl('sonCekim')) || '1970-01-01T00:00:00.000Z';
-  const bas = new Date(new Date(since).getTime() - 120000).toISOString(); // 2 dk örtüşme: gecikmeli kayıtlar kaçmasın
-  const rows = await bulut.cek(bas);
-  let enSon = since;
-  for(const r of rows) if(new Date(r.guncelleme) > new Date(enSon)) enSon = r.guncelleme;
-  await uzaktanGeldi(rows);
-  await metaYaz('sonCekim', enSon);
+  let t = new Date(new Date(since).getTime() - 120000).toISOString(), id = ''; // 2 dk örtüşme: gecikmeli kayıtlar kaçmasın
+  const N = 1000;
+  for(;;){
+    const rows = await bulut.sayfa(t, id, N);
+    if(!rows.length) break;
+    await uzaktanGeldi(rows);
+    const son = rows[rows.length - 1]; t = son.guncelleme; id = son.id;
+    if(new Date(t) > new Date(since)) await metaYaz('sonCekim', t); // her sayfadan sonra ilerleme kaydedilir
+    if(rows.length < N) break;
+  }
 }
 async function esitle(){
   if(!firmaId || !idb){ return; }
@@ -716,11 +729,14 @@ async function esitle(){
 }
 let esitT; function esitleSonra(){ clearTimeout(esitT); esitT = setTimeout(esitle, 400); }
 async function bekleyenGuncelle(){ if(idb){ try{ bekleyenSayi = await idbSay('bekleyen'); }catch(e){} } durumCiz(); }
+// Canlı gelen değişiklikler biriktirilip toplu işlenir (toplu aktarımda yüzlerce olay gelir)
+let canliKuyruk = [], canliT;
+function canliEkle(r){ canliKuyruk.push(r); clearTimeout(canliT); canliT = setTimeout(() => { const l = canliKuyruk; canliKuyruk = []; uzaktanGeldi(l).catch(e => console.warn(e)); }, 600); }
 function abone(){
   if(!sb || !oturum || !firmaId) return;
   if(kanal) try{ sb.removeChannel(kanal); }catch(e){}
   kanal = sb.channel('brn-' + firmaId)
-    .on('postgres_changes', {event:'*', schema:'public', table:TABLO, filter:'firma_id=eq.' + firmaId}, p => { const r = p.new; if(r && r.koleksiyon) uzaktanGeldi([r]); })
+    .on('postgres_changes', {event:'*', schema:'public', table:TABLO, filter:'firma_id=eq.' + firmaId}, p => { const r = p.new; if(r && r.koleksiyon) canliEkle(r); })
     .subscribe();
 }
 function durumCiz(){
@@ -3040,7 +3056,11 @@ $('#importFile').onchange = async e => {
     try{ await scriptYukle(XLSX_URL, 'XLSX'); }catch(_){ alert('Excel dosyasını okumak için internet bağlantısı gerekir (ilk kullanımda). Dilerseniz CSV olarak kaydedip yükleyin.'); return; }
     const wb = window.XLSX.read(await f.arrayBuffer(), {type: 'array'});
     const ad = wb.SheetNames.find(n => /ürün|urun/i.test(n)) || wb.SheetNames[0];
-    rows = window.XLSX.utils.sheet_to_json(wb.Sheets[ad], {header: 1, raw: true, defval: ''}).map(r => r.map(hucreMetin)).filter(r => r.some(x => String(x).trim()));
+    // Bazı programlar sayfa boyutunu (!ref) eksik yazar; gerçek dolu hücrelere göre yeniden hesapla ki satır kaçmasın
+    const ws = wb.Sheets[ad], U = window.XLSX.utils; let mr = 0, mc = 0;
+    for(const k in ws){ if(k[0] === '!') continue; const c = U.decode_cell(k); if(c.r > mr) mr = c.r; if(c.c > mc) mc = c.c; }
+    ws['!ref'] = U.encode_range({s: {r: 0, c: 0}, e: {r: mr, c: mc}});
+    rows = U.sheet_to_json(ws, {header: 1, raw: true, defval: ''}).map(r => r.map(hucreMetin)).filter(r => r.some(x => String(x).trim()));
   } else {
     let text = await f.text();
     if(text.includes('�')){ try{ text = new TextDecoder('windows-1254').decode(await f.arrayBuffer()); }catch(_){} }

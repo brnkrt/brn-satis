@@ -2,7 +2,7 @@
 // Sayfa internet varsa en güncel sürümü alır; internet yoksa kayıtlı sürüm açılır.
 // Kayıtlar (Supabase) önbelleğe alınmaz; onları program kendi yerel veritabanında tutar.
 // Önbellek adı "brn-" ile başlar ve yalnızca kendi eski önbelleklerini siler.
-const SURUM = "brn-v5";
+const SURUM = "brn-v6";
 const KABUK = ["./", "./index.html", "./config.js", "./manifest.webmanifest", "./icon-192.png", "./icon-512.png", "./favicon-32.png", "./logo.png", "./logo-yatay.png"];
 const KUTUPHANELER = [
   "https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.js",
