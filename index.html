@@ -2433,7 +2433,7 @@ function renderTedarik(){
     const t = D.tedarikci.get(f.tedarikciId), u = (f.urunId && urunById(f.urunId)) || (f.barkod && urunByBarkod(f.barkod));
     const ucuz = sayGrup.get(grup(f)) > 1 && +f.fiyat === enUcuz.get(grup(f));
     const fark = u && u.alis ? r2(+f.fiyat - +u.alis) : null;
-    return `<tr><td><b>${esc(t.ad)}</b></td><td>${esc(f.urunAd || (u && u.ad) || '')}<div class="muted mono">${esc(f.barkod || '')}</div></td>
+    return `<tr><td><b style="color:#dc2626">${esc(t.ad)}</b></td><td>${esc(f.urunAd || (u && u.ad) || '')}<div class="muted mono">${esc(f.barkod || '')}</div></td>
       <td class="r num"><b>${tl(f.fiyat)}</b>${ucuz ? ' <span class="tag ok" title="Bu ürün için en ucuz tedarikçi">en ucuz</span>' : ''}</td>
       <td class="r num hide-m">${u && u.alis ? tl(u.alis) + (fark ? `<div style="font-size:12px;color:${fark < 0 ? 'var(--ok,#16a34a)' : 'var(--out,#dc2626)'}">${fark < 0 ? '▼ ' + tl(-fark) + ' ucuz' : '▲ ' + tl(fark) + ' pahalı'}</div>` : '') : '—'}</td>
       <td class="muted hide-m">${f.tarih ? fmtDate(f.tarih) : ''}</td>
@@ -2489,7 +2489,10 @@ function tdCanliCiz(){
   const p = tdUrunBul(d.q);
   // Bizim alışla fark: barkod aynıysa ya da sitede tek sonuç varsa
   const ayniUrun = (s, u) => p && p.alis && ((u.barkod && p.barkod && String(u.barkod) === String(p.barkod)) || (s.urunler.length === 1 && !u.barkod));
-  $('#tdCanli').innerHTML = d.sonuclar.map(s => {
+  // Tek tablo: sütunlar (Liste / Net fiyat / Stok) tüm tedarikçilerde alt alta hizalı; her tedarikçi bir başlık satırıyla ayrılır
+  $('#tdCanli').innerHTML = `<div class="tblwrap"><table style="table-layout:fixed;width:100%">
+    <thead><tr><th>Ürün</th><th class="r hide-m" style="width:110px">Liste</th><th class="r" style="width:150px">Net fiyat</th><th style="width:28%">Stok</th><th style="width:96px"></th></tr></thead>
+    <tbody>` + d.sonuclar.map(s => {
     const durum = s.durum === 'ok' ? (s.urunler.length ? `<span class="muted">${s.urunler.length} ürün</span>` : '<span class="muted">bulunamadı</span>')
       : s.durum === 'ayar-yok' ? '<span style="color:var(--warn)">bayi bilgisi girilmemiş</span>' : `<span style="color:var(--out,#dc2626)" title="${esc(s.mesaj || '')}">hata: ${esc((s.mesaj || '').slice(0, 80))}</span>`;
     const satir = s.urunler.map((u, i) => {
@@ -2500,13 +2503,53 @@ function tdCanliCiz(){
         <td class="r num muted hide-m">${u.liste != null ? tl(u.liste) : '—'}</td>
         <td class="r num"><b>${net != null ? tl(net) : '—'}</b>${ucuz ? ' <span class="tag ok">en ucuz</span>' : ''}${fark ? `<div style="font-size:12px;color:${fark < 0 ? 'var(--ok,#16a34a)' : 'var(--out,#dc2626)'}">${fark < 0 ? '▼ ' + tl(-fark) : '▲ ' + tl(fark)} bizim alışa göre</div>` : ''}</td>
         <td><span class="tag ${u.tukendi || /^0$|yok/i.test(u.stok) ? 'bad' : 'ok'}" style="font-family:var(--font-body);white-space:normal">${esc(u.stok || '—')}</span></td>
-        <td class="r"><button class="btn sm" data-tdk="${esc(s.anahtar)}|${i}" title="Bu fiyatı kayıtlı tedarikçi fiyatlarına ekle">💾</button></td></tr>`;
+        <td class="r" style="white-space:nowrap">${u.id ? `<button class="btn sm pri" data-tds="${esc(s.anahtar)}|${i}" ${u.tukendi ? 'disabled title="Stokta yok"' : 'title="Tedarikçinin sepetine ekle"'}>🛒</button> ` : ''}<button class="btn sm" data-tdk="${esc(s.anahtar)}|${i}" title="Bu fiyatı kayıtlı tedarikçi fiyatlarına ekle">💾</button></td></tr>`;
     }).join('');
-    return `<div style="margin-bottom:12px"><div class="row" style="align-items:center;gap:8px;margin-bottom:4px"><b>${esc(s.ad)}</b>${durum}<span style="flex:1"></span><a class="btn sm" href="${esc(s.url)}" target="_blank" rel="noopener">↗ Sitede aç</a></div>
-      ${satir ? `<div class="tblwrap"><table><thead><tr><th>Ürün</th><th class="r hide-m">Liste</th><th class="r">Net fiyat</th><th>Stok</th><th></th></tr></thead><tbody>${satir}</tbody></table></div>` : ''}</div>`;
-  }).join('');
+    return `<tr class="tdBaslik"><td colspan="5" style="background:var(--accent-soft);border-top:2px solid #dc2626"><div class="row" style="align-items:center;gap:8px"><b style="color:#dc2626;font-size:17px">${esc(s.ad)}</b>${durum}<span style="flex:1"></span><a class="btn sm" href="${esc(s.url)}" target="_blank" rel="noopener">↗ Sitede aç</a></div></td></tr>${satir}`;
+  }).join('') + '</tbody></table></div>';
+}
+// Tedarikçinin sitesindeki sepete ekleme (sipariş verilmez; sipariş tedarikçinin sitesinde onaylanır)
+async function tdFonk(govde){
+  const {data, error} = await sb.functions.invoke('brn-tedarik', {body: Object.assign({firmaId}, govde)});
+  if(error){ let m = error.message || String(error); try{ const j = await error.context.json(); if(j && j.hata) m = j.hata; }catch(_){} throw new Error(m); }
+  if(data && data.hata) throw new Error(data.hata);
+  return data;
+}
+function tdSepetPenceresi(s, u){
+  openModal(`<div class="mdIc"><h2>🛒 ${esc(s.ad)} sepetine ekle</h2>
+    <div style="margin-bottom:10px"><b>${esc(u.ad)}</b><div class="muted">${esc([u.kod, u.barkod].filter(Boolean).join(' · '))} · Net ${u.net != null ? tl(u.net) : '—'} · Stok ${esc(u.stok || '—')}</div></div>
+    <div class="form">
+      <div><label>Birim</label><select id="tsBirim" disabled><option>Yükleniyor…</option></select></div>
+      <div><label>Miktar</label><input id="tsMiktar" type="number" min="${u.adim || 1}" step="${u.adim || 1}" value="${u.miktar || u.adim || 1}" inputmode="numeric"></div>
+    </div>
+    <div class="muted" id="tsBilgi" style="margin-top:8px;font-size:13px">Ürün yalnızca sepete eklenir, sipariş verilmez. Siparişi ${esc(s.ad)} sitesinde sepeti kontrol edip siz onaylarsınız.</div>
+    <div class="mfoot"><button class="btn" id="tsVaz">Vazgeç</button><button class="btn pri" id="tsEkle" disabled>🛒 Sepete ekle</button></div></div>`);
+  $('#tsVaz').onclick = closeModal;
+  tdFonk({islem: 'birim', site: s.anahtar, id: u.id}).then(r => {
+    if(!$('#tsBirim')) return;
+    const b = r.birimler || [];
+    $('#tsBirim').innerHTML = b.map(x => `<option value="${esc(x.deger)}" ${x.secili ? 'selected' : ''}>${esc(x.ad)}</option>`).join('') || '<option value="">—</option>';
+    $('#tsBirim').disabled = b.length < 2; $('#tsEkle').disabled = !b.length;
+    if(r.stok != null) $('#tsBilgi').insertAdjacentHTML('afterbegin', `Tedarikçi stoğu: <b>${num2(r.stok)}</b>. `);
+    if(!b.length) $('#tsBilgi').textContent = 'Bu ürün için satış birimi bulunamadı; tedarikçinin sitesinden ekleyin.';
+    setTimeout(() => $('#tsMiktar') && $('#tsMiktar').select(), 30);
+  }).catch(err => { if($('#tsBilgi')) $('#tsBilgi').innerHTML = `<span style="color:var(--out,#dc2626)">Birimler alınamadı: ${esc(err.message)}</span>`; });
+  const ekle = async () => {
+    const miktar = Math.floor(+$('#tsMiktar').value), sel = $('#tsBirim'), opt = sel.options[sel.selectedIndex];
+    if(!(miktar > 0)) return toast('Miktarı yazın', 'bad');
+    if(u.adim > 1 && miktar % u.adim) return toast(`Bu ürün ${u.adim}'li katlarla satılıyor`, 'bad');
+    $('#tsEkle').disabled = true; $('#tsEkle').textContent = 'Ekleniyor…';
+    try{
+      const r = await tdFonk({islem: 'ekle', site: s.anahtar, id: u.id, birim: sel.value, birimAd: opt ? opt.textContent : '', miktar});
+      closeModal(); toast(`${s.ad}: ${r.mesaj || 'Sepete eklendi'} — ${miktar} ${opt ? opt.textContent : ''}`, 'ok');
+    }catch(err){ if($('#tsEkle')){ $('#tsEkle').disabled = false; $('#tsEkle').textContent = '🛒 Sepete ekle'; } toast('Sepete eklenemedi: ' + err.message, 'bad'); }
+  };
+  $('#tsEkle').onclick = ekle;
+  $('#tsMiktar').addEventListener('keydown', e => { if(e.key === 'Enter' && !$('#tsEkle').disabled) ekle(); });
 }
 $('#tdCanli').addEventListener('click', async e => {
+  const sp = e.target.closest('[data-tds]');
+  if(sp && tdCanliSon){ const [a, i] = sp.dataset.tds.split('|'), s = tdCanliSon.sonuclar.find(x => x.anahtar === a), u = s && s.urunler[+i]; if(u) tdSepetPenceresi(s, u); return; }
   const b = e.target.closest('[data-tdk]'); if(!b || !tdCanliSon) return;
   const [anahtar, i] = b.dataset.tdk.split('|'), s = tdCanliSon.sonuclar.find(x => x.anahtar === anahtar), u = s && s.urunler[+i]; if(!u) return;
   let t = tdSiteTedarikci(anahtar);
