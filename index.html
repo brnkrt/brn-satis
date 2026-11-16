@@ -398,9 +398,14 @@ tr.cancel td:last-child{text-decoration:none}
     <div class="row" style="margin-bottom:10px">
       <input id="tdAra" type="search" placeholder="Ürün adı veya barkod yazın — tedarikçilerde arayın…" style="flex:1;min-width:220px;font-size:18px;padding:12px" autocomplete="off">
       <button class="btn" id="tdCam" title="Barkodu kamerayla okut">📷</button>
+      <button class="btn pri" id="tdGetir" title="Tedarikçilerin sitelerinden güncel fiyat ve stoğu getirir (Enter)">📡 Fiyat &amp; stok getir</button>
     </div>
     <div id="tdUrun" style="margin-bottom:8px"></div>
     <div id="tdSiteler" class="row" style="gap:8px;flex-wrap:wrap"></div>
+  </div>
+  <div class="card" id="tdCanliKart" style="display:none">
+    <div class="row" style="margin-bottom:8px;align-items:center"><b style="font-size:17px">📡 Tedarikçilerde şu an</b><span style="flex:1"></span><span class="muted" id="tdCanliZaman"></span></div>
+    <div id="tdCanli"></div>
   </div>
   <div class="card">
     <div class="row" style="margin-bottom:10px;align-items:center">
@@ -2444,8 +2449,73 @@ function renderTedarik(){
 }
 let tdAraT;
 $('#tdAra').addEventListener('input', () => { clearTimeout(tdAraT); tdAraT = setTimeout(renderTedarik, 200); });
-$('#tdAra').addEventListener('keydown', e => { if(e.key === 'Enter'){ clearTimeout(tdAraT); renderTedarik(); const ilk = $('#tdSiteler a.pri'); if(ilk && e.ctrlKey) ilk.click(); } });
-$('#tdCam').onclick = () => kameraAc(kod => { $('#tdAra').value = kod; renderTedarik(); }, {baslik: 'Tedarikçide ara — barkod okut'});
+$('#tdAra').addEventListener('keydown', e => { if(e.key === 'Enter'){ clearTimeout(tdAraT); renderTedarik(); tdCanliGetir(); } });
+$('#tdCam').onclick = () => kameraAc(kod => { $('#tdAra').value = kod; renderTedarik(); tdCanliGetir(); }, {baslik: 'Tedarikçide ara — barkod okut'});
+$('#tdGetir').onclick = () => tdCanliGetir(true);
+
+/* ---------- Canlı tedarikçi fiyatı (Supabase "brn-tedarik" fonksiyonu) ---------- */
+// Fonksiyon tedarikçi sitelerine bayi bilgileriyle giriş yapıp ürünü arar; sonuç burada listelenir.
+const TD_SITE_HOST = {kirtasiyem: 'kirtasiyem', yilmazlar: 'yilmazlar', budak: 'budak'};
+let tdCanliSon = null, tdCanliIstek = 0;
+const tdCanliOnbellek = new Map();
+function tdSiteTedarikci(anahtar){ const h = TD_SITE_HOST[anahtar]; return tedarikciler().find(t => (t.aramaUrl || t.site || '').toLowerCase().includes(h)) || null; }
+async function tdCanliGetir(zorla){
+  const q = $('#tdAra').value.trim();
+  if(q.length < 2){ if(zorla) toast('Ürün adı veya barkod yazın', 'bad'); return; }
+  if(!sb || !oturum || !sb.functions){ if(zorla) toast('Bunun için internet ve giriş gerekli', 'bad'); return; }
+  const kart = $('#tdCanliKart'); kart.style.display = '';
+  const onb = tdCanliOnbellek.get(q);
+  if(onb && !zorla && Date.now() - onb.z < 120000){ tdCanliSon = onb.v; return tdCanliCiz(); }
+  const no = ++tdCanliIstek;
+  $('#tdCanli').innerHTML = `<div class="muted" style="padding:14px">⏳ “${esc(q)}” tedarikçilerde aranıyor… (birkaç saniye sürebilir)</div>`; $('#tdCanliZaman').textContent = '';
+  $('#tdGetir').disabled = true;
+  try{
+    const {data, error} = await sb.functions.invoke('brn-tedarik', {body: {q, firmaId}});
+    if(no !== tdCanliIstek) return;
+    if(error){ let m = error.message || String(error); try{ const j = await error.context.json(); if(j && j.hata) m = j.hata; }catch(_){} throw new Error(m); }
+    tdCanliSon = data; tdCanliOnbellek.set(q, {z: Date.now(), v: data}); tdCanliCiz();
+  }catch(e){
+    if(no !== tdCanliIstek) return;
+    const yok = /not found|404|Failed to send|FunctionsFetchError/i.test(e.message || '');
+    $('#tdCanli').innerHTML = `<div style="padding:12px;color:var(--out,#dc2626)">${yok ? 'Tedarikçi bağlantısı henüz kurulmamış (Supabase fonksiyonu bulunamadı).' : 'Tedarikçi fiyatları alınamadı: ' + esc(e.message || e)}</div>`;
+  }finally{ if(no === tdCanliIstek) $('#tdGetir').disabled = false; }
+}
+function tdCanliCiz(){
+  const d = tdCanliSon; if(!d) return;
+  $('#tdCanliZaman').textContent = '“' + d.q + '” · ' + new Date(d.zaman).toLocaleTimeString('tr-TR', {hour: '2-digit', minute: '2-digit'});
+  // "En ucuz" yalnızca aynı ürün karşılaştırılırken: en az iki sitede tek sonuç çıktıysa (genelde barkod araması)
+  const tekler = d.sonuclar.filter(s => s.urunler.length === 1).map(s => s.urunler[0].net ?? s.urunler[0].liste).filter(x => x > 0);
+  const enDusuk = tekler.length > 1 ? Math.min(...tekler) : null;
+  const p = tdUrunBul(d.q);
+  // Bizim alışla fark: barkod aynıysa ya da sitede tek sonuç varsa
+  const ayniUrun = (s, u) => p && p.alis && ((u.barkod && p.barkod && String(u.barkod) === String(p.barkod)) || (s.urunler.length === 1 && !u.barkod));
+  $('#tdCanli').innerHTML = d.sonuclar.map(s => {
+    const durum = s.durum === 'ok' ? (s.urunler.length ? `<span class="muted">${s.urunler.length} ürün</span>` : '<span class="muted">bulunamadı</span>')
+      : s.durum === 'ayar-yok' ? '<span style="color:var(--warn)">bayi bilgisi girilmemiş</span>' : `<span style="color:var(--out,#dc2626)" title="${esc(s.mesaj || '')}">hata: ${esc((s.mesaj || '').slice(0, 80))}</span>`;
+    const satir = s.urunler.map((u, i) => {
+      const net = u.net ?? u.liste, ucuz = enDusuk != null && s.urunler.length === 1 && net === enDusuk;
+      const fark = net && ayniUrun(s, u) ? r2(net - p.alis) : null;
+      return `<tr${u.tukendi ? ' style="opacity:.55"' : ''}>
+        <td>${esc(u.ad)}<div class="muted mono" style="font-size:12px">${esc([u.kod, u.barkod].filter(Boolean).join(' · '))}</div></td>
+        <td class="r num muted hide-m">${u.liste != null ? tl(u.liste) : '—'}</td>
+        <td class="r num"><b>${net != null ? tl(net) : '—'}</b>${ucuz ? ' <span class="tag ok">en ucuz</span>' : ''}${fark ? `<div style="font-size:12px;color:${fark < 0 ? 'var(--ok,#16a34a)' : 'var(--out,#dc2626)'}">${fark < 0 ? '▼ ' + tl(-fark) : '▲ ' + tl(fark)} bizim alışa göre</div>` : ''}</td>
+        <td><span class="tag ${u.tukendi || /^0$|yok/i.test(u.stok) ? 'bad' : 'ok'}" style="font-family:var(--font-body);white-space:normal">${esc(u.stok || '—')}</span></td>
+        <td class="r"><button class="btn sm" data-tdk="${esc(s.anahtar)}|${i}" title="Bu fiyatı kayıtlı tedarikçi fiyatlarına ekle">💾</button></td></tr>`;
+    }).join('');
+    return `<div style="margin-bottom:12px"><div class="row" style="align-items:center;gap:8px;margin-bottom:4px"><b>${esc(s.ad)}</b>${durum}<span style="flex:1"></span><a class="btn sm" href="${esc(s.url)}" target="_blank" rel="noopener">↗ Sitede aç</a></div>
+      ${satir ? `<div class="tblwrap"><table><thead><tr><th>Ürün</th><th class="r hide-m">Liste</th><th class="r">Net fiyat</th><th>Stok</th><th></th></tr></thead><tbody>${satir}</tbody></table></div>` : ''}</div>`;
+  }).join('');
+}
+$('#tdCanli').addEventListener('click', async e => {
+  const b = e.target.closest('[data-tdk]'); if(!b || !tdCanliSon) return;
+  const [anahtar, i] = b.dataset.tdk.split('|'), s = tdCanliSon.sonuclar.find(x => x.anahtar === anahtar), u = s && s.urunler[+i]; if(!u) return;
+  let t = tdSiteTedarikci(anahtar);
+  if(!t){ const id = idUret(); await kaydet('tedarikci', id, {ad: s.ad, site: new URL(s.url).host, aramaUrl: s.url.replace(/q=[^&]*/, 'q={ara}'), tel: '', not: ''}); t = D.tedarikci.get(id); }
+  const p = tdUrunBul(tdCanliSon.q) || (u.barkod && urunByBarkod(u.barkod)) || null;
+  const anah = (p && p.barkod) || u.barkod || tAnahtar(u.ad);
+  await kaydet('tfiyat', 'tf' + kisaHash(t.id + '|' + anah), {tedarikciId: t.id, urunAd: p ? p.ad : u.ad, tedarikciUrunAd: u.ad, barkod: p ? (p.barkod || '') : (u.barkod || ''), urunId: p ? p.id : null, kod: u.kod || '', fiyat: r2(u.net ?? u.liste), liste: u.liste, stok: u.stok, tarih: new Date().toISOString()});
+  toast(`${t.ad}: ${tl(u.net ?? u.liste)} kaydedildi`, 'ok'); renderTedarik();
+});
 $('#tdYeni').onclick = () => tedarikciForm(null);
 $('#tdListe').addEventListener('click', e => { const b = e.target.closest('[data-tdd]'); if(b) tedarikciForm(b.dataset.tdd); });
 $('#tdFiyatBody').addEventListener('click', e => { const b = e.target.closest('[data-tfd]'); if(b) tFiyatForm(b.dataset.tfd); });
