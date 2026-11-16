@@ -245,6 +245,7 @@ tr.cancel td:last-child{text-decoration:none}
     <button data-tab="urunler"><span class="ic">📦</span>Ürünler</button>
     <button data-tab="cariler"><span class="ic">📒</span>Veresiye</button>
     <button data-tab="fatura"><span class="ic">🧾</span>Fatura</button>
+    <button data-tab="tedarik"><span class="ic">🚚</span>Tedarikçiler</button>
     <button data-tab="personel"><span class="ic">👥</span>Personel</button>
     <button data-tab="raporlar"><span class="ic">📊</span>Raporlar</button>
     <button data-tab="ayarlar"><span class="ic">⚙️</span>Ayarlar</button>
@@ -388,6 +389,37 @@ tr.cancel td:last-child{text-decoration:none}
         <tbody id="ftBody"></tbody>
       </table>
     </div>
+  </div>
+</section>
+
+<!-- TEDARİKÇİLER -->
+<section class="tab" id="tab-tedarik">
+  <div class="card">
+    <div class="row" style="margin-bottom:10px">
+      <input id="tdAra" type="search" placeholder="Ürün adı veya barkod yazın — tedarikçilerde arayın…" style="flex:1;min-width:220px;font-size:18px;padding:12px" autocomplete="off">
+      <button class="btn" id="tdCam" title="Barkodu kamerayla okut">📷</button>
+    </div>
+    <div id="tdUrun" style="margin-bottom:8px"></div>
+    <div id="tdSiteler" class="row" style="gap:8px;flex-wrap:wrap"></div>
+  </div>
+  <div class="card">
+    <div class="row" style="margin-bottom:10px;align-items:center">
+      <b style="font-size:17px">💰 Kayıtlı tedarikçi fiyatları</b><span style="flex:1"></span>
+      <button class="btn" id="tdFiyatEkle">+ Fiyat kaydet</button>
+      <button class="btn" id="tdExcel" title="Tedarikçinin gönderdiği Excel fiyat listesini yükler">⬆ Fiyat listesi yükle</button>
+      <input type="file" id="tdExcelDosya" accept=".xlsx,.xls,.csv" hidden>
+    </div>
+    <div class="muted" id="tdFiyatOzet" style="margin-bottom:6px"></div>
+    <div class="tblwrap" style="max-height:50vh">
+      <table>
+        <thead><tr><th>Tedarikçi</th><th>Ürün</th><th class="r">Tedarikçi fiyatı</th><th class="r hide-m">Bizim alış</th><th class="hide-m">Tarih</th><th></th></tr></thead>
+        <tbody id="tdFiyatBody"></tbody>
+      </table>
+    </div>
+  </div>
+  <div class="card">
+    <div class="row" style="margin-bottom:10px;align-items:center"><b style="font-size:17px">🚚 Tedarikçiler</b><span style="flex:1"></span><button class="btn pri" id="tdYeni">+ Tedarikçi ekle</button></div>
+    <div class="tblwrap"><table><thead><tr><th>Firma</th><th class="hide-m">Web sitesi</th><th class="hide-m">Telefon</th><th class="r">Kayıtlı fiyat</th><th></th></tr></thead><tbody id="tdListe"></tbody></table></div>
   </div>
 </section>
 
@@ -572,7 +604,7 @@ function idbBekleyenSil(list){
 
 /* ================= BELLEKTEKİ VERİ ================= */
 const D = {urun: new Map(), stokgiris: new Map(), satis: new Map(), ayar: new Map(), cari: new Map(), tahsilat: new Map(), yetki: new Map(), fatura: new Map(),
-  personel: new Map(), personelOdeme: new Map(), personelEk: new Map(), izin: new Map()};
+  personel: new Map(), personelOdeme: new Map(), personelEk: new Map(), izin: new Map(), tedarikci: new Map(), tfiyat: new Map()};
 let stokKirli = true, stokMap = new Map(), barkodMap = new Map();
 function uygulaBellek(col, id, veri){
   const m = D[col]; if(!m) return;
@@ -592,6 +624,7 @@ const YETKILER = [
   ['rapor', 'Raporları, kârı ve alış fiyatlarını görme', false],
   ['fatura', 'Fatura hazırlama ve kesme', false],
   ['personel', 'Personel, maaş, avans ve izinler', false],
+  ['tedarikci', 'Tedarikçiler ve tedarikçi fiyatları', false],
   ['ayar', 'Fiş bilgileri, yedek alma ve yedekten yükleme', false]
 ];
 function yetkili(k){
@@ -606,6 +639,7 @@ function yetkiUygula(){
   g('nav [data-tab="cariler"]', yetkili('veresiye'));
   g('nav [data-tab="fatura"]', yetkili('fatura'));
   g('nav [data-tab="personel"]', yetkili('personel'));
+  g('nav [data-tab="tedarik"]', yetkili('tedarikci'));
   g('.methods [data-m="veresiye"]', yetkili('veresiye'));
   $('.methods').style.gridTemplateColumns = yetkili('veresiye') ? '' : '1fr 1fr';
   g('#newProdBtn', yetkili('urunDuzenle')); g('#newVarBtn', yetkili('urunDuzenle')); g('#pSecTh', yetkili('urunDuzenle')); g('#hizliDuzenBtn', yetkili('urunDuzenle')); g('#ayarExcel', yetkili('urunDuzenle'));
@@ -613,7 +647,7 @@ function yetkiUygula(){
   g('#ayarFis', yetkili('ayar')); g('.ayarFisYok', !yetkili('ayar')); g('#ayarFatura', yetkili('ayar') && yetkili('fatura')); g('#backupBtn', yetkili('ayar')); g('#restoreBtn', yetkili('ayar'));
   const ind = $('#discount'); ind.disabled = !yetkili('indirim'); if(ind.disabled) ind.value = '';
   if(payMethod === 'veresiye' && !yetkili('veresiye')) setMethod('nakit');
-  if((curTab === 'raporlar' && !yetkili('rapor')) || (curTab === 'cariler' && !yetkili('veresiye')) || (curTab === 'fatura' && !yetkili('fatura')) || (curTab === 'personel' && !yetkili('personel'))) showTab('satis');
+  if((curTab === 'raporlar' && !yetkili('rapor')) || (curTab === 'cariler' && !yetkili('veresiye')) || (curTab === 'fatura' && !yetkili('fatura')) || (curTab === 'personel' && !yetkili('personel')) || (curTab === 'tedarik' && !yetkili('tedarikci'))) showTab('satis');
 }
 
 /* ---------- Veresiye bakiyeleri ---------- */
@@ -894,6 +928,7 @@ function renderAktif(){
   if(curTab === 'cariler') renderCariler();
   if(curTab === 'fatura') renderFaturalar();
   if(curTab === 'personel') renderPersonel();
+  if(curTab === 'tedarik') renderTedarik();
   if(curTab === 'raporlar') renderReport();
   if(curTab === 'ayarlar') loadSettingsForm();
 }
@@ -2344,6 +2379,180 @@ function kdvHesap(kalemler){
   return {matrah: r2(net), kdvler: [...oran.entries()].sort((a, b) => a[0] - b[0]), kdvToplam: r2(brut - net), toplam: r2(brut)};
 }
 const kdvHaric = (fiyat, kdv) => Math.round((+fiyat || 0) / (1 + (+kdv || 0) / 100) * 10000) / 10000;
+
+/* ================= TEDARİKÇİLER ================= */
+// Tedarikçi fiyatları web sitelerinde: program her tedarikçinin sitesinde aranan ürünü tek tıkla açar.
+// Görülen fiyatlar kaydedilebilir (ya da Excel fiyat listesi yüklenir); en ucuz tedarikçi işaretlenir.
+const tedarikciler = () => [...D.tedarikci.values()].sort((a, b) => a.ad.localeCompare(b.ad, 'tr'));
+const tAnahtar = s => low(s).replace(/[^a-z0-9çğıöşü]/g, '');
+function kisaHash(s){ let h = 5381; for(const c of String(s)) h = ((h << 5) + h + c.charCodeAt(0)) >>> 0; return h.toString(36); }
+// Aranan metne uyan ürün (barkod tam eşleşmesi öncelikli)
+function tdUrunBul(raw){
+  if(!raw) return null;
+  const b = urunByBarkod(raw); if(b) return b;
+  const q = low(raw); if(q.length < 3) return null;
+  return urunler().find(p => low(p.ad) === q) || null;
+}
+function aramaAdresi(t, metin){
+  if(t.aramaUrl && t.aramaUrl.includes('{ara}')) return t.aramaUrl.split('{ara}').join(encodeURIComponent(metin));
+  return null;
+}
+function siteAdresi(t){ const s = String(t.site || '').trim(); if(!s) return ''; return /^https?:\/\//i.test(s) ? s : 'https://' + s; }
+function renderTedarik(){
+  const raw = $('#tdAra').value.trim(), q = low(raw), ts = tedarikciler();
+  const p = tdUrunBul(raw);
+  // Ürün bilgisi
+  $('#tdUrun').innerHTML = p ? `<span class="tag" style="font-family:var(--font-body);background:var(--accent-soft);color:var(--accent)">📦 ${esc(p.ad)}</span> <span class="muted">Satış ${tl(p.satis)} · Bizim alış ${p.alis ? tl(p.alis) : '—'} · Stok ${stok(p.id)}</span>` : (raw ? '<span class="muted">Bu metinle eşleşen kayıtlı ürün yok; yine de tedarikçilerde arayabilirsiniz.</span>' : '');
+  // Site düğmeleri
+  if(!ts.length) $('#tdSiteler').innerHTML = `<div class="muted">Henüz tedarikçi eklenmedi. Aşağıdan <b>+ Tedarikçi ekle</b> ile firmaları ve web sitelerini girin.</div>`;
+  else {
+    const metinler = raw ? [raw] : [];
+    if(p && p.barkod && raw !== p.ad && String(p.barkod) === raw) metinler.push(p.ad); // barkod okutulduysa adıyla da aranabilsin
+    $('#tdSiteler').innerHTML = ts.map(t => {
+      const site = siteAdresi(t);
+      if(!metinler.length) return site ? `<a class="btn" href="${esc(site)}" target="_blank" rel="noopener">↗ ${esc(t.ad)}</a>` : `<span class="btn" style="opacity:.5">${esc(t.ad)}</span>`;
+      const linkler = metinler.map((m, i) => { const u = aramaAdresi(t, m); return u ? `<a class="btn ${i === 0 ? 'pri' : 'sm'}" href="${esc(u)}" target="_blank" rel="noopener" title="${esc(t.ad)} sitesinde “${esc(m)}” ara">🔎 ${esc(t.ad)}${i ? ' (adıyla)' : ''}</a>` : ''; }).join('');
+      return linkler || (site ? `<a class="btn" href="${esc(site)}" target="_blank" rel="noopener" title="Arama adresi tanımlı değil, site açılır">↗ ${esc(t.ad)}</a>` : '');
+    }).join('');
+  }
+  // Kayıtlı fiyatlar
+  const tum = [...D.tfiyat.values()].filter(f => D.tedarikci.has(f.tedarikciId));
+  let list = tum;
+  if(raw) list = tum.filter(f => (p && (f.urunId === p.id || (p.barkod && String(f.barkod) === String(p.barkod)))) || String(f.barkod || '').includes(raw) || low(f.urunAd).includes(q));
+  const grup = f => f.barkod ? 'b' + f.barkod : 'a' + tAnahtar(f.urunAd);
+  const enUcuz = new Map(); for(const f of list){ const g = grup(f); if(!enUcuz.has(g) || +f.fiyat < enUcuz.get(g)) enUcuz.set(g, +f.fiyat); }
+  const sayGrup = new Map(); for(const f of list) sayGrup.set(grup(f), (sayGrup.get(grup(f)) || 0) + 1);
+  list.sort((a, b) => grup(a).localeCompare(grup(b)) || (+a.fiyat - +b.fiyat));
+  $('#tdFiyatOzet').textContent = raw ? `${list.length} kayıtlı fiyat bulundu` : `Toplam ${tum.length} kayıtlı fiyat` + (tum.length > 300 ? ' · ilk 300 gösteriliyor, yukarıdan arayın' : '');
+  $('#tdFiyatBody').innerHTML = list.slice(0, 300).map(f => {
+    const t = D.tedarikci.get(f.tedarikciId), u = (f.urunId && urunById(f.urunId)) || (f.barkod && urunByBarkod(f.barkod));
+    const ucuz = sayGrup.get(grup(f)) > 1 && +f.fiyat === enUcuz.get(grup(f));
+    const fark = u && u.alis ? r2(+f.fiyat - +u.alis) : null;
+    return `<tr><td><b>${esc(t.ad)}</b></td><td>${esc(f.urunAd || (u && u.ad) || '')}<div class="muted mono">${esc(f.barkod || '')}</div></td>
+      <td class="r num"><b>${tl(f.fiyat)}</b>${ucuz ? ' <span class="tag ok" title="Bu ürün için en ucuz tedarikçi">en ucuz</span>' : ''}</td>
+      <td class="r num hide-m">${u && u.alis ? tl(u.alis) + (fark ? `<div style="font-size:12px;color:${fark < 0 ? 'var(--ok,#16a34a)' : 'var(--out,#dc2626)'}">${fark < 0 ? '▼ ' + tl(-fark) + ' ucuz' : '▲ ' + tl(fark) + ' pahalı'}</div>` : '') : '—'}</td>
+      <td class="muted hide-m">${f.tarih ? fmtDate(f.tarih) : ''}</td>
+      <td class="r"><button class="btn sm" data-tfd="${f.id}">Düzenle</button></td></tr>`;
+  }).join('') || `<tr><td colspan="6" class="empty">${raw ? 'Bu ürün için kayıtlı tedarikçi fiyatı yok. Sitede gördüğünüz fiyatı <b>+ Fiyat kaydet</b> ile ekleyebilirsiniz.' : 'Henüz kayıtlı fiyat yok.'}</td></tr>`;
+  // Tedarikçi listesi
+  const fSay = new Map(); for(const f of tum) fSay.set(f.tedarikciId, (fSay.get(f.tedarikciId) || 0) + 1);
+  $('#tdListe').innerHTML = ts.map(t => `<tr><td><b>${esc(t.ad)}</b>${t.not ? `<div class="muted">${esc(t.not)}</div>` : ''}${t.aramaUrl ? '' : '<div style="font-size:12px;color:var(--warn)">arama adresi yok — yalnızca site açılır</div>'}</td>
+    <td class="hide-m">${siteAdresi(t) ? `<a href="${esc(siteAdresi(t))}" target="_blank" rel="noopener">${esc(t.site)}</a>` : '—'}</td>
+    <td class="hide-m">${t.tel ? `<a href="tel:${esc(t.tel)}">${esc(t.tel)}</a>` : '—'}</td>
+    <td class="r num">${fSay.get(t.id) || 0}</td>
+    <td class="r"><button class="btn sm" data-tdd="${t.id}">Düzenle</button></td></tr>`).join('') || '<tr><td colspan="5" class="empty">Henüz tedarikçi yok.</td></tr>';
+}
+let tdAraT;
+$('#tdAra').addEventListener('input', () => { clearTimeout(tdAraT); tdAraT = setTimeout(renderTedarik, 200); });
+$('#tdAra').addEventListener('keydown', e => { if(e.key === 'Enter'){ clearTimeout(tdAraT); renderTedarik(); const ilk = $('#tdSiteler a.pri'); if(ilk && e.ctrlKey) ilk.click(); } });
+$('#tdCam').onclick = () => kameraAc(kod => { $('#tdAra').value = kod; renderTedarik(); }, {baslik: 'Tedarikçide ara — barkod okut'});
+$('#tdYeni').onclick = () => tedarikciForm(null);
+$('#tdListe').addEventListener('click', e => { const b = e.target.closest('[data-tdd]'); if(b) tedarikciForm(b.dataset.tdd); });
+$('#tdFiyatBody').addEventListener('click', e => { const b = e.target.closest('[data-tfd]'); if(b) tFiyatForm(b.dataset.tfd); });
+$('#tdFiyatEkle').onclick = () => tFiyatForm(null);
+
+function tedarikciForm(id){
+  const t = id ? D.tedarikci.get(id) : {};
+  openModal(`<div class="mdIc"><h2>🚚 ${id ? 'Tedarikçiyi düzenle' : 'Yeni tedarikçi'}</h2>
+    <div class="form">
+      <div class="full"><label>Firma adı</label><input id="tfAd" value="${esc(t.ad || '')}" autofocus></div>
+      <div class="full"><label>Web sitesi</label><input id="tfSite" value="${esc(t.site || '')}" placeholder="ornek.com"></div>
+      <div class="full"><label>Ürün arama adresi</label><input id="tfArama" value="${esc(t.aramaUrl || '')}" placeholder="https://ornek.com/arama?q={ara}">
+        <div class="muted" style="font-size:13px;margin-top:4px">Nasıl bulunur: Tedarikçinin sitesinde arama kutusuna <b>TEST</b> yazıp arayın, adres çubuğundaki adresi kopyalayıp buraya yapıştırın. Program TEST yerine aradığınız ürünü koyar.</div></div>
+      <div><label>Telefon</label><input id="tfTel" value="${esc(t.tel || '')}"></div>
+      <div><label>Not</label><input id="tfNot" value="${esc(t.not || '')}" placeholder="Temsilci, vade, iskonto…"></div>
+    </div>
+    <div class="mfoot">${id ? '<button class="btn bad" id="tfSil" style="margin-right:auto">Sil</button>' : ''}<button class="btn" id="tfVaz">Vazgeç</button><button class="btn pri" id="tfKaydet">Kaydet</button></div></div>`);
+  $('#tfVaz').onclick = closeModal;
+  if($('#tfSil')) $('#tfSil').onclick = async () => {
+    if(!confirm(`"${t.ad}" tedarikçisi ve kayıtlı fiyatları silinsin mi?`)) return;
+    const isl = [['tedarikci', id, Object.assign({}, t, {silindi: true})]].concat([...D.tfiyat.values()].filter(f => f.tedarikciId === id).map(f => ['tfiyat', f.id, Object.assign({}, f, {silindi: true})]));
+    for(let i = 0; i < isl.length; i += 1000) await kaydetCok(isl.slice(i, i + 1000));
+    closeModal(); toast('Tedarikçi silindi'); renderAktif();
+  };
+  $('#tfKaydet').onclick = async () => {
+    const ad = $('#tfAd').value.trim(); if(!ad){ $('#tfAd').focus(); return toast('Firma adını yazın', 'bad'); }
+    let arama = $('#tfArama').value.trim();
+    if(arama && !arama.includes('{ara}')){
+      if(/test/i.test(arama)) arama = arama.replace(/test/i, '{ara}');
+      else if(!confirm('Arama adresinde TEST bulunamadı. Bu durumda düğme yalnızca siteyi açar.\nYine de kaydedilsin mi?')) return;
+    }
+    if(arama && !/^https?:\/\//i.test(arama)) arama = 'https://' + arama;
+    const doc = Object.assign({}, t, {ad, site: $('#tfSite').value.trim() || (arama ? new URL(arama.replace('{ara}', 'x')).host : ''), aramaUrl: arama, tel: $('#tfTel').value.trim(), not: $('#tfNot').value.trim()});
+    try{ await kaydet('tedarikci', id || idUret(), doc); }catch(e){ return toast('Kaydedilemedi: ' + e.message, 'bad'); }
+    closeModal(); toast(ad + ' kaydedildi', 'ok'); renderAktif();
+  };
+}
+
+function tFiyatForm(id){
+  const ts = tedarikciler();
+  if(!ts.length){ toast('Önce bir tedarikçi ekleyin', 'bad'); return tedarikciForm(null); }
+  const f = id ? D.tfiyat.get(id) : {};
+  const raw = $('#tdAra').value.trim(), p = id ? null : tdUrunBul(raw);
+  const urunAd = f.urunAd || (p ? p.ad : (raw && !/^\d{6,}$/.test(raw) ? raw : ''));
+  const barkod = f.barkod || (p ? p.barkod || '' : (/^\d{6,}$/.test(raw) ? raw : ''));
+  openModal(`<div class="mdIc"><h2>💰 ${id ? 'Tedarikçi fiyatını düzenle' : 'Tedarikçi fiyatı kaydet'}</h2>
+    <div class="form">
+      <div class="full"><label>Tedarikçi</label><select id="tpTed">${ts.map(t => `<option value="${t.id}" ${t.id === (f.tedarikciId || cihaz.sonTedarikci) ? 'selected' : ''}>${esc(t.ad)}</option>`).join('')}</select></div>
+      <div class="full"><label>Ürün adı</label><input id="tpAd" value="${esc(urunAd)}"></div>
+      <div><label>Barkod</label><input id="tpBarkod" value="${esc(barkod)}" class="mono"></div>
+      <div><label>Tedarikçi fiyatı (₺)</label><input id="tpFiyat" value="${f.fiyat != null ? esc(num2(f.fiyat)) : ''}" inputmode="decimal" autofocus></div>
+    </div>
+    <div class="mfoot">${id ? '<button class="btn bad" id="tpSil" style="margin-right:auto">Sil</button>' : ''}<button class="btn" id="tpVaz">Vazgeç</button><button class="btn pri" id="tpKaydet">Kaydet</button></div></div>`);
+  setTimeout(() => $('#tpFiyat') && $('#tpFiyat').focus(), 30);
+  $('#tpVaz').onclick = closeModal;
+  if($('#tpSil')) $('#tpSil').onclick = async () => { await kaydet('tfiyat', id, Object.assign({}, f, {silindi: true})); closeModal(); toast('Fiyat silindi'); renderAktif(); };
+  const kaydetF = async () => {
+    const fiyat = parseNum($('#tpFiyat').value), ad = $('#tpAd').value.trim(), bk = $('#tpBarkod').value.trim(), tid = $('#tpTed').value;
+    if(isNaN(fiyat) || fiyat < 0){ $('#tpFiyat').focus(); return toast('Fiyatı yazın', 'bad'); }
+    if(!ad && !bk) return toast('Ürün adı ya da barkod gerekli', 'bad');
+    const u = (bk && urunByBarkod(bk)) || p;
+    const yeniId = id || ('tf' + kisaHash(tid + '|' + (bk || tAnahtar(ad))));
+    await kaydet('tfiyat', yeniId, {tedarikciId: tid, urunAd: ad || (u && u.ad) || '', barkod: bk, urunId: u ? u.id : (f.urunId || null), fiyat: r2(fiyat), tarih: new Date().toISOString()});
+    cihaz.sonTedarikci = tid; lsYaz('brn-cihaz', cihaz);
+    closeModal(); toast('Fiyat kaydedildi', 'ok'); renderAktif();
+  };
+  $('#tpKaydet').onclick = kaydetF;
+  $('#tpFiyat').addEventListener('keydown', e => { if(e.key === 'Enter') kaydetF(); });
+}
+
+// Excel fiyat listesi: sütunlar Barkod, Ürün Adı, Fiyat (başlık satırı olabilir)
+$('#tdExcel').onclick = () => {
+  const ts = tedarikciler();
+  if(!ts.length){ toast('Önce bir tedarikçi ekleyin', 'bad'); return tedarikciForm(null); }
+  openModal(`<div class="mdIc"><h2>⬆ Tedarikçi fiyat listesi yükle</h2>
+    <div class="form"><div class="full"><label>Hangi tedarikçinin listesi?</label><select id="txTed">${ts.map(t => `<option value="${t.id}" ${t.id === cihaz.sonTedarikci ? 'selected' : ''}>${esc(t.ad)}</option>`).join('')}</select></div></div>
+    <div class="muted" style="margin-top:8px">Excel'de sütun sırası: <b>Barkod</b> · <b>Ürün Adı</b> · <b>Fiyat</b>. İlk satır başlık olabilir. Aynı ürünün eski fiyatı güncellenir.</div>
+    <div class="mfoot"><button class="btn" id="txVaz">Vazgeç</button><button class="btn pri" id="txSec">Dosya seç</button></div></div>`);
+  $('#txVaz').onclick = closeModal;
+  $('#txSec').onclick = () => { cihaz.sonTedarikci = $('#txTed').value; lsYaz('brn-cihaz', cihaz); closeModal(); $('#tdExcelDosya').click(); };
+};
+$('#tdExcelDosya').onchange = async e => {
+  const dosya = e.target.files[0]; e.target.value = ''; if(!dosya) return;
+  const tid = cihaz.sonTedarikci, t = D.tedarikci.get(tid); if(!t) return;
+  let rows;
+  if(/\.(xlsx|xls)$/i.test(dosya.name)){
+    try{ await scriptYukle(XLSX_URL, 'XLSX'); }catch(_){ return alert('Excel dosyasını okumak için internet bağlantısı gerekir.'); }
+    const wb = window.XLSX.read(await dosya.arrayBuffer(), {type: 'array'}), ws = wb.Sheets[wb.SheetNames[0]], U = window.XLSX.utils;
+    let mr = 0, mc = 0; for(const k in ws){ if(k[0] === '!') continue; const c = U.decode_cell(k); if(c.r > mr) mr = c.r; if(c.c > mc) mc = c.c; }
+    ws['!ref'] = U.encode_range({s: {r: 0, c: 0}, e: {r: mr, c: mc}});
+    rows = U.sheet_to_json(ws, {header: 1, raw: true, defval: ''}).map(r => r.map(hucreMetin));
+  } else {
+    let text = await dosya.text(); if(text.includes('�')){ try{ text = new TextDecoder('windows-1254').decode(await dosya.arrayBuffer()); }catch(_){} }
+    rows = parseCsv(text);
+  }
+  const z = new Date().toISOString(), isl = []; let atlanan = 0;
+  for(const r of rows){
+    const [bk = '', ad = '', fy = ''] = r.map(x => String(x).trim()); const fiyat = parseNum(fy);
+    if(isNaN(fiyat) || (!bk && !ad)){ atlanan++; continue; }
+    const u = bk ? urunByBarkod(bk) : null;
+    isl.push(['tfiyat', 'tf' + kisaHash(tid + '|' + (bk || tAnahtar(ad))), {tedarikciId: tid, urunAd: ad || (u && u.ad) || '', barkod: bk, urunId: u ? u.id : null, fiyat: r2(fiyat), tarih: z}]);
+  }
+  if(!isl.length) return alert('Dosyada geçerli fiyat satırı bulunamadı.\nSütun sırası: Barkod, Ürün Adı, Fiyat');
+  if(!confirm(`${t.ad}: ${isl.length} fiyat yüklenecek${atlanan ? ` (${atlanan} satır atlanacak)` : ''}. Devam edilsin mi?`)) return;
+  for(let i = 0; i < isl.length; i += 1000) await kaydetCok(isl.slice(i, i + 1000));
+  toast(`${t.ad}: ${isl.length} fiyat yüklendi`, 'ok'); renderAktif();
+};
 
 $('#ftAra').addEventListener('input', renderFaturalar);
 $('#ftDurum').addEventListener('change', renderFaturalar);
