@@ -227,12 +227,13 @@ tr.cancel td:last-child{text-decoration:none}
 @media print{
   body{background:#fff}
   body>*:not(#printArea){display:none!important}
-  #printArea{display:block;font-family:"Courier New",monospace;font-size:12px;color:#000;padding:2mm}
+  /* Fiş: termal yazıcıda net çıksın diye kalın, büyük ve tam siyah yazı */
+  #printArea{display:block;font-family:Arial,"Helvetica Neue",sans-serif;font-size:14px;font-weight:700;line-height:1.3;color:#000;padding:2mm;-webkit-print-color-adjust:exact;print-color-adjust:exact}
   #printArea table{width:100%;border-collapse:collapse}
-  #printArea td{padding:1px 0;border:0;font-size:inherit;color:#000}
+  #printArea td{padding:2px 0;border:0;font-size:inherit;font-weight:inherit;color:#000}
   #printArea .c{text-align:center}#printArea .r{text-align:right}
-  #printArea hr{border:0;border-top:1px dashed #000;margin:4px 0}
-  #printArea .b{font-weight:bold}#printArea .lg{font-size:1.25em}
+  #printArea hr{border:0;border-top:2px dashed #000;margin:5px 0}
+  #printArea .b{font-weight:900}#printArea .lg{font-size:1.4em}
 }
 </style>
 <style id="pageStyle"></style>
@@ -1591,12 +1592,12 @@ async function etiketBas(liste, o){
     kapsayici.appendChild(d);
   });
   const area = $('#printArea'); area.innerHTML = ''; area.appendChild(kapsayici);
-  $('#pageStyle').textContent = `@media print{@page{size:${E.a4 ? 'A4' : E.w + 'mm ' + E.h + 'mm'};margin:0} #printArea{width:auto!important;padding:0!important;font-family:Arial,sans-serif}}`;
+  $('#pageStyle').textContent = `@media print{@page{size:${E.a4 ? 'A4' : E.w + 'mm ' + E.h + 'mm'};margin:0} #printArea{width:auto!important;padding:0!important;font-family:Arial,sans-serif;font-weight:400;line-height:normal}}`;
   setTimeout(() => window.print(), 80);
 }
 
 /* ================= FİŞ ================= */
-function kagitAyarla(){ const w = cihaz.kagit === '58' ? '48mm' : cihaz.kagit === 'a4' ? '80mm' : '72mm', fs = cihaz.kagit === '58' ? '11px' : '12px'; $('#pageStyle').textContent = `@media print{@page{margin:${cihaz.kagit === 'a4' ? '10mm' : '0'}} #printArea{width:${w};font-size:${fs}}}`; }
+function kagitAyarla(){ const w = cihaz.kagit === '58' ? '48mm' : cihaz.kagit === 'a4' ? '80mm' : '72mm', fs = cihaz.kagit === '58' ? '12px' : cihaz.kagit === 'a4' ? '14px' : '15px'; $('#pageStyle').textContent = `@media print{@page{margin:${cihaz.kagit === 'a4' ? '10mm' : '0'}} #printArea{width:${w};font-size:${fs}}}`; }
 function printReceipt(s){
   const f = fisAyar(); kagitAyarla();
   const items = (s.kalemler || []).map(it => `<tr><td colspan="2">${esc(it.ad)}</td></tr><tr><td>&nbsp; ${it.adet} x ${num2(it.fiyat)}</td><td class="r">${num2(it.adet * it.fiyat)}</td></tr>`).join('');
@@ -2962,7 +2963,7 @@ function portalAktarim(fid){
 // Fatura önizleme (taslak çıktısı — mali değeri yoktur)
 function faturaYazdir(f){
   const s = fisAyar(), a = f.alici || {}, h = kdvHesap(f.kalemler || []);
-  $('#pageStyle').textContent = '@media print{@page{size:A4;margin:14mm} #printArea{width:auto!important;padding:0!important;font-family:Arial,sans-serif!important;font-size:11pt!important}}';
+  $('#pageStyle').textContent = '@media print{@page{size:A4;margin:14mm} #printArea{width:auto!important;padding:0!important;font-family:Arial,sans-serif!important;font-size:11pt!important;font-weight:400!important;line-height:normal!important}}';
   $('#printArea').innerHTML = `
     <div style="display:flex;justify-content:space-between;gap:20px;align-items:flex-start">
       <div><div class="b lg">${esc(s.isletme)}</div><div>${esc(s.adres)}</div>${s.tel ? `<div>Tel: ${esc(s.tel)}</div>` : ''}</div>
