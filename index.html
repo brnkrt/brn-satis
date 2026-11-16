@@ -522,7 +522,9 @@ function lsAl(k, d){ try{ const v = localStorage.getItem(k); return v ? JSON.par
 function lsYaz(k, v){ try{ localStorage.setItem(k, JSON.stringify(v)); }catch(e){} }
 
 /* ---------- Bu cihazın ayarları ---------- */
-let cihaz = Object.assign({kasa: 'K' + idUret().slice(0,3).toUpperCase(), kagit: '80', otoYazdir: true}, lsAl('brn-cihaz', {}));
+let cihaz = Object.assign({kasa: 'K' + idUret().slice(0,3).toUpperCase(), kagit: '80', otoYazdir: false}, lsAl('brn-cihaz', {}));
+// Otomatik yazdırma artık varsayılan olarak kapalı; eski cihazlarda bir kez kapatılır (sonra Ayarlar'dan açılabilir)
+if(!cihaz.yazdirV2){ cihaz.otoYazdir = false; cihaz.yazdirV2 = true; lsYaz('brn-cihaz', cihaz); }
 lsYaz('brn-cihaz', cihaz);
 
 /* ================= YEREL VERİTABANI (IndexedDB) ================= */
@@ -1319,8 +1321,9 @@ async function completeSale(){
     ls.innerHTML = `<div>Fiş ${esc(satis.no)} kaydedildi — ${tl(satis.toplam)} (${odemeAd(satis.odeme)})</div>` +
       (satis.odeme === 'nakit' ? `<div class="chg">Para üstü: ${tl(satis.paraUstu)}</div>` : '') +
       (cari ? `<div class="chg" style="font-size:18px">${esc(cari.ad)} · borç: ${tl(cariBakiye(cari.id))}</div>` : '');
-    if(yetkili('fatura')) ls.insertAdjacentHTML('beforeend', `<button class="btn sm" id="lsFatura" style="margin-top:8px">🧾 Bu satışa fatura kes</button>`);
+    ls.insertAdjacentHTML('beforeend', `<div class="row" style="margin-top:10px;gap:8px;flex-wrap:wrap"><button class="btn pri" id="lsYazdir" style="font-size:17px;padding:10px 18px">🖨 Fiş Yazdır</button>${yetkili('fatura') ? `<button class="btn sm" id="lsFatura">🧾 Bu satışa fatura kes</button>` : ''}</div>`);
     ls.style.display = 'block'; beep(true);
+    $('#lsYazdir').onclick = () => printReceipt(lastSaleObj);
     if($('#lsFatura')) $('#lsFatura').onclick = () => faturaSatistan(D.satis.get(id));
     if(cihaz.otoYazdir) printReceipt(lastSaleObj);
   }catch(e){ alert('Satış kaydedilemedi: ' + e.message); }
@@ -3265,7 +3268,7 @@ $('#saveFisBtn').onclick = async () => {
 $('#saveCihazBtn').onclick = () => {
   const k = $('#sKasa').value.trim().toUpperCase().replace(/[^A-Z0-9ÇĞİÖŞÜ]/g, '');
   if(!k){ toast('Kasa adı boş olamaz', 'bad'); return; }
-  cihaz = {kasa: k, kagit: $('#sPaper').value, otoYazdir: $('#sAuto').checked}; lsYaz('brn-cihaz', cihaz);
+  cihaz = {kasa: k, kagit: $('#sPaper').value, otoYazdir: $('#sAuto').checked, yazdirV2: true}; lsYaz('brn-cihaz', cihaz);
   toast('Cihaz ayarları kaydedildi', 'ok');
 };
 $('#testPrintBtn').onclick = () => printReceipt({no: cihaz.kasa + '-DENEME', tarih: new Date().toISOString(), kalemler: [{ad: 'Deneme Ürünü', adet: 2, fiyat: 12.5}], araToplam: 25, indirim: 0, toplam: 25, odeme: 'nakit', alinan: 50, paraUstu: 25});
