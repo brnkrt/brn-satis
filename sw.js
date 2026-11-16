@@ -2,7 +2,7 @@
 // Sayfa internet varsa en güncel sürümü alır; internet yoksa kayıtlı sürüm açılır.
 // Kayıtlar (Supabase) önbelleğe alınmaz; onları program kendi yerel veritabanında tutar.
 // Önbellek adı "brn-" ile başlar ve yalnızca kendi eski önbelleklerini siler.
-const SURUM = "brn-v11";
+const SURUM = "brn-v12";
 const KABUK = ["./", "./index.html", "./config.js", "./manifest.webmanifest", "./icon-192.png", "./icon-512.png", "./favicon-32.png", "./logo.png", "./logo-yatay.png"];
 const KUTUPHANELER = [
   "https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.js",
@@ -23,7 +23,8 @@ self.addEventListener("fetch", e => {
   const kutuphane = /cdn\.jsdelivr\.net|fonts\.(googleapis|gstatic)\.com/.test(u.hostname);
   const onbellek = () => caches.open(SURUM);
   if (ayniKaynak) {
-    e.respondWith(fetch(e.request).then(r => { if (r.ok) { const k = r.clone(); onbellek().then(c => c.put(e.request, k)); } return r; })
+    // cache:'no-cache' → tarayıcının HTTP önbelleği atlanır, sunucuya "değişti mi?" sorulur (yeni sürüm hemen gelir)
+    e.respondWith(fetch(e.request.url, {cache: "no-cache", credentials: "same-origin"}).then(r => { if (r.ok) { const k = r.clone(); onbellek().then(c => c.put(e.request, k)); } return r; })
       .catch(() => onbellek().then(c => c.match(e.request, {ignoreSearch: true}).then(r => r || c.match("./index.html")))));
   } else if (kutuphane) {
     e.respondWith(onbellek().then(c => c.match(e.request)).then(r => r || fetch(e.request).then(res => { const k = res.clone(); onbellek().then(c => c.put(e.request, k)); return res; })));
