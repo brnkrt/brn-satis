@@ -325,7 +325,7 @@ tr.cancel td:last-child{text-decoration:none}
       <button class="btn pri" id="newProdBtn">+ Yeni Ürün</button>
     </div>
     <div class="row" style="margin-bottom:8px;justify-content:space-between">
-      <div class="muted" id="pCount"></div>
+      <div class="row" style="gap:10px;align-items:center"><button class="btn sm" id="pTumunuSec" title="Listedeki (aramaya uyan) tüm ürünleri seç">☑ Tümünü seç</button><div class="muted" id="pCount"></div></div>
       <label style="display:flex;align-items:center;gap:6px;margin:0;font-size:14px;color:var(--fg)">↕ Sırala
         <select id="pSira">
           <option value="ad:1">Ada göre (A → Z)</option>
@@ -1534,6 +1534,9 @@ function renderProducts(){
   for(const id of [...seciliU]) if(!urunById(id)) seciliU.delete(id);
   const secilebilir = yetkili('urunDuzenle');
   pGorunen = secilebilir ? list.slice(0, 400).map(p => p.id) : [];
+  pListe = secilebilir ? list.map(p => p.id) : [];
+  const tsb = $('#pTumunuSec'); tsb.style.display = secilebilir && list.length ? '' : 'none';
+  tsb.textContent = `☑ Tümünü seç (${list.length})`;
   topluBarCiz();
   if(!all.length){ $('#pBody').innerHTML = `<tr><td colspan="9" class="empty">Henüz ürün yok.<br><br><button class="btn pri" onclick="openProductForm(null)">+ İlk ürünü ekle</button> <button class="btn" onclick="showTab('ayarlar')">Excel'den aktar</button></td></tr>`; return; }
   $('#pBody').innerHTML = list.slice(0, 400).map(p => { const s = stok(p.id); return `
@@ -1555,13 +1558,15 @@ function renderProducts(){
 
 /* ================= TOPLU DÜZENLEME ================= */
 const seciliU = new Set();
-let pGorunen = [], sonSecilen = null;
+let pGorunen = [], pListe = [], sonSecilen = null;
+$('#pTumunuSec').onclick = () => { pListe.forEach(id => seciliU.add(id)); renderProducts(); toast(`${seciliU.size} ürün seçildi`, 'ok'); };
 function topluBarCiz(){
   const bar = $('#pTopluBar'), n = seciliU.size;
   if(!n || !yetkili('urunDuzenle')){ bar.style.display = 'none'; return; }
   const sec = [...seciliU].map(urunById).filter(Boolean), hepsiHizli = sec.every(p => p.hizli);
   bar.style.display = 'flex';
-  bar.innerHTML = `<b>${n} ürün seçildi</b>
+  const eksik = pListe.filter(id => !seciliU.has(id)).length;
+  bar.innerHTML = `<b>${n} ürün seçildi</b>${eksik ? ` <button class="btn sm" data-tb="hepsi">Listedeki tüm ${pListe.length} ürünü seç</button>` : ''}
     <button class="btn sm pri" data-tb="duzenle">✏️ Toplu düzenle</button>
     <button class="btn sm" data-tb="etiket">🏷 Etiket</button>
     <button class="btn sm" data-tb="hizli">${hepsiHizli ? '⚡ Hızlı üründen çıkar' : '⚡ Hızlı ürün yap'}</button>
@@ -1572,6 +1577,7 @@ $('#pTopluBar').addEventListener('click', async e => {
   const b = e.target.closest('[data-tb]'); if(!b) return;
   const sec = [...seciliU].map(urunById).filter(Boolean);
   if(b.dataset.tb === 'temizle'){ seciliU.clear(); renderProducts(); }
+  if(b.dataset.tb === 'hepsi'){ pListe.forEach(id => seciliU.add(id)); renderProducts(); }
   if(b.dataset.tb === 'duzenle') topluDuzenle();
   if(b.dataset.tb === 'etiket') etiketPenceresi(sec.map(p => p.id));
   if(b.dataset.tb === 'hizli'){
@@ -1582,8 +1588,12 @@ $('#pTopluBar').addEventListener('click', async e => {
   if(b.dataset.tb === 'sil'){
     if(!confirm(`${sec.length} ürün silinsin mi?\n\n${sec.slice(0, 8).map(p => '• ' + p.ad).join('\n')}${sec.length > 8 ? `\n… ve ${sec.length - 8} ürün daha` : ''}\n\nGeçmiş satış kayıtları korunur.`)) return;
     const isl = sec.map(p => ['urun', p.id, Object.assign({}, p, {silindi: true})]);
-    for(let i = 0; i < isl.length; i += 300) await kaydetCok(isl.slice(i, i + 300));
-    seciliU.clear(); toast(`${sec.length} ürün silindi`); renderAktif();
+    if(sec.length > 1000 && !confirm(`DİKKAT: ${sec.length} ürün silinecek.\nEmin misiniz?`)) return;
+    for(let i = 0; i < isl.length; i += 1000){
+      await kaydetCok(isl.slice(i, i + 1000));
+      if(isl.length > 1000) toast(`Siliniyor… ${Math.min(i + 1000, isl.length)} / ${isl.length}`);
+    }
+    seciliU.clear(); toast(`${sec.length} ürün silindi`, 'ok'); renderAktif();
   }
 });
 // Listede satır içinden KDV değiştirme (varyantlı üründe tüm varyantlara uygulanır)
