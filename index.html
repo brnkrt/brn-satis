@@ -2498,7 +2498,6 @@ async function efkGonder(f, dugme){
     const sonuc = {disNo: y.invoiceId, ettn: y.invoiceUuid, trendyolDurum: y.status, efkOrtam: r.ortam, gonderimTarih: new Date().toISOString(), gonderen: profil.email};
     if(r.ortam === 'canli'){
       await kaydet('fatura', f.id, Object.assign({}, D.fatura.get(f.id) || f, {tip: f.tip, durum: 'kesildi', kesimTarih: sonuc.gonderimTarih, kesen: profil.email}, sonuc));
-      toast(`Fatura kesildi: ${y.invoiceId}`, 'ok');
     } else {
       await kaydet('fatura', f.id, Object.assign({}, D.fatura.get(f.id) || f, {tip: f.tip, testSonuc: sonuc}));
       alert(`TEST ortamında fatura oluştu ✓\n\nNumara: ${y.invoiceId}\nETTN: ${y.invoiceUuid || '—'}\n\nBu bir denemedir; gerçek fatura kesilmedi. BRN'deki fatura taslak olarak kalır.`);
@@ -2506,6 +2505,41 @@ async function efkGonder(f, dugme){
     renderAktif(); return true;
   }catch(e){ alert('Gönderilemedi: ' + e.message); return false; }
   finally{ if(dugme){ dugme.disabled = false; dugme.textContent = eskiYazi; } }
+}
+// Kesilen fatura için onay penceresi: yazdır / PDF
+function faturaKesildiPenceresi(f){
+  openModal(`<h2>✅ Fatura kesildi</h2>
+    <div style="font-size:16px;margin:6px 0 4px">${f.tip === 'EFATURA' ? 'e-Fatura' : 'e-Arşiv'} · <b class="mono">${esc(f.disNo || '')}</b></div>
+    <div class="muted">${esc(f.alici && f.alici.ad || '')} · <b class="num" style="color:var(--fg)">${tl(f.toplam)}</b></div>
+    <div class="mfoot"><button class="btn" id="fkPdf">📄 PDF</button><button class="btn" id="fkKapat">Kapat</button><button class="btn pri" id="fkYaz" style="font-size:17px;padding:10px 18px">🖨 Yazdır</button></div>`);
+  $('#modal').style.width = 'min(460px,100%)';
+  $('#fkKapat').onclick = closeModal;
+  $('#fkPdf').onclick = () => efkPdf(f);
+  $('#fkYaz').onclick = () => faturaBas(f);
+  setTimeout(() => $('#fkYaz') && $('#fkYaz').focus(), 30);
+}
+// Kesilmiş faturayı yazdırır: Trendyol'un resmi PDF'i köprüden alınıp yazıcıya gönderilir.
+// Köprü yoksa/PDF alınamazsa: Trendyol kaydı varsa PDF yeni sekmede açılır, yoksa BRN fatura çıktısı basılır.
+async function faturaBas(f){
+  const ettn = f.ettn || (f.testSonuc && f.testSonuc.ettn);
+  if(!ettn){ faturaYazdir(f); return; }
+  toast('Fatura yazdırmaya hazırlanıyor…');
+  let blob = null;
+  try{
+    const r = await fetch(EFK_URL + '/pdf', {method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({uuid: ettn, tip: f.tip})});
+    if(r.ok){ const b = await r.blob(); if(b.size > 1000 && (await b.slice(0, 4).text()) === '%PDF') blob = new Blob([b], {type: 'application/pdf'}); }
+  }catch(_){}
+  if(!blob){
+    const d = await efkDurum(true);
+    if(d && d.kurulu) return efkPdf(f);   // eski köprü: PDF yeni sekmede açılır, oradan yazdırılır
+    toast('Resmi PDF için e-Fatura köprüsü gerekli; BRN çıktısı yazdırılıyor', 'bad'); faturaYazdir(f); return;
+  }
+  const url = URL.createObjectURL(blob);
+  let fr = document.getElementById('faturaBasCerceve'); if(fr) fr.remove();
+  fr = document.createElement('iframe'); fr.id = 'faturaBasCerceve';
+  fr.style.cssText = 'position:fixed;left:-10000px;top:0;width:800px;height:1100px;border:0';
+  fr.onload = () => setTimeout(() => { try{ fr.contentWindow.focus(); fr.contentWindow.print(); }catch(_){ window.open(url, '_blank', 'noopener'); } }, 400);
+  fr.src = url; document.body.appendChild(fr);
 }
 async function efkPdf(f){
   const s = f.ettn ? f : f.testSonuc ? Object.assign({tip: f.tip}, f.testSonuc) : null;
@@ -2840,10 +2874,13 @@ function renderFaturalar(){
     <td class="hide-m">${f.tip === 'EFATURA' ? 'e-Fatura' : 'e-Arşiv'}</td>
     <td class="r num"><b>${tl(f.toplam)}</b></td>
     <td><span class="tag ${dCls}" style="font-family:var(--font-body)">${dAd}</span></td>
-    <td class="r"><button class="btn sm" data-fac="${f.id}">Aç</button></td></tr>`; }).join('')
+    <td class="r" style="white-space:nowrap">${f.durum === 'kesildi' ? `<button class="btn sm" data-fyaz="${f.id}" title="Faturayı yazdır">🖨 Yazdır</button> ` : ''}<button class="btn sm" data-fac="${f.id}">Aç</button></td></tr>`; }).join('')
     || `<tr><td colspan="7" class="empty">${hepsi.length ? 'Eşleşen fatura yok' : 'Henüz fatura yok. "+ Yeni Fatura" ile ya da Raporlar › satış detayındaki "🧾 Fatura" düğmesiyle oluşturabilirsiniz.'}</td></tr>`;
 }
-$('#ftBody').addEventListener('click', e => { const b = e.target.closest('[data-fac]'); if(b) faturaForm(b.dataset.fac); });
+$('#ftBody').addEventListener('click', e => {
+  const y = e.target.closest('[data-fyaz]'); if(y){ const f = D.fatura.get(y.dataset.fyaz); if(f) faturaBas(f); return; }
+  const b = e.target.closest('[data-fac]'); if(b) faturaForm(b.dataset.fac);
+});
 
 async function faturaNoUret(){
   let enBuyuk = (await metaAl('faturaSayac')) || 0;
@@ -2911,7 +2948,7 @@ function faturaForm(id, onceden = {}){
     <div class="mfoot">
       ${mevcut && f.durum === 'taslak' ? '<button class="btn bad" id="feSil" style="margin-right:auto">Taslağı sil</button>' : ''}
       ${mevcut && f.durum === 'kesildi' ? '<button class="btn bad" id="feIptal" style="margin-right:auto">İptal edildi olarak işaretle</button>' : ''}
-      <button class="btn" id="feYazdir">🖨 Önizleme</button>
+      <button class="btn ${f.durum === 'kesildi' ? 'pri' : ''}" id="feYazdir">${f.durum === 'kesildi' ? '🖨 Yazdır' : '🖨 Önizleme'}</button>
       <button class="btn" id="feKapat">${kilitli ? 'Kapat' : 'Vazgeç'}</button>
       ${f.ettn ? '<button class="btn" id="fePdf">📄 Fatura PDF</button>' : ''}
       ${kilitli ? '' : `<button class="btn" id="feKaydet">Taslak kaydet</button><button class="btn" id="feKes" title="Portala kopyala-yapıştırla aktarım">Portalda kes →</button><button class="btn pri" id="feGonder" style="display:none" title="BRN e-Fatura Köprüsü ile tek tuşla kesim">⚡ Trendyol'a gönder</button>`}
@@ -2950,7 +2987,7 @@ function faturaForm(id, onceden = {}){
     const b = $('#feGonder'); if(!b || !d || !d.kurulu) return;
     b.style.display = ''; if(d.ortam !== 'canli') b.textContent = '⚡ Trendyol\'a gönder (TEST)';
   });
-  $('#feYazdir').onclick = () => { if(!kilitli) formOku(); faturaYazdir(Object.assign({}, f, {no: f.no || 'TASLAK'})); };
+  $('#feYazdir').onclick = () => { if(f.durum === 'kesildi') return faturaBas(f); if(!kilitli) formOku(); faturaYazdir(Object.assign({}, f, {no: f.no || 'TASLAK'})); };
 
   // Formdaki alanları f nesnesine aktar
   const formOku = () => {
@@ -3062,7 +3099,7 @@ function faturaForm(id, onceden = {}){
     if(!String($('#feIl').value).trim()){ $('#feErr').textContent = 'Otomatik kesim için alıcının ilini (şehrini) yazın.'; $('#feIl').focus(); return; }
     if(!String($('#feIlce').value).trim()){ $('#feErr').textContent = 'Otomatik kesim için alıcının ilçesini yazın (Trendyol zorunlu tutuyor).'; $('#feIlce').focus(); return; }
     const s = await kaydetFatura(false); if(!s) return;
-    if(await efkGonder(s, $('#feGonder'))) closeModal();
+    if(await efkGonder(s, $('#feGonder'))){ closeModal(); const k = D.fatura.get(s.id); if(k && k.durum === 'kesildi') faturaKesildiPenceresi(k); }
   };
   if($('#feSil')) $('#feSil').onclick = async () => {
     if(!confirm('Taslak fatura silinsin mi?')) return;
