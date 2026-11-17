@@ -2439,10 +2439,12 @@ function trendyolGovde(f){
   if(a.vergiDairesi && String(a.vergiDairesi).trim().length >= 2) alici.taxOffice = String(a.vergiDairesi).trim();
   const tel = String(a.tel || '').replace(/[^\d+]/g, ''); if(/^\+?\d{7,15}$/.test(tel)) alici.phone = tel;
   const ep = String(a.eposta || '').trim().toLowerCase(); if(/^[a-z0-9._%+-]+@[a-z0-9.-]+\.[a-z]{2,}$/.test(ep)) alici.email = ep;
-  // Fatura tarihi: bugünse şu an, değilse o günün öğlesi (Türkiye saati)
-  const bugun = ymd(new Date());
-  const issuedAt = f.tarih && f.tarih !== bugun ? f.tarih + 'T12:00:00+03:00' : new Date().toISOString();
-  const govde = {autoInvoiceId: true, companyId: 0, userId: 0, source: 'WEB', localReferenceId: String(f.no || '').slice(0, 127),
+  // Fatura tarihi: bugünse şu an, değilse o günün öğlesi. Trendyol saat dilimi bilgisini yok sayıp
+  // saati yerel (Türkiye) saati olarak kaydettiği için yerel saat, dilim eki olmadan gönderilir.
+  const sim = new Date(), iki = n => String(n).padStart(2, '0'), bugun = ymd(sim);
+  const issuedAt = f.tarih && f.tarih !== bugun ? f.tarih + 'T12:00:00' : `${bugun}T${iki(sim.getHours())}:${iki(sim.getMinutes())}:${iki(sim.getSeconds())}`;
+  // source 'PORTAL': firmanın varsayılan ön ekleri (ör. DAP/DIP) "Portal" kullanımına tanımlı; başka kaynakla ön ek bulunamıyor
+  const govde = {autoInvoiceId: true, companyId: 0, userId: 0, source: 'PORTAL', localReferenceId: String(f.no || '').slice(0, 127),
     recipientInfo: alici, currencyInfo: {currency: 'TRY'},
     invoiceInfo: {invoiceType: f.tip === 'EFATURA' ? 'TEMELFATURA' : 'EARSIVFATURA', invoiceTypeCode: 'SATIS'},
     invoiceLines, issuedAt,
@@ -2455,8 +2457,13 @@ function trendyolGovde(f){
 function trendyolHata(y){
   if(!y) return 'Bilinmeyen hata';
   if(typeof y === 'string') return y.slice(0, 300);
+  if(/prefix-not-found/.test(y.type || '')) return 'Trendyol e-Faturam hesabınızda varsayılan fatura seri ön eki (ör. ABC) tanımlı değil. Portalda e-Arşiv / e-Fatura seri (ön ek) ayarlarından bir seri ekleyip varsayılan yapın, sonra tekrar gönderin.';
+  if(/username-or-password/.test(y.type || '')) return 'Trendyol e-posta / şifre hatalı. Köprü klasöründeki KURULUM.cmd ile bilgileri yeniden girin.';
   const alanAd = {city: 'İl', address: 'Adres', taxId: 'VKN/TCKN', name: 'Ad / Ünvan', surname: 'Soyad', email: 'E-posta', phone: 'Telefon', taxOffice: 'Vergi dairesi', district: 'İlçe', itemName: 'Ürün adı'};
   if(Array.isArray(y.errors) && y.errors.length) return y.errors.map(e => { const al = String(e.field || '').split('.').pop(); return (alanAd[al] || e.field || '') + ': ' + (e.defaultMessage || e.message || e.code || ''); }).join(' · ');
+  // "error.district.value.cannot.be.empty" gibi kodlar
+  const m = /error\.([a-zA-Z]+)\.value\.(cannot\.be\.empty|is\.not\.valid|invalid)/.exec([y.detail, y.title, y.message].join(' '));
+  if(m) return (alanAd[m[1]] || m[1]) + (/empty/.test(m[2]) ? ' boş olamaz — faturada bu alanı doldurun.' : ' geçersiz — faturada bu alanı kontrol edin.');
   return [y.title, y.detail, y.message].filter(Boolean).join(' — ') || JSON.stringify(y).slice(0, 300);
 }
 // Faturayı köprü üzerinden Trendyol'a gönderir. Canlı ortamda fatura "Kesildi" olur; test ortamında taslak kalır.
@@ -2466,6 +2473,7 @@ async function efkGonder(f, dugme){
   if(!d.kurulu){ alert('e-Fatura köprüsü kurulmamış. Köprü klasöründeki KURULUM.cmd dosyasını çalıştırın.'); return false; }
   const a = f.alici;
   if(!String(a.il || '').trim() || String(a.il).trim().length < 2){ alert('Otomatik kesim için alıcının ili (şehri) gerekli. Faturada "İl" alanını doldurun.'); return false; }
+  if(!String(a.ilce || '').trim()){ alert('Otomatik kesim için alıcının ilçesi gerekli (Trendyol zorunlu tutuyor). Faturada "İlçe" alanını doldurun.'); return false; }
   const canli = d.ortam === 'canli';
   const eskiYazi = dugme ? dugme.textContent : '';
   const yaz = t => { if(dugme){ dugme.disabled = true; dugme.textContent = t; } };
@@ -2875,8 +2883,8 @@ function faturaForm(id, onceden = {}){
           <div><label>Vergi dairesi <span class="muted">(şirketse)</span></label><input id="feVd" value="${esc(a.vergiDairesi)}" ${dis}></div>
           ${kilitli ? '' : `<div class="full"><label style="display:flex;gap:6px;align-items:center;margin:0;color:var(--fg);font-size:13px"><input type="checkbox" id="feNihai" ${a.vkn === '11111111111' ? 'checked' : ''}> TCKN bilinmiyor — nihai tüketici (11111111111)</label></div>`}
           <div class="full"><label>Adres *</label><input id="feAdres" value="${esc(a.adres)}" ${dis}></div>
-          <div><label>İl</label><input id="feIl" value="${esc(a.il)}" ${dis}></div>
-          <div><label>İlçe</label><input id="feIlce" value="${esc(a.ilce)}" ${dis}></div>
+          <div><label>İl <span class="muted">(otomatik kesimde zorunlu)</span></label><input id="feIl" value="${esc(a.il)}" ${dis}></div>
+          <div><label>İlçe <span class="muted">(otomatik kesimde zorunlu)</span></label><input id="feIlce" value="${esc(a.ilce)}" ${dis}></div>
           <div><label>E-posta <span class="muted">(fatura gönderimi)</span></label><input id="feEposta" value="${esc(a.eposta)}" type="email" ${dis}></div>
           <div><label>Telefon</label><input id="feTel" value="${esc(a.tel)}" inputmode="tel" ${dis}></div>
         </div>
@@ -3052,6 +3060,7 @@ function faturaForm(id, onceden = {}){
   $('#feKes').onclick = async () => { const s = await kaydetFatura(false); if(s){ closeModal(); portalAktarim(s.id); } };
   $('#feGonder').onclick = async () => {
     if(!String($('#feIl').value).trim()){ $('#feErr').textContent = 'Otomatik kesim için alıcının ilini (şehrini) yazın.'; $('#feIl').focus(); return; }
+    if(!String($('#feIlce').value).trim()){ $('#feErr').textContent = 'Otomatik kesim için alıcının ilçesini yazın (Trendyol zorunlu tutuyor).'; $('#feIlce').focus(); return; }
     const s = await kaydetFatura(false); if(!s) return;
     if(await efkGonder(s, $('#feGonder'))) closeModal();
   };
