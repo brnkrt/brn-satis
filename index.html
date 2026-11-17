@@ -514,7 +514,8 @@ tr.cancel td:last-child{text-decoration:none}
       <h2 style="margin-top:24px">🧾 Fatura</h2>
       <div class="row"><label style="margin:0;color:var(--fg);font-size:14px">Varsayılan KDV oranı</label><select id="sKdv"><option value="0">%0</option><option value="1">%1</option><option value="10">%10</option><option value="20">%20</option></select><button class="btn sm" id="saveFaturaBtn">Kaydet</button></div>
       <p class="muted" style="margin-bottom:0">KDV oranı girilmemiş ürünlerde bu oran kullanılır. Ürün formundan her ürüne ayrı oran verilebilir.<br>
-      <b>Trendyol e-Faturam bağlantısı:</b> Şu an faturalar BRN'de hazırlanıp portala kolay aktarılıyor. Tek tuşla otomatik kesim için Trendyol e-Faturam portalından <i>bireysel entegrasyon</i> başvurusu ve sabit IP'li bir aracı sunucu gerekir (ayrıntılar README.md'de).</p>
+      <b>Trendyol e-Faturam bağlantısı:</b> <span id="efkAyarDurum">kontrol ediliyor…</span> <button class="btn sm" id="efkAyarTest" style="margin-left:4px">Bağlantıyı dene</button><br>
+      Tek tuşla kesim, <i>BRN e-Fatura Köprüsü</i> kurulu bilgisayarda çalışır (bilgisayarın internet adresi Trendyol'da izinli olmalı). Köprü yoksa fatura portala kopyala-yapıştırla aktarılır.</p>
       </div>
       <h2 style="margin-top:24px">Hesap</h2>
       <div id="hesapBilgi" class="muted" style="margin-bottom:10px"></div>
@@ -930,7 +931,7 @@ function showTab(t){
   $$('.tab').forEach(s => s.classList.toggle('active', s.id === 'tab-' + t));
   renderAktif();
   if(t === 'satis') focusScan();
-  if(t === 'ayarlar') uyeleriYukle();
+  if(t === 'ayarlar'){ uyeleriYukle(); efkAyarCiz(false); }
 }
 function renderAktif(){
   yetkiUygula();
@@ -2382,8 +2383,128 @@ $('#zRaporBtn').onclick = () => {
 
 /* ================= FATURA ================= */
 // Fatura burada hazırlanır; yasal fatura Trendyol e-Faturam'da kesilir.
-// Otomatik gönderim (API) için sabit IP'li bir aracı sunucu gerekir; o kurulunca "Trendyol'a gönder" buraya eklenecek.
+// Otomatik gönderim: Trendyol API'si yalnızca izinli IP'den çalışır. Bu yüzden izinli bilgisayarda çalışan
+// "BRN e-Fatura Köprüsü" (efatura-kopru/kopru.ps1, localhost:8796) üzerinden gönderilir. Köprü yoksa portala aktarım kullanılır.
 const PORTAL_URL = 'https://trendyolefaturam.com/portal/giris';
+const EFK_URL = 'http://localhost:8796';
+let efkSon = null, efkZaman = 0;
+// Köprü bu bilgisayarda çalışıyor mu? (kısa süre önbellekli)
+async function efkDurum(zorla){
+  if(!zorla && Date.now() - efkZaman < 15000) return efkSon;
+  try{
+    const c = new AbortController(), t = setTimeout(() => c.abort(), 1500);
+    const r = await fetch(EFK_URL + '/durum', {signal: c.signal}); clearTimeout(t);
+    efkSon = r.ok ? await r.json() : null;
+  }catch(_){ efkSon = null; }
+  efkZaman = Date.now(); return efkSon;
+}
+async function efkIstek(yol, govde){
+  let r;
+  try{ r = await fetch(EFK_URL + yol, {method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify(govde || {})}); }
+  catch(e){ throw new Error('e-Fatura köprüsüne ulaşılamadı. Köprü bu bilgisayarda çalışıyor mu? (BASLAT.cmd)'); }
+  let j = null; try{ j = await r.json(); }catch(_){}
+  if(!r.ok) throw new Error((j && j.hata) || ('Köprü hatası ' + r.status));
+  return j;
+}
+const kurus = tl => Math.round((+tl || 0) * 100);
+// BRN faturasını Trendyol e-Faturam API biçimine çevirir (tutarlar kuruş). Fiyatlar KDV dahildir.
+// Eksi tutarlı satırlar (ör. "İndirim") aynı KDV oranlı satırlara tutarlarıyla orantılı dağıtılır.
+function trendyolGovde(f){
+  const a = f.alici || {};
+  let satirlar = f.kalemler.map(k => ({ad: String(k.ad).trim(), adet: +k.adet || 0, kdv: +k.kdv || 0, dahil: kurus((+k.adet || 0) * (+k.fiyat || 0))}));
+  const eksi = satirlar.filter(s => s.dahil < 0); satirlar = satirlar.filter(s => s.dahil > 0 && s.adet > 0);
+  for(const e of eksi){
+    let hedef = satirlar.filter(s => s.kdv === e.kdv); if(!hedef.length) hedef = satirlar;
+    const top = hedef.reduce((t, s) => t + s.dahil, 0); let kalan = -e.dahil;
+    hedef.forEach((s, i) => { const pay = i === hedef.length - 1 ? kalan : Math.round(-e.dahil * s.dahil / top); s.dahil -= pay; kalan -= pay; });
+  }
+  if(satirlar.some(s => s.dahil <= 0)) throw new Error('İndirim, satır tutarlarından büyük; faturayı kontrol edin.');
+  const muaf = {taxExemptionReasonCode: 351, taxExemptionReason: 'KDV - İstisna Olmayan Diğer'};
+  const vergiler = new Map(); let matrahTop = 0, kdvTop = 0;
+  const invoiceLines = satirlar.map(s => {
+    const matrah = Math.round(s.dahil / (1 + s.kdv / 100)), kdv = s.dahil - matrah;
+    matrahTop += matrah; kdvTop += kdv;
+    const v = vergiler.get(s.kdv) || {taxableAmount: 0, taxAmount: 0}; v.taxableAmount += matrah; v.taxAmount += kdv; vergiler.set(s.kdv, v);
+    const alt = Object.assign({taxableAmount: matrah, taxAmount: kdv, taxType: 'KDV', percent: s.kdv, name: 'KDV'}, s.kdv === 0 ? muaf : {});
+    return {unitCode: 'C62', quantity: s.adet, itemName: s.ad.slice(0, 250), unitPriceAmount: Math.round(matrah / s.adet * 10000) / 10000,
+      totalAmount: matrah, taxableAmount: matrah, taxAmount: kdv, taxPercent: s.kdv, taxName: 'KDV', totalDiscountAmount: 0,
+      totalTax: {totalTaxAmount: kdv, subTotalTaxes: [alt]}};
+  });
+  // Alıcı: şahısta son kelime soyad olarak ayrılır
+  const ad = String(a.ad || '').trim(), sahis = String(a.vkn).length === 11, parca = ad.split(/\s+/);
+  const alici = {taxId: String(a.vkn), countryCode: 'TR', city: String(a.il || '').trim(), address: String(a.adres || '').trim().slice(0, 255),
+    name: sahis && parca.length > 1 ? parca.slice(0, -1).join(' ') : ad.slice(0, 127)};
+  if(sahis && parca.length > 1) alici.surname = parca[parca.length - 1];
+  if(a.ilce && String(a.ilce).trim()) alici.district = String(a.ilce).trim();
+  if(a.vergiDairesi && String(a.vergiDairesi).trim().length >= 2) alici.taxOffice = String(a.vergiDairesi).trim();
+  const tel = String(a.tel || '').replace(/[^\d+]/g, ''); if(/^\+?\d{7,15}$/.test(tel)) alici.phone = tel;
+  const ep = String(a.eposta || '').trim().toLowerCase(); if(/^[a-z0-9._%+-]+@[a-z0-9.-]+\.[a-z]{2,}$/.test(ep)) alici.email = ep;
+  // Fatura tarihi: bugünse şu an, değilse o günün öğlesi (Türkiye saati)
+  const bugun = ymd(new Date());
+  const issuedAt = f.tarih && f.tarih !== bugun ? f.tarih + 'T12:00:00+03:00' : new Date().toISOString();
+  const govde = {autoInvoiceId: true, companyId: 0, userId: 0, source: 'WEB', localReferenceId: String(f.no || '').slice(0, 127),
+    recipientInfo: alici, currencyInfo: {currency: 'TRY'},
+    invoiceInfo: {invoiceType: f.tip === 'EFATURA' ? 'TEMELFATURA' : 'EARSIVFATURA', invoiceTypeCode: 'SATIS'},
+    invoiceLines, issuedAt,
+    totalTax: {totalTaxAmount: kdvTop, subTotalTaxes: [...vergiler.entries()].sort((x, y) => x[0] - y[0]).map(([o, v]) => Object.assign({taxableAmount: v.taxableAmount, taxAmount: v.taxAmount, taxType: 'KDV', percent: o, name: 'KDV'}, o === 0 ? muaf : {}))},
+    invoiceTotal: {lineExtensionAmount: matrahTop, taxExclusiveAmount: matrahTop, taxInclusiveAmount: matrahTop + kdvTop, payableAmount: matrahTop + kdvTop, allowanceTotalAmount: 0}};
+  if(f.aciklama) govde.notes = [String(f.aciklama).slice(0, 250)];
+  return govde;
+}
+// Trendyol hata yanıtını okunur metne çevirir
+function trendyolHata(y){
+  if(!y) return 'Bilinmeyen hata';
+  if(typeof y === 'string') return y.slice(0, 300);
+  const alanAd = {city: 'İl', address: 'Adres', taxId: 'VKN/TCKN', name: 'Ad / Ünvan', surname: 'Soyad', email: 'E-posta', phone: 'Telefon', taxOffice: 'Vergi dairesi', district: 'İlçe', itemName: 'Ürün adı'};
+  if(Array.isArray(y.errors) && y.errors.length) return y.errors.map(e => { const al = String(e.field || '').split('.').pop(); return (alanAd[al] || e.field || '') + ': ' + (e.defaultMessage || e.message || e.code || ''); }).join(' · ');
+  return [y.title, y.detail, y.message].filter(Boolean).join(' — ') || JSON.stringify(y).slice(0, 300);
+}
+// Faturayı köprü üzerinden Trendyol'a gönderir. Canlı ortamda fatura "Kesildi" olur; test ortamında taslak kalır.
+async function efkGonder(f, dugme){
+  const d = await efkDurum(true);
+  if(!d){ toast('e-Fatura köprüsü bu bilgisayarda çalışmıyor', 'bad'); return false; }
+  if(!d.kurulu){ alert('e-Fatura köprüsü kurulmamış. Köprü klasöründeki KURULUM.cmd dosyasını çalıştırın.'); return false; }
+  const a = f.alici;
+  if(!String(a.il || '').trim() || String(a.il).trim().length < 2){ alert('Otomatik kesim için alıcının ili (şehri) gerekli. Faturada "İl" alanını doldurun.'); return false; }
+  const canli = d.ortam === 'canli';
+  const eskiYazi = dugme ? dugme.textContent : '';
+  const yaz = t => { if(dugme){ dugme.disabled = true; dugme.textContent = t; } };
+  try{
+    // Mükellef kontrolü: alıcı e-Fatura kullanıcısıysa e-Fatura, değilse e-Arşiv kesilmeli
+    yaz('Mükellef sorgulanıyor…');
+    if(a.vkn !== '11111111111'){
+      let mk = null; try{ mk = await efkIstek('/mukellef', {vkn: a.vkn}); }catch(_){}
+      const efaturaci = Array.isArray(mk) && mk.some(x => !x.deletedAt && (x.aliasType || 'INVOICE') === 'INVOICE');
+      if(Array.isArray(mk)){
+        if(efaturaci && f.tip !== 'EFATURA'){ if(!confirm(`${a.ad} e-Fatura mükellefi görünüyor. Fatura e-Fatura olarak kesilsin mi?\n(İptal: işlemi durdurur)`)) return false; f.tip = 'EFATURA'; }
+        else if(!efaturaci && f.tip === 'EFATURA'){ if(!confirm(`${a.ad} e-Fatura mükellefi değil. Fatura e-Arşiv olarak kesilsin mi?\n(İptal: işlemi durdurur)`)) return false; f.tip = 'EARSIV'; }
+      }
+    } else if(f.tip === 'EFATURA') f.tip = 'EARSIV';
+    const govde = trendyolGovde(f);
+    const h = kdvHesap(f.kalemler);
+    if(!confirm(`${canli ? 'GERÇEK FATURA KESİLECEK' : 'TEST ortamına gönderilecek (gerçek fatura kesilmez)'}\n\n${f.tip === 'EFATURA' ? 'e-Fatura' : 'e-Arşiv'} · ${a.ad}\nToplam: ${tl(h.toplam)}\n\nDevam edilsin mi?`)) return false;
+    yaz('Trendyol\'a gönderiliyor…');
+    const r = await efkIstek('/kes', {tip: f.tip, ref: f.no, govde: JSON.stringify(govde)});
+    const y = r.yanit || {};
+    if(!(r.kod >= 200 && r.kod < 300) || !y.invoiceId){ alert('Trendyol faturayı kabul etmedi (' + r.kod + '):\n\n' + trendyolHata(y)); return false; }
+    const sonuc = {disNo: y.invoiceId, ettn: y.invoiceUuid, trendyolDurum: y.status, efkOrtam: r.ortam, gonderimTarih: new Date().toISOString(), gonderen: profil.email};
+    if(r.ortam === 'canli'){
+      await kaydet('fatura', f.id, Object.assign({}, D.fatura.get(f.id) || f, {tip: f.tip, durum: 'kesildi', kesimTarih: sonuc.gonderimTarih, kesen: profil.email}, sonuc));
+      toast(`Fatura kesildi: ${y.invoiceId}`, 'ok');
+    } else {
+      await kaydet('fatura', f.id, Object.assign({}, D.fatura.get(f.id) || f, {tip: f.tip, testSonuc: sonuc}));
+      alert(`TEST ortamında fatura oluştu ✓\n\nNumara: ${y.invoiceId}\nETTN: ${y.invoiceUuid || '—'}\n\nBu bir denemedir; gerçek fatura kesilmedi. BRN'deki fatura taslak olarak kalır.`);
+    }
+    renderAktif(); return true;
+  }catch(e){ alert('Gönderilemedi: ' + e.message); return false; }
+  finally{ if(dugme){ dugme.disabled = false; dugme.textContent = eskiYazi; } }
+}
+async function efkPdf(f){
+  const s = f.ettn ? f : f.testSonuc ? Object.assign({tip: f.tip}, f.testSonuc) : null;
+  if(!s || !s.ettn){ toast('Bu faturanın Trendyol kaydı yok', 'bad'); return; }
+  try{ const r = await efkIstek('/indir', {uuid: s.ettn, tip: f.tip}); if(r.kod === 200 && /^https?:\/\//.test(r.url)) window.open(r.url, '_blank', 'noopener'); else toast('PDF alınamadı (' + r.kod + ')', 'bad'); }
+  catch(e){ toast(e.message, 'bad'); }
+}
 const KDV_ORANLARI = [0, 1, 10, 20];
 const faturaAyar = () => Object.assign({varsayilanKdv: 20}, D.ayar.get('fatura') || {});
 const faturalar = () => [...D.fatura.values()];
@@ -2784,8 +2905,10 @@ function faturaForm(id, onceden = {}){
       ${mevcut && f.durum === 'kesildi' ? '<button class="btn bad" id="feIptal" style="margin-right:auto">İptal edildi olarak işaretle</button>' : ''}
       <button class="btn" id="feYazdir">🖨 Önizleme</button>
       <button class="btn" id="feKapat">${kilitli ? 'Kapat' : 'Vazgeç'}</button>
-      ${kilitli ? '' : '<button class="btn" id="feKaydet">Taslak kaydet</button><button class="btn pri" id="feKes">Trendyol e-Faturam\'da kes →</button>'}
-    </div>`);
+      ${f.ettn ? '<button class="btn" id="fePdf">📄 Fatura PDF</button>' : ''}
+      ${kilitli ? '' : `<button class="btn" id="feKaydet">Taslak kaydet</button><button class="btn" id="feKes" title="Portala kopyala-yapıştırla aktarım">Portalda kes →</button><button class="btn pri" id="feGonder" style="display:none" title="BRN e-Fatura Köprüsü ile tek tuşla kesim">⚡ Trendyol'a gönder</button>`}
+    </div>
+    ${f.testSonuc ? `<div class="muted" style="font-size:12px;text-align:right;margin-top:6px">Son TEST gönderimi: <span class="mono">${esc(f.testSonuc.disNo)}</span> · ${new Date(f.testSonuc.gonderimTarih).toLocaleString('tr-TR')}</div>` : ''}`);
   $('#modal').style.width = 'min(980px,100%)';
 
   const kalemCiz = () => {
@@ -2813,6 +2936,12 @@ function faturaForm(id, onceden = {}){
   };
   kalemCiz(); vknKontrol();
   $('#feKapat').onclick = closeModal;
+  if($('#fePdf')) $('#fePdf').onclick = () => efkPdf(f);
+  // Köprü bu bilgisayarda çalışıyorsa tek tuşla gönderim düğmesi görünür
+  if($('#feGonder')) efkDurum().then(d => {
+    const b = $('#feGonder'); if(!b || !d || !d.kurulu) return;
+    b.style.display = ''; if(d.ortam !== 'canli') b.textContent = '⚡ Trendyol\'a gönder (TEST)';
+  });
   $('#feYazdir').onclick = () => { if(!kilitli) formOku(); faturaYazdir(Object.assign({}, f, {no: f.no || 'TASLAK'})); };
 
   // Formdaki alanları f nesnesine aktar
@@ -2921,6 +3050,11 @@ function faturaForm(id, onceden = {}){
   };
   $('#feKaydet').onclick = async () => { const s = await kaydetFatura(true); if(s){ toast('Taslak kaydedildi', 'ok'); closeModal(); } };
   $('#feKes').onclick = async () => { const s = await kaydetFatura(false); if(s){ closeModal(); portalAktarim(s.id); } };
+  $('#feGonder').onclick = async () => {
+    if(!String($('#feIl').value).trim()){ $('#feErr').textContent = 'Otomatik kesim için alıcının ilini (şehrini) yazın.'; $('#feIl').focus(); return; }
+    const s = await kaydetFatura(false); if(!s) return;
+    if(await efkGonder(s, $('#feGonder'))) closeModal();
+  };
   if($('#feSil')) $('#feSil').onclick = async () => {
     if(!confirm('Taslak fatura silinsin mi?')) return;
     await kaydet('fatura', mevcut.id, Object.assign({}, mevcut, {silindi: true}));
@@ -3609,6 +3743,20 @@ $('#uyeForm').onsubmit = async e => {
   if(error){ toast(sbMesaj(error), 'bad'); return; }
   $('#uyeEposta').value = ''; toast('Kullanıcı eklendi', 'ok'); uyeleriYukle();
 };
+// Ayarlar › Fatura: e-Fatura köprüsünün durumu ve Trendyol'a giriş denemesi
+async function efkAyarCiz(girisDene){
+  const el = $('#efkAyarDurum'); if(!el) return;
+  const d = await efkDurum(true);
+  if(!d){ el.innerHTML = '<span class="muted">bu bilgisayarda köprü çalışmıyor — portala aktarım kullanılır.</span>'; return; }
+  if(!d.kurulu){ el.innerHTML = '<span style="color:var(--warn)">köprü çalışıyor ama kurulmamış (KURULUM.cmd).</span>'; return; }
+  el.innerHTML = `<span style="color:var(--in)">köprü çalışıyor</span> · ${d.ortam === 'canli' ? '<b style="color:var(--out)">CANLI</b>' : '<b>TEST</b>'} ortamı · ${esc(d.eposta)}`;
+  if(girisDene){
+    el.insertAdjacentHTML('beforeend', ' · <span class="muted">Trendyol\'a giriş deneniyor…</span>');
+    try{ const r = await efkIstek('/giris'); el.lastElementChild.outerHTML = r.companyId && r.userId ? ' · <span style="color:var(--in)">Trendyol girişi başarılı ✓</span>' : ` · <span style="color:var(--warn)">giriş tamam ama firma kimliği okunamadı (${esc(r.alanlar || '')})</span>`; }
+    catch(e){ el.lastElementChild.outerHTML = ' · <span style="color:var(--out)">' + esc(e.message) + '</span>'; }
+  }
+}
+$('#efkAyarTest').onclick = () => efkAyarCiz(true);
 $('#saveFaturaBtn').onclick = async () => { await kaydet('ayar', 'fatura', Object.assign({}, faturaAyar(), {varsayilanKdv: +$('#sKdv').value})); toast('Fatura ayarı kaydedildi', 'ok'); };
 $('#saveFisBtn').onclick = async () => {
   await kaydet('ayar', 'fis', {isletme: $('#sName').value.trim() || (profil ? profil.firmaAd : ''), adres: $('#sAddr').value.trim(), tel: $('#sPhone').value.trim(), altYazi: $('#sFooter').value.trim()});

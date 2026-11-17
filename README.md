@@ -123,14 +123,15 @@ Renk, ebat, çizgi tipi gibi seçenekleri olan ürünler için (örn. *Faber Tü
 - BRN'deki **🖨 Önizleme** çıktısı fatura değildir. Yasal fatura Trendyol e-Faturam'da kesilir.
 - Yetki: çalışanların fatura kesebilmesi için *Ayarlar › Kullanıcılar › Yetkiler*den **Fatura hazırlama ve kesme** açılmalıdır.
 
-### Tek tuşla otomatik kesim (ileride)
+### Tek tuşla otomatik kesim (BRN e-Fatura Köprüsü)
 
-Trendyol e-Faturam'ın API'si yalnızca **önceden tanımlanmış sabit IPv4 adreslerinden** gelen isteklere açıktır. Program tarayıcıda çalıştığı için doğrudan bağlanamaz; araya sabit IP'li küçük bir sunucu gerekir. Kurulum için:
+Trendyol e-Faturam'ın API'si yalnızca **portalda izin verilen IPv4 adreslerinden** gelen isteklere açıktır (Entegrasyon ekranı, en fazla 3 adres). Bu yüzden gönderim, izinli internet bağlantısındaki bir bilgisayarda çalışan küçük bir köprü programı üzerinden yapılır (`efatura-kopru/`).
 
-1. Trendyol e-Faturam portalında **Entegrasyon** ekranından *bireysel entegrasyon* başvurusu yapılır (sunucunun sabit IP adresi girilir, en fazla 3 adres).
-2. Onay e-postasıyla test ortamına şifre belirlenir; denemeler test ortamında yapılır.
-3. Sabit IP'li küçük bir sunucu (VPS) kiralanır. Bu sunucuda BRN ile Trendyol arasında aracılık eden küçük bir program çalışır.
-4. Bunlar hazır olunca fatura ekranına **Trendyol'a gönder** düğmesi eklenir: fatura tek tuşla kesilir, numarası ve PDF'i otomatik gelir.
+1. Köprü klasöründeki **KURULUM.cmd** çalıştırılır: ortam (TEST / CANLI), Trendyol e-Faturam e-postası ve şifresi girilir. Şifre yalnızca o bilgisayarda Windows şifrelemesiyle (DPAPI) saklanır. Kurulum ekranı bilgisayarın dış IP adresini de gösterir; bu adres portalda izinli olmalıdır.
+2. Köprü arka planda çalışır (istenirse bilgisayar açılınca kendiliğinden başlar; elle başlatmak için **BASLAT.cmd**).
+3. O bilgisayarda BRN'de fatura ekranında **⚡ Trendyol'a gönder** düğmesi görünür. Program alıcının e-Fatura mükellefi olup olmadığını sorgular, faturayı gönderir; CANLI ortamda fatura **Kesildi** olur, numarası ve ETTN'si kaydedilir, **📄 Fatura PDF** ile indirilebilir. TEST ortamında fatura taslak kalır.
+4. Durum: *Ayarlar › Fatura › Bağlantıyı dene*. Köprü olmayan cihazlarda eski portala aktarım (Portalda kes →) kullanılır.
+5. Başka bir bilgisayara taşımak için köprü klasörü kopyalanıp orada KURULUM.cmd çalıştırılır. Bilgisayar farklı bir internet bağlantısındaysa o adres portala eklenmelidir.
 
 ## Personel
 
