@@ -118,7 +118,11 @@ th.sirali{color:var(--accent)}
 #payCard .sumrow.muted, #payCard .sumrow .muted{font-size:17px}
 #payCard #subTotal{font-size:20px;font-weight:600;color:var(--fg)}
 #payCard #itemCount{font-size:16px}
-#payCard #discount, #payCard #received{font-size:22px;padding:8px 12px;font-family:var(--font-num)}
+#payCard #discount.degisti{border-color:var(--warn);background:var(--warn-soft)}
+.iskKutu{width:58px;text-align:right;padding:7px 6px;font-size:15px;font-family:var(--font-num)}
+.iskKutu.degisti{border-color:var(--warn);background:var(--warn-soft);font-weight:600}
+@media (max-width:820px){.iskKutu{width:46px;padding:6px 4px}}
+#payCard #discountPct, #payCard #discount, #payCard #received{font-size:22px;padding:8px 12px;font-family:var(--font-num)}
 #payCard .bills .btn{font-size:16px;padding:9px 2px}
 #payCard #veresiyeBox, #payCard #vAra{font-size:17px}
 .sumrow{display:flex;justify-content:space-between;align-items:center;gap:8px;margin:6px 0}
@@ -271,13 +275,14 @@ tr.cancel td:last-child{text-decoration:none}
       <div id="sepetSekmeler"></div>
       <div class="card" id="cartBox">
         <table>
-          <thead><tr><th style="width:30px" class="hide-m">#</th><th>Ürün</th><th class="r">Fiyat</th><th style="text-align:center">Adet</th><th class="r">Tutar</th><th style="width:40px"></th></tr></thead>
+          <thead><tr><th style="width:30px" class="hide-m">#</th><th>Ürün</th><th class="r">Fiyat</th><th class="r" title="Satır indirimi (%)">İnd. %</th><th style="text-align:center">Adet</th><th class="r">Tutar</th><th style="width:40px"></th></tr></thead>
           <tbody id="cartBody"></tbody>
         </table>
       </div>
     </div>
     <div class="card" id="payCard">
       <div class="sumrow muted"><span>Ara toplam</span><span id="subTotal" class="num">0,00 ₺</span></div>
+      <div class="sumrow"><span class="muted">İndirim (%)</span><input id="discountPct" style="width:120px;text-align:right" placeholder="%0" inputmode="decimal"></div>
       <div class="sumrow"><span class="muted">İndirim (₺)</span><input id="discount" style="width:120px;text-align:right" placeholder="0,00" inputmode="decimal"></div>
       <div class="sumrow muted" style="margin-top:12px"><span>TOPLAM</span><span id="itemCount"></span></div>
       <div class="big" id="grandTotal">0,00 ₺</div>
@@ -651,7 +656,7 @@ function yetkiUygula(){
   g('#newProdBtn', yetkili('urunDuzenle')); g('#newVarBtn', yetkili('urunDuzenle')); g('#pSecTh', yetkili('urunDuzenle')); g('#hizliDuzenBtn', yetkili('urunDuzenle')); g('#ayarExcel', yetkili('urunDuzenle'));
   g('#stockInBtn', yetkili('stokGiris'));
   g('#ayarFis', yetkili('ayar')); g('.ayarFisYok', !yetkili('ayar')); g('#ayarFatura', yetkili('ayar') && yetkili('fatura')); g('#backupBtn', yetkili('ayar')); g('#restoreBtn', yetkili('ayar'));
-  const ind = $('#discount'); ind.disabled = !yetkili('indirim'); if(ind.disabled) ind.value = '';
+  const ind = $('#discount'), iy = $('#discountPct'); ind.disabled = iy.disabled = !yetkili('indirim'); if(ind.disabled){ ind.value = ''; iy.value = ''; }
   if(payMethod === 'veresiye' && !yetkili('veresiye')) setMethod('nakit');
   if((curTab === 'raporlar' && !yetkili('rapor')) || (curTab === 'cariler' && !yetkili('veresiye')) || (curTab === 'fatura' && !yetkili('fatura')) || (curTab === 'personel' && !yetkili('personel')) || (curTab === 'tedarik' && !yetkili('tedarikci'))) showTab('satis');
 }
@@ -1063,7 +1068,7 @@ let cart = [];          // {pid, qty} — etkin müşteri sekmesinin sepeti
    ödeme şekli ve veresiye müşterisi ayrı tutulur; bu cihazda saklanır (sayfa yenilense de kalır). */
 const SEPET_SAYI = 4;
 let sepetler = [], aktifSepet = 0, sepetHazir = false;
-const bosSepet = () => ({cart: [], indirim: '', alinan: '', odeme: 'nakit', cariId: null});
+const bosSepet = () => ({cart: [], indirim: '', indirimYuzde: '', alinan: '', odeme: 'nakit', cariId: null});
 function sepetleriYukle(){
   const k = lsAl('brn-sepetler-' + firmaId, null);
   sepetler = Array.from({length: SEPET_SAYI}, (_, i) => Object.assign(bosSepet(), k && k.sepetler && k.sepetler[i] || {}));
@@ -1073,14 +1078,14 @@ function sepetleriYukle(){
 }
 function sepetYukleAktif(){
   const s = sepetler[aktifSepet];
-  cart = s.cart; $('#discount').value = s.indirim || ''; $('#received').value = s.alinan || '';
+  cart = s.cart; $('#discount').value = s.indirim || ''; $('#discountPct').value = s.indirimYuzde || ''; $('#received').value = s.alinan || '';
   seciliCari = s.cariId || null; lastPid = null; $('#lastSale').style.display = 'none';
   setMethod(s.odeme === 'veresiye' && !yetkili('veresiye') ? 'nakit' : (s.odeme || 'nakit'));
   hideResults(); renderCart();
 }
 function sepetKaydet(){
   if(!sepetHazir || !sepetler[aktifSepet]) return;
-  Object.assign(sepetler[aktifSepet], {cart, indirim: $('#discount').value, alinan: $('#received').value, odeme: payMethod, cariId: seciliCari});
+  Object.assign(sepetler[aktifSepet], {cart, indirim: $('#discount').value, indirimYuzde: $('#discountPct').value, alinan:$('#received').value, odeme: payMethod, cariId: seciliCari});
   lsYaz('brn-sepetler-' + firmaId, {aktif: aktifSepet, sepetler});
 }
 function sepetSec(i){
@@ -1091,13 +1096,13 @@ function sepetSekmeCiz(){
   const el = $('#sepetSekmeler'); if(!el || !sepetHazir) return;
   el.innerHTML = sepetler.map((s, i) => {
     const c = i === aktifSepet ? cart : s.cart || [];
-    const adet = c.reduce((a, l) => a + (+l.qty || 0), 0), top = c.reduce((a, l) => a + satirFiyat(l) * l.qty, 0);
+    const adet = c.reduce((a, l) => a + (+l.qty || 0), 0), top = c.reduce((a, l) => a + satirTutar(l), 0);
     return `<button class="sepetSekme ${i === aktifSepet ? 'aktif' : ''} ${adet && i !== aktifSepet ? 'dolu' : ''}" data-sepet="${i}" title="Alt+${i + 1}">🛒 Müşteri ${i + 1}<small>${adet ? `${adet} ürün · ${tl(top)}` : 'boş'}</small></button>`;
   }).join('');
 }
 document.addEventListener('click', e => { const b = e.target.closest('[data-sepet]'); if(b) sepetSec(+b.dataset.sepet); });
 // İndirim, alınan para ve ödeme şekli değişince de sekmeye kaydet
-['#discount', '#received'].forEach(s => document.querySelector(s).addEventListener('input', () => { sepetKaydet(); }));
+['#discount', '#discountPct', '#received'].forEach(s => document.querySelector(s).addEventListener('input', () => { sepetKaydet(); }));
 let lastPid = null, payMethod = 'nakit', lastSaleObj = null;
 const scan = $('#scan');
 const dokunmatik = () => !matchMedia('(pointer:fine)').matches;
@@ -1189,19 +1194,25 @@ function addToCart(pid, qty=1){
 function setQty(pid, q){ q = Math.floor(+q); if(!(q > 0)) cart = cart.filter(l => l.pid !== pid); else { const l = cart.find(l => l.pid === pid); if(l) l.qty = q; } renderCart(); }
 // Sepet satırının fiyatı: kasada değiştirildiyse o, değilse ürünün kayıtlı fiyatı
 function satirFiyat(l){ if(l.serbest) return +l.fiyat || 0; const p = urunById(l.pid); return l.fiyat != null ? l.fiyat : (+(p && p.satis) || 0); }
+// Satır indirimi (%): indirimli birim fiyat kuruşa yuvarlanır, satır tutarı = indirimli birim × adet
+const satirIsk = l => { const p = +l.isk; return p > 0 && p <= 100 ? p : 0; };
+const satirNet = l => r2(satirFiyat(l) * (1 - satirIsk(l) / 100));
+const satirTutar = l => r2(satirNet(l) * (+l.qty || 0));
+const yuzdeOku = v => { const p = parseNum(v); return String(v ?? '').trim() && !isNaN(p) && p > 0 ? Math.min(100, p) : 0; };
 // Sepet satırının ürünü: serbest (muhtelif) satırlarda ürün yerine geçen sanal kayıt
 function satirUrun(l){ return l.serbest ? {id: l.pid, ad: l.ad, barkod: '', satis: l.fiyat, alis: 0, serbest: true} : urunById(l.pid); }
 const fiyatDegistirebilir = () => yetkili('indirim') || yetkili('urunDuzenle');
 function getTotals(){
   let sub = 0, count = 0;
-  cart.forEach(l => { const p = satirUrun(l); if(p){ sub += satirFiyat(l) * l.qty; count += l.qty; } });
-  sub = r2(sub); let disc = parseNum($('#discount').value); disc = isNaN(disc) || disc < 0 ? 0 : r2(disc);
-  return {sub, disc, total: r2(sub - disc), count};
+  cart.forEach(l => { const p = satirUrun(l); if(p){ sub += satirTutar(l); count += l.qty; } });
+  sub = r2(sub); const yuzde = yuzdeOku($('#discountPct').value);
+  let disc = yuzde ? r2(sub * yuzde / 100) : parseNum($('#discount').value); disc = isNaN(disc) || disc < 0 ? 0 : r2(disc);
+  return {sub, disc, yuzde, total: r2(sub - disc), count};
 }
 function renderCart(){
   cart = cart.filter(l => l.serbest || urunById(l.pid));
   const body = $('#cartBody');
-  if(!cart.length) body.innerHTML = `<tr><td colspan="6" class="empty">Müşteri ${aktifSepet + 1} — sepet boş. Barkod okutarak başlayın.</td></tr>`;
+  if(!cart.length) body.innerHTML = `<tr><td colspan="7" class="empty">Müşteri ${aktifSepet + 1} — sepet boş. Barkod okutarak başlayın.</td></tr>`;
   else body.innerHTML = cart.map((l, i) => { const p = satirUrun(l), s = l.serbest ? Infinity : stok(p.id); return `
     <tr class="${l.pid === lastPid ? 'last' : ''}">
       <td class="muted hide-m">${i + 1}</td>
@@ -1214,8 +1225,9 @@ function renderCart(){
         : fiyatDegistirebilir()
         ? `<span class="fiyatKutu"><input data-act="fiyat" data-pid="${p.id}" value="${num2(satirFiyat(l))}" inputmode="decimal" class="num ${l.fiyat != null ? 'degisti' : ''}" title="Bu satış için fiyatı değiştirin">${l.fiyat != null ? `<span class="fiyatNot">eski fiyat: ${num2(p.satis)}</span>` : ''}${l.fiyat != null && yetkili('urunDuzenle') ? `<button class="kaliciBtn ${l.kalici ? 'aktif' : ''}" data-act="kalici" data-pid="${p.id}" title="${l.kalici ? 'Satış tamamlanınca bu fiyat ürüne kaydedilecek. Vazgeçmek için tekrar basın.' : 'Basarsanız satış tamamlanınca bu fiyat ürünün yeni fiyatı olur'}">${l.kalici ? '✓ Kalıcı olacak' : '📌 Kalıcı yap'}</button>` : ''}</span>`
         : `<span class="num">${tl(satirFiyat(l))}</span>`}</td>
+      <td class="r">${yetkili('indirim') ? `<input data-act="isk" data-pid="${p.id}" value="${satirIsk(l) ? String(satirIsk(l)).replace('.', ',') : ''}" placeholder="%" inputmode="decimal" class="iskKutu ${satirIsk(l) ? 'degisti' : ''}" title="Bu ürüne yüzde indirim">` : (satirIsk(l) ? `%${satirIsk(l)}` : '')}${satirIsk(l) ? `<div class="muted num" style="font-size:12px">${num2(satirNet(l))}</div>` : ''}</td>
       <td style="text-align:center"><span class="qty"><button class="btn" data-act="dec" data-pid="${p.id}">−</button><input data-act="qty" data-pid="${p.id}" value="${l.qty}" inputmode="numeric"><button class="btn" data-act="inc" data-pid="${p.id}">+</button></span></td>
-      <td class="r num"><b>${tl(satirFiyat(l) * l.qty)}</b></td>
+      <td class="r num"><b>${tl(satirTutar(l))}</b></td>
       <td><button class="btn sm bad" data-act="del" data-pid="${p.id}" title="Kaldır">✕</button></td>
     </tr>`; }).join('');
   updateTotals(); renderHizli(); sepetKaydet(); sepetSekmeCiz();
@@ -1223,6 +1235,8 @@ function renderCart(){
 }
 function updateTotals(){
   const t = getTotals();
+  // % girildiyse ₺ indirim kutusu hesaplanan tutarı gösterir
+  const ind = $('#discount'); if(t.yuzde){ if(document.activeElement !== ind) ind.value = num2(t.disc); } ind.classList.toggle('degisti', !!t.yuzde);
   $('#subTotal').textContent = tl(t.sub); $('#grandTotal').textContent = tl(t.total);
   $('#itemCount').textContent = t.count ? t.count + ' ürün' : '';
   const r = parseNum($('#received').value), cb = $('#changeBox');
@@ -1243,6 +1257,13 @@ $('#cartBody').addEventListener('click', e => {
 });
 $('#cartBody').addEventListener('change', e => {
   if(e.target.dataset.act === 'qty'){ setQty(e.target.dataset.pid, e.target.value); focusScan(); }
+  if(e.target.dataset.act === 'isk'){
+    const l = cart.find(x => x.pid === e.target.dataset.pid); if(!l || !yetkili('indirim')) return;
+    const v = String(e.target.value).replace('%', '').trim(), p = parseNum(v);
+    if(v && (isNaN(p) || p < 0 || p > 100)){ toast('İndirim 0 ile 100 arasında olmalı', 'bad'); renderCart(); return; }
+    if(!v || !p) delete l.isk; else l.isk = r2(p);
+    renderCart(); focusScan();
+  }
   if(e.target.dataset.act === 'kdv'){
     const l = cart.find(x => x.pid === e.target.dataset.pid); if(!l) return;
     const kdv = +e.target.value;
@@ -1263,9 +1284,12 @@ $('#cartBody').addEventListener('change', e => {
     renderCart(); focusScan();
   }
 });
-$('#cartBody').addEventListener('keydown', e => { if((e.target.dataset.act === 'qty' || e.target.dataset.act === 'fiyat') && e.key === 'Enter') e.target.blur(); });
-$('#cartBody').addEventListener('focusin', e => { if(e.target.dataset.act === 'fiyat') setTimeout(() => e.target.select(), 0); });
-$('#discount').addEventListener('input', updateTotals);
+$('#cartBody').addEventListener('keydown', e => { if(['qty', 'fiyat', 'isk'].includes(e.target.dataset.act) && e.key === 'Enter') e.target.blur(); });
+$('#cartBody').addEventListener('focusin', e => { if(['fiyat', 'isk'].includes(e.target.dataset.act)) setTimeout(() => e.target.select(), 0); });
+// ₺ indirim elle yazılırsa % indirim temizlenir; % yazılırsa ₺ tutar hesaplanır
+$('#discount').addEventListener('input', () => { if($('#discountPct').value){ $('#discountPct').value = ''; } updateTotals(); sepetKaydet(); });
+$('#discountPct').addEventListener('input', () => { if(!$('#discountPct').value.trim()) $('#discount').value = ''; updateTotals(); sepetKaydet(); });
+$('#discountPct').addEventListener('keydown', e => { if(e.key === 'Enter'){ e.preventDefault(); focusScan(); } });
 $('#received').addEventListener('input', updateTotals);
 $('#received').addEventListener('keydown', e => { if(e.key === 'Enter'){ e.preventDefault(); completeSale(); } });
 $('#discount').addEventListener('keydown', e => { if(e.key === 'Enter'){ e.preventDefault(); focusScan(); } });
@@ -1311,7 +1335,7 @@ $$('.bills .btn').forEach(b => b.onclick = () => { const t = getTotals(); $('#re
 $('#completeBtn').onclick = completeSale;
 $('#clearCartBtn').onclick = clearCart;
 $('#reprintBtn').onclick = () => { if(lastSaleObj) printReceipt(lastSaleObj); };
-function clearCart(){ if(cart.length && !confirm('Sepet temizlensin mi?')) return; cart = []; $('#discount').value = ''; $('#received').value = ''; renderCart(); focusScan(); }
+function clearCart(){ if(cart.length && !confirm('Sepet temizlensin mi?')) return; cart = []; $('#discount').value = ''; $('#discountPct').value = ''; $('#received').value = ''; renderCart(); focusScan(); }
 
 let satisSuruyor = false;
 async function completeSale(){
@@ -1340,10 +1364,12 @@ async function completeSale(){
     const id = idUret();
     const satis = {
       no: cihaz.kasa + '-' + String(sayac).padStart(5, '0'), kasa: cihaz.kasa, tarih: new Date().toISOString(),
+      // fiyat = satır indirimi uygulanmış birim fiyat (raporlar fiyat × adet kullanır); isk ve iskFiyat fiş için tutulur
       kalemler: cart.map(l => {
-        if(l.serbest) return {urunId: null, barkod: '', ad: l.ad, adet: l.qty, fiyat: r2(l.fiyat), alis: 0, kdv: l.kdv, serbest: true};
-        const p = urunById(l.pid), k = {urunId: p.id, barkod: p.barkod || '', ad: p.ad, adet: l.qty, fiyat: r2(satirFiyat(l)), alis: r2(p.alis || 0), kdv: urunKdv(p)}; if(l.fiyat != null) k.listeFiyati = r2(p.satis); return k; }),
-      araToplam: t.sub, indirim: t.disc, toplam: t.total, odeme: payMethod, alinan, paraUstu, iptal: false, kullanici: profil.email
+        const isk = (k => { if(satirIsk(l)){ k.isk = satirIsk(l); k.iskFiyat = r2(satirFiyat(l)); } return k; });
+        if(l.serbest) return isk({urunId: null, barkod: '', ad: l.ad, adet: l.qty, fiyat: satirNet(l), alis: 0, kdv: l.kdv, serbest: true});
+        const p = urunById(l.pid), k = {urunId: p.id, barkod: p.barkod || '', ad: p.ad, adet: l.qty, fiyat: satirNet(l), alis: r2(p.alis || 0), kdv: urunKdv(p)}; if(l.fiyat != null || satirIsk(l)) k.listeFiyati = r2(p.satis); return isk(k); }),
+      araToplam: t.sub, indirim: t.disc, indirimYuzde: t.yuzde || 0, toplam: t.total, odeme: payMethod, alinan, paraUstu, iptal: false, kullanici: profil.email
     };
     if(cari){ satis.cariId = cari.id; satis.cariAd = cari.ad; }
     // Satış ve kalıcı fiyat değişiklikleri tek seferde kaydedilir
@@ -1357,7 +1383,7 @@ async function completeSale(){
     await kaydetCok(islemler);
     if(kalicilar.length) setTimeout(() => toast(`${kalicilar.length} ürünün fiyatı kalıcı olarak güncellendi`, 'ok'), 900);
     lastSaleObj = Object.assign({id}, satis); $('#reprintBtn').disabled = false;
-    cart = []; lastPid = null; seciliCari = null; $('#discount').value = ''; $('#received').value = ''; setMethod('nakit'); renderCart();
+    cart = []; lastPid = null; seciliCari = null; $('#discount').value = ''; $('#discountPct').value = ''; $('#received').value = ''; setMethod('nakit'); renderCart();
     const ls = $('#lastSale');
     ls.innerHTML = `<div>Fiş ${esc(satis.no)} kaydedildi — ${tl(satis.toplam)} (${odemeAd(satis.odeme)})</div>` +
       (satis.odeme === 'nakit' ? `<div class="chg">Para üstü: ${tl(satis.paraUstu)}</div>` : '') +
@@ -1600,12 +1626,12 @@ async function etiketBas(liste, o){
 function kagitAyarla(){ const w = cihaz.kagit === '58' ? '48mm' : cihaz.kagit === 'a4' ? '80mm' : '72mm', fs = cihaz.kagit === '58' ? '12px' : cihaz.kagit === 'a4' ? '14px' : '15px'; $('#pageStyle').textContent = `@media print{@page{margin:${cihaz.kagit === 'a4' ? '10mm' : '0'}} #printArea{width:${w};font-size:${fs}}}`; }
 function printReceipt(s){
   const f = fisAyar(); kagitAyarla();
-  const items = (s.kalemler || []).map(it => `<tr><td colspan="2">${esc(it.ad)}</td></tr><tr><td>&nbsp; ${it.adet} x ${num2(it.fiyat)}</td><td class="r">${num2(it.adet * it.fiyat)}</td></tr>`).join('');
+  const items = (s.kalemler || []).map(it => `<tr><td colspan="2">${esc(it.ad)}</td></tr>${it.isk ? `<tr><td colspan="2">&nbsp; ${num2(it.iskFiyat)} %${String(it.isk).replace('.', ',')} ind.</td></tr>` : ''}<tr><td>&nbsp; ${it.adet} x ${num2(it.fiyat)}</td><td class="r">${num2(it.adet * it.fiyat)}</td></tr>`).join('');
   $('#printArea').innerHTML = `
     <div class="c b lg">${esc(f.isletme)}</div>${f.adres ? `<div class="c">${esc(f.adres)}</div>` : ''}${f.tel ? `<div class="c">Tel: ${esc(f.tel)}</div>` : ''}
     <hr><table><tr><td>Fiş: ${esc(s.no)}</td><td class="r">${fmtDate(s.tarih)}</td></tr></table><hr>
     <table>${items}</table><hr>
-    <table>${s.indirim ? `<tr><td>Ara Toplam</td><td class="r">${num2(s.araToplam)}</td></tr><tr><td>İndirim</td><td class="r">-${num2(s.indirim)}</td></tr>` : ''}
+    <table>${s.indirim ? `<tr><td>Ara Toplam</td><td class="r">${num2(s.araToplam)}</td></tr><tr><td>İndirim${s.indirimYuzde ? ' (%' + String(s.indirimYuzde).replace('.', ',') + ')' : ''}</td><td class="r">-${num2(s.indirim)}</td></tr>` : ''}
       <tr class="b lg"><td>TOPLAM</td><td class="r">${tl(s.toplam)}</td></tr>
       <tr><td>Ödeme</td><td class="r">${({nakit: 'NAKİT', kart: 'KREDİ KARTI', veresiye: 'VERESİYE', personel: 'PERSONEL (MAAŞTAN)'})[s.odeme] || ''}</td></tr>
       ${s.odeme === 'nakit' ? `<tr><td>Alınan</td><td class="r">${num2(s.alinan)}</td></tr><tr><td>Para Üstü</td><td class="r">${num2(s.paraUstu)}</td></tr>` : ''}
