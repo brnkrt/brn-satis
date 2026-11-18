@@ -85,7 +85,8 @@ th.sirali{color:var(--accent)}
 .err{color:var(--out);font-size:14px;min-height:1px}
 .tblwrap{overflow:auto}
 /* Satış */
-#salesGrid{display:grid;grid-template-columns:1fr 390px;gap:16px;align-items:start}
+#salesGrid{display:grid;grid-template-columns:390px 1fr;gap:16px;align-items:start}
+#salesGrid > #payCard{order:-1}
 #scanRow{display:flex;gap:8px;position:relative}
 #scan{flex:1;font-size:21px;padding:12px 14px;border-width:2px;border-color:var(--accent)}
 #camBtn{font-size:22px;padding:0 16px}
@@ -210,7 +211,7 @@ tr.cancel td:last-child{text-decoration:none}
 #toast.bad{background:var(--out);color:#fff}#toast.ok{background:var(--in);color:#fff}
 #printArea{display:none}
 #kamKutu video{width:100%!important;border-radius:8px}
-@media (max-width:1000px){#salesGrid{grid-template-columns:1fr 340px}}
+@media (max-width:1000px){#salesGrid{grid-template-columns:340px 1fr}}
 @media (max-width:820px){
   header{gap:10px;padding:0 12px}
   header h1 small{display:none}
@@ -221,6 +222,9 @@ tr.cancel td:last-child{text-decoration:none}
   nav .ic{font-size:21px}
   main{padding:12px 10px 90px}
   #salesGrid,.grid2,.form{grid-template-columns:1fr}
+  #salesGrid > #payCard{order:0}
+  #salesGrid > div:first-child{display:contents}
+  #hizliBolum{order:1}
   #cartBox{max-height:none}
   #payCard .big{font-size:44px}
   .methods .btn{font-size:16px}
@@ -279,6 +283,10 @@ tr.cancel td:last-child{text-decoration:none}
           <tbody id="cartBody"></tbody>
         </table>
       </div>
+      <div class="card" id="hizliBolum">
+        <div class="sumrow" style="margin:0 0 10px"><span><b style="font-size:17px">⚡ Hızlı Ürünler</b> <span class="muted" id="hizliIpucu">· düzenlemek için ürüne <span class="hide-m">sağ tıklayın</span><span class="show-m">basılı tutun</span></span></span><button class="btn sm" id="hizliDuzenBtn">⚙ Düzenle</button></div>
+        <div id="hizliGrid"></div>
+      </div>
     </div>
     <div class="card" id="payCard">
       <div class="sumrow muted"><span>Ara toplam</span><span id="subTotal" class="num">0,00 ₺</span></div>
@@ -312,10 +320,6 @@ tr.cancel td:last-child{text-decoration:none}
       <div id="lastSale"></div>
       <div class="keys"><kbd>Enter</kbd> ekle · <kbd>5*barkod</kbd> 5 adet · <kbd>+25</kbd> muhtelif 25 ₺ · <kbd>F8</kbd> muhtelif · <kbd>Alt+1…4</kbd> müşteri sekmesi · <kbd>↓</kbd> arama sonuçları · <kbd>Esc</kbd> temizle</div>
     </div>
-  </div>
-  <div class="card" id="hizliBolum">
-    <div class="sumrow" style="margin:0 0 10px"><span><b style="font-size:17px">⚡ Hızlı Ürünler</b> <span class="muted" id="hizliIpucu">· düzenlemek için ürüne <span class="hide-m">sağ tıklayın</span><span class="show-m">basılı tutun</span></span></span><button class="btn sm" id="hizliDuzenBtn">⚙ Düzenle</button></div>
-    <div id="hizliGrid"></div>
   </div>
 </section>
 
