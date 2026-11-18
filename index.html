@@ -390,6 +390,7 @@ tr.cancel td:last-child{text-decoration:none}
         <tbody id="pBody"></tbody>
       </table>
     </div>
+    <div id="pSayfalar" class="row" style="justify-content:center;margin-top:12px;display:none"></div>
   </div>
 </section>
 
@@ -1707,6 +1708,8 @@ $('#newProdBtn').onclick = () => openProductForm(null);
 $('#newVarBtn').onclick = () => varyantForm(null);
 $('#stockInBtn').onclick = openStockIn;
 $('#pCam').onclick = () => kameraAc(kod => { const p = urunByBarkod(kod); if(p) openProductForm(p); else if(!yetkili('urunDuzenle')) toast(`"${kod}" kayıtlı değil`, 'bad'); else if(confirm(`"${kod}" kayıtlı değil. Yeni ürün olarak eklensin mi?`)) openProductForm(null, {barkod: kod}); }, {baslik: 'Fiyat / stok sorgula'});
+const P_SAYFA = 200;   // ürün listesinde bir sayfadaki ürün sayısı
+let pSayfa = 1, pSayfaAnahtar = '';
 function renderProducts(){
   const raw = $('#pSearch').value.trim(), q = low(raw), crit = $('#pCrit').checked, all = urunler();
   const list = all.filter(p => (!q || low(p.ad).includes(q) || String(p.barkod || '').includes(raw) || low(p.kategori).includes(q)) && (!crit || stok(p.id) <= (+p.kritik || 0)));
@@ -1724,17 +1727,24 @@ function renderProducts(){
   $$('#pBaslik [data-sira]').forEach(th => { th.textContent = th.textContent.replace(/ [▲▼]$/, '') + (th.dataset.sira === sk ? (sy === 1 ? ' ▲' : ' ▼') : ''); th.classList.toggle('sirali', th.dataset.sira === sk); });
   siraSecici();
   const critCount = all.filter(p => stok(p.id) <= (+p.kritik || 0)).length;
-  $('#pCount').innerHTML = `${all.length} ürün` + (critCount ? ` · <span style="color:var(--out)">${critCount} ürün kritik stokta</span>` : '') + (list.length > 400 ? ' · ilk 400 gösteriliyor, aramayı daraltın' : '');
+  // Sayfalama: arama / filtre / sıralama değişince 1. sayfaya dön
+  const anahtar = [raw, crit, sk, sy].join('|');
+  if(anahtar !== pSayfaAnahtar){ pSayfaAnahtar = anahtar; pSayfa = 1; }
+  const sayfaSayisi = Math.max(1, Math.ceil(list.length / P_SAYFA));
+  pSayfa = Math.min(Math.max(1, pSayfa), sayfaSayisi);
+  const bas = (pSayfa - 1) * P_SAYFA, sayfa = list.slice(bas, bas + P_SAYFA);
+  $('#pCount').innerHTML = `${all.length} ürün` + (critCount ? ` · <span style="color:var(--out)">${critCount} ürün kritik stokta</span>` : '') + (sayfaSayisi > 1 ? ` · ${bas + 1}–${bas + sayfa.length} arası gösteriliyor` : '');
+  sayfaDugmeleri(sayfaSayisi);
   // Toplu seçim: silinen ürünleri seçimden çıkar, görünen listeyi hatırla
   for(const id of [...seciliU]) if(!urunById(id)) seciliU.delete(id);
   const secilebilir = yetkili('urunDuzenle');
-  pGorunen = secilebilir ? list.slice(0, 400).map(p => p.id) : [];
+  pGorunen = secilebilir ? sayfa.map(p => p.id) : [];
   pListe = secilebilir ? list.map(p => p.id) : [];
   const tsb = $('#pTumunuSec'); tsb.style.display = secilebilir && list.length ? '' : 'none';
   tsb.textContent = `☑ Tümünü seç (${list.length})`;
   topluBarCiz();
   if(!all.length){ $('#pBody').innerHTML = `<tr><td colspan="9" class="empty">Henüz ürün yok.<br><br><button class="btn pri" onclick="openProductForm(null)">+ İlk ürünü ekle</button> <button class="btn" onclick="showTab('ayarlar')">Excel'den aktar</button></td></tr>`; return; }
-  $('#pBody').innerHTML = list.slice(0, 400).map(p => { const s = stok(p.id); return `
+  $('#pBody').innerHTML = sayfa.map(p => { const s = stok(p.id); return `
     <tr class="${seciliU.has(p.id) ? 'secili' : ''}">
       ${secilebilir ? `<td><input type="checkbox" data-sec="${p.id}" ${seciliU.has(p.id) ? 'checked' : ''} style="width:18px;height:18px"></td>` : ''}
       <td class="muted mono hide-m">${esc(p.barkod || '—')}</td>
@@ -1750,6 +1760,27 @@ function renderProducts(){
   const tum = $('#pSecTum'); const gorSecili = pGorunen.filter(id => seciliU.has(id)).length;
   tum.checked = pGorunen.length > 0 && gorSecili === pGorunen.length; tum.indeterminate = gorSecili > 0 && gorSecili < pGorunen.length;
 }
+
+/* Ürün listesi sayfaları */
+function sayfaDugmeleri(n){
+  const k = $('#pSayfalar');
+  if(n <= 1){ k.style.display = 'none'; k.innerHTML = ''; return; }
+  // 1 … (bulunulan sayfanın çevresi) … son
+  const no = new Set([1, n, pSayfa - 2, pSayfa - 1, pSayfa, pSayfa + 1, pSayfa + 2].filter(x => x >= 1 && x <= n));
+  const sirali = [...no].sort((a, b) => a - b);
+  let h = `<button class="btn sm" data-sayfa="${pSayfa - 1}" ${pSayfa === 1 ? 'disabled' : ''}>‹ Önceki</button>`;
+  sirali.forEach((x, i) => {
+    if(i && x - sirali[i - 1] > 1) h += '<span class="muted">…</span>';
+    h += `<button class="btn sm ${x === pSayfa ? 'pri' : ''}" data-sayfa="${x}">${x}</button>`;
+  });
+  h += `<button class="btn sm" data-sayfa="${pSayfa + 1}" ${pSayfa === n ? 'disabled' : ''}>Sonraki ›</button>`;
+  k.innerHTML = h; k.style.display = 'flex';
+}
+$('#pSayfalar').addEventListener('click', e => {
+  const b = e.target.closest('[data-sayfa]'); if(!b || b.disabled) return;
+  pSayfa = +b.dataset.sayfa; renderProducts();
+  $('#tab-urunler').scrollIntoView({block: 'start'});
+});
 
 /* ================= TOPLU DÜZENLEME ================= */
 const seciliU = new Set();
