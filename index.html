@@ -88,7 +88,12 @@ th.sirali{color:var(--accent)}
 #salesGrid{display:grid;grid-template-columns:1fr 360px;grid-template-areas:"sol hizli" "pay hizli";gap:16px;align-items:start}
 #satisSol{grid-area:sol;min-width:0}
 /* Ödeme paneli: 1 ara toplam · 2 TOPLAM · 3 ödeme yöntemi · 4 Satışı Tamamla · 5 son satış (yeşil kutu) */
-#payCard{grid-area:pay;display:grid;grid-template-columns:.8fr 1fr 1.2fr .9fr 1fr;gap:20px;align-items:start}
+#payCard{grid-area:pay;display:grid;grid-template-columns:.75fr .95fr 1.4fr 1fr 1fr;gap:20px;align-items:start}
+/* Son satış kutusu görünmüyorken Satışı Tamamla sağdaki boşluğa da yayılır */
+#payCard:not(:has(> #lastSale[style*="block"])) > div:nth-child(4){grid-column:4 / -1}
+#payCard .methods{grid-template-columns:repeat(auto-fit,minmax(118px,1fr))}
+#payCard .methods .btn{min-width:0;display:flex;flex-direction:column;align-items:center;gap:4px;line-height:1.15}
+#payCard .methods .btn kbd{margin:0}
 #payCard #grandTotal{font-size:clamp(30px,2.1vw,44px);white-space:nowrap}
 #payCard > div{min-width:0}
 #payCard > #lastSale{grid-column:5;grid-row:1;margin-top:0}
@@ -97,6 +102,7 @@ th.sirali{color:var(--accent)}
   #payCard > div:nth-child(-n+3){grid-row:1 / span 2}
   #payCard > div:nth-child(4){grid-row:1}
   #payCard > #lastSale{grid-column:4;grid-row:2;margin-top:-8px}
+  #payCard:not(:has(> #lastSale[style*="block"])) > div:nth-child(4){grid-column:4}
 }
 #payCard .methods{margin-top:0}
 #payCard .keys{grid-column:1/-1;margin-top:0}
@@ -107,7 +113,7 @@ th.sirali{color:var(--accent)}
 #results{position:absolute;left:0;right:0;top:100%;margin-top:4px;background:var(--surface);border:1px solid var(--line);border-radius:10px;box-shadow:0 10px 30px rgba(0,0,0,.18);z-index:6;max-height:380px;overflow:auto;display:none}
 #results button{display:flex;width:100%;justify-content:space-between;align-items:center;gap:10px;border:0;background:none;color:var(--fg);padding:11px 14px;font:inherit;text-align:left;cursor:pointer;border-bottom:1px solid var(--line)}
 #results button:hover,#results button:focus{background:var(--accent-soft);outline:none}
-#cartBox{margin-top:0;padding:0;overflow:auto;height:calc(100vh - 490px);min-height:200px;border-top-left-radius:0}
+#cartBox{margin-top:0;padding:0;overflow:auto;height:calc(100vh - 510px);min-height:200px;border-top-left-radius:0}
 #sepetSekmeler{display:flex;gap:4px;margin-top:10px;overflow-x:auto;scrollbar-width:thin}
 .sepetSekme{flex:1 0 auto;min-width:120px;border:1px solid var(--line);border-bottom:0;background:var(--surface-2);color:var(--muted);border-radius:10px 10px 0 0;padding:8px 12px;font:inherit;font-weight:600;cursor:pointer;display:flex;flex-direction:column;align-items:flex-start;gap:1px;line-height:1.2}
 .sepetSekme small{font-weight:500;font-size:12px;font-family:var(--font-num)}
@@ -224,7 +230,7 @@ tr.cancel td:last-child{text-decoration:none}
 #toast.bad{background:var(--out);color:#fff}#toast.ok{background:var(--in);color:#fff}
 #printArea{display:none}
 #kamKutu video{width:100%!important;border-radius:8px}
-@media (max-width:1250px){#salesGrid{grid-template-columns:1fr 300px}#payCard{grid-template-columns:1fr 1fr}#payCard > div:nth-child(n){grid-row:auto}#payCard > #lastSale{grid-column:1/-1;grid-row:auto;margin-top:0}#payCard #grandTotal{font-size:44px}#cartBox{height:calc(100vh - 640px)}}
+@media (max-width:1250px){#salesGrid{grid-template-columns:1fr 300px}#payCard{grid-template-columns:1fr 1fr}#payCard > div:nth-child(n){grid-row:auto}#payCard:not(:has(> #lastSale[style*="block"])) > div:nth-child(4){grid-column:auto}#payCard > #lastSale{grid-column:1/-1;grid-row:auto;margin-top:0}#payCard #grandTotal{font-size:44px}#cartBox{height:calc(100vh - 640px)}}
 @media (max-width:820px){
   header{gap:10px;padding:0 12px}
   header h1 small{display:none}
