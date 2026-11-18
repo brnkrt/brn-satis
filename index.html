@@ -124,6 +124,8 @@ th.sirali{color:var(--accent)}
 #cartBox tr.last td{background:var(--accent-soft)}
 /* Sepet satırı: ürün adı, barkod, KDV ve stok uyarısı yan yana (sığmazsa alta geçer) */
 .sepetUrun{display:flex;align-items:center;flex-wrap:wrap;column-gap:22px;row-gap:4px}
+.sepetUrun > b{font-size:19px;line-height:1.25}
+@media (max-width:820px){.sepetUrun > b{font-size:16px}}
 .sepetBilgi{display:flex;align-items:center;gap:16px;flex-wrap:wrap}
 .sepetBilgi > span:empty{display:none}
 .qty{display:inline-flex;align-items:center;gap:4px}
@@ -1251,13 +1253,12 @@ function renderCart(){
   cart = cart.filter(l => l.serbest || urunById(l.pid));
   const body = $('#cartBody');
   if(!cart.length) body.innerHTML = `<tr><td colspan="7" class="empty">Müşteri ${aktifSepet + 1} — sepet boş. Barkod okutarak başlayın.</td></tr>`;
-  else body.innerHTML = cart.map((l, i) => { const p = satirUrun(l), s = l.serbest ? Infinity : stok(p.id); return `
+  else body.innerHTML = cart.map((l, i) => { const p = satirUrun(l); return `
     <tr class="${l.pid === lastPid ? 'last' : ''}">
       <td class="muted hide-m">${i + 1}</td>
-      <td><div class="sepetUrun"><b>${esc(p.ad)}</b><div class="muted mono sepetBilgi">${l.serbest ? '<span class="tag" style="font-family:var(--font-body)">muhtelif</span>' : esc(p.barkod || '')}
+      <td><div class="sepetUrun"><b>${esc(p.ad)}</b><div class="muted sepetBilgi">${l.serbest ? '<span class="tag">muhtelif</span>' : ''}
         ${(() => { const k = l.serbest ? +l.kdv : urunKdv(p), duz = !l.serbest && !yetkili('urunDuzenle');
-          return duz ? `<span>KDV %${k}</span>` : `<select data-act="kdv" data-pid="${p.id}" class="kdvSec" title="${l.serbest ? 'Bu satırın KDV oranı' : 'Ürünün KDV oranı (kalıcı olarak değişir)'}">${KDV_ORANLARI.concat(KDV_ORANLARI.includes(k) ? [] : [k]).map(o => `<option value="${o}" ${k === o ? 'selected' : ''}>KDV %${o}</option>`).join('')}</select>`; })()}
-        <span class="hide-m">${s < l.qty ? '<span class="tag bad">stok ' + s + '</span>' : ''}</span></div></div></td>
+          return duz ? `<span>KDV %${k}</span>` : `<select data-act="kdv" data-pid="${p.id}" class="kdvSec" title="${l.serbest ? 'Bu satırın KDV oranı' : 'Ürünün KDV oranı (kalıcı olarak değişir)'}">${KDV_ORANLARI.concat(KDV_ORANLARI.includes(k) ? [] : [k]).map(o => `<option value="${o}" ${k === o ? 'selected' : ''}>KDV %${o}</option>`).join('')}</select>`; })()}</div></div></td>
       <td class="r" style="white-space:nowrap">${l.serbest
         ? `<span class="fiyatKutu"><input data-act="fiyat" data-pid="${p.id}" value="${num2(satirFiyat(l))}" inputmode="decimal" class="num" title="Tutarı değiştirin"></span>`
         : fiyatDegistirebilir()
