@@ -85,15 +85,21 @@ th.sirali{color:var(--accent)}
 .err{color:var(--out);font-size:14px;min-height:1px}
 .tblwrap{overflow:auto}
 /* Satış */
-#salesGrid{display:grid;grid-template-columns:390px 1fr;gap:16px;align-items:start}
-#salesGrid > #payCard{order:-1}
+#salesGrid{display:grid;grid-template-columns:1fr 360px;grid-template-areas:"sol hizli" "pay hizli";gap:16px;align-items:start}
+#satisSol{grid-area:sol;min-width:0}
+#payCard{grid-area:pay;display:grid;grid-template-columns:.9fr 1.4fr 1.25fr 1fr;gap:20px;align-items:start}
+#payCard #grandTotal{font-size:clamp(34px,2.8vw,54px);white-space:nowrap}
+#payCard > div{min-width:0}
+#payCard .methods{margin-top:0}
+#payCard .keys{grid-column:1/-1;margin-top:0}
+#hizliBolum{grid-area:hizli;position:sticky;top:72px;max-height:calc(100vh - 88px);overflow:auto}
 #scanRow{display:flex;gap:8px;position:relative}
 #scan{flex:1;font-size:21px;padding:12px 14px;border-width:2px;border-color:var(--accent)}
 #camBtn{font-size:22px;padding:0 16px}
 #results{position:absolute;left:0;right:0;top:100%;margin-top:4px;background:var(--surface);border:1px solid var(--line);border-radius:10px;box-shadow:0 10px 30px rgba(0,0,0,.18);z-index:6;max-height:380px;overflow:auto;display:none}
 #results button{display:flex;width:100%;justify-content:space-between;align-items:center;gap:10px;border:0;background:none;color:var(--fg);padding:11px 14px;font:inherit;text-align:left;cursor:pointer;border-bottom:1px solid var(--line)}
 #results button:hover,#results button:focus{background:var(--accent-soft);outline:none}
-#cartBox{margin-top:0;padding:0;overflow:auto;max-height:calc(100vh - 290px);min-height:200px;border-top-left-radius:0}
+#cartBox{margin-top:0;padding:0;overflow:auto;height:calc(100vh - 490px);min-height:200px;border-top-left-radius:0}
 #sepetSekmeler{display:flex;gap:4px;margin-top:10px;overflow-x:auto;scrollbar-width:thin}
 .sepetSekme{flex:1 0 auto;min-width:120px;border:1px solid var(--line);border-bottom:0;background:var(--surface-2);color:var(--muted);border-radius:10px 10px 0 0;padding:8px 12px;font:inherit;font-weight:600;cursor:pointer;display:flex;flex-direction:column;align-items:flex-start;gap:1px;line-height:1.2}
 .sepetSekme small{font-weight:500;font-size:12px;font-family:var(--font-num)}
@@ -145,7 +151,6 @@ th.sirali{color:var(--accent)}
 #lastSale{margin-top:12px;display:none;background:var(--in-soft);color:var(--in);border-radius:10px;padding:12px}
 #lastSale .chg{font-size:26px;font-weight:700;font-family:var(--font-num)}
 .keys{margin-top:10px;font-size:12px;color:var(--muted);line-height:1.8}
-#hizliBolum{margin-top:16px}
 #hizliGrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:8px}
 #hizliGrid .btn{white-space:normal;padding:10px 8px;font-size:16px;font-weight:600;line-height:1.25;min-height:84px;display:flex;flex-direction:column;justify-content:center;align-items:center;gap:6px;text-align:center}
 #hizliGrid .btn span{display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
@@ -211,7 +216,7 @@ tr.cancel td:last-child{text-decoration:none}
 #toast.bad{background:var(--out);color:#fff}#toast.ok{background:var(--in);color:#fff}
 #printArea{display:none}
 #kamKutu video{width:100%!important;border-radius:8px}
-@media (max-width:1000px){#salesGrid{grid-template-columns:340px 1fr}}
+@media (max-width:1250px){#salesGrid{grid-template-columns:1fr 300px}#payCard{grid-template-columns:1fr 1fr}#payCard #grandTotal{font-size:44px}#cartBox{height:calc(100vh - 640px)}}
 @media (max-width:820px){
   header{gap:10px;padding:0 12px}
   header h1 small{display:none}
@@ -222,10 +227,10 @@ tr.cancel td:last-child{text-decoration:none}
   nav .ic{font-size:21px}
   main{padding:12px 10px 90px}
   #salesGrid,.grid2,.form{grid-template-columns:1fr}
-  #salesGrid > #payCard{order:0}
-  #salesGrid > div:first-child{display:contents}
-  #hizliBolum{order:1}
-  #cartBox{max-height:none}
+  #salesGrid{grid-template-areas:"sol" "pay" "hizli"}
+  #payCard{grid-template-columns:1fr;gap:0}
+  #hizliBolum{position:static;max-height:none;overflow:visible}
+  #cartBox{height:auto;max-height:none}
   #payCard .big{font-size:44px}
   .methods .btn{font-size:16px}
   #scan{font-size:18px}
@@ -269,7 +274,7 @@ tr.cancel td:last-child{text-decoration:none}
 <!-- SATIŞ -->
 <section class="tab active" id="tab-satis">
   <div id="salesGrid">
-    <div>
+    <div id="satisSol">
       <div id="scanRow">
         <input id="scan" placeholder="Barkod okutun veya ürün adı yazın…" autocomplete="off" enterkeyhint="go">
         <button class="btn" id="camBtn" title="Kamerayla barkod okut">📷</button>
@@ -283,17 +288,22 @@ tr.cancel td:last-child{text-decoration:none}
           <tbody id="cartBody"></tbody>
         </table>
       </div>
-      <div class="card" id="hizliBolum">
-        <div class="sumrow" style="margin:0 0 10px"><span><b style="font-size:17px">⚡ Hızlı Ürünler</b> <span class="muted" id="hizliIpucu">· düzenlemek için ürüne <span class="hide-m">sağ tıklayın</span><span class="show-m">basılı tutun</span></span></span><button class="btn sm" id="hizliDuzenBtn">⚙ Düzenle</button></div>
-        <div id="hizliGrid"></div>
-      </div>
+    </div>
+    <div class="card" id="hizliBolum">
+      <div class="sumrow" style="margin:0 0 10px;flex-wrap:wrap"><span><b style="font-size:17px">⚡ Hızlı Ürünler</b> <span class="muted" id="hizliIpucu">· düzenlemek için ürüne <span class="hide-m">sağ tıklayın</span><span class="show-m">basılı tutun</span></span></span><button class="btn sm" id="hizliDuzenBtn">⚙ Düzenle</button></div>
+      <div id="hizliGrid"></div>
     </div>
     <div class="card" id="payCard">
-      <div class="sumrow muted"><span>Ara toplam</span><span id="subTotal" class="num">0,00 ₺</span></div>
+     <div>
+      <div class="sumrow muted" style="margin-top:0"><span>Ara toplam</span><span id="subTotal" class="num">0,00 ₺</span></div>
       <div class="sumrow"><span class="muted">İndirim (%)</span><input id="discountPct" style="width:120px;text-align:right" placeholder="%0" inputmode="decimal"></div>
       <div class="sumrow"><span class="muted">İndirim (₺)</span><input id="discount" style="width:120px;text-align:right" placeholder="0,00" inputmode="decimal"></div>
-      <div class="sumrow muted" style="margin-top:12px"><span>TOPLAM</span><span id="itemCount"></span></div>
+     </div>
+     <div>
+      <div class="sumrow muted" style="margin-top:0"><span>TOPLAM</span><span id="itemCount"></span></div>
       <div class="big" id="grandTotal">0,00 ₺</div>
+     </div>
+     <div>
       <div class="methods">
         <button class="btn sel" data-m="nakit">💵 Nakit <kbd class="hide-m">F2</kbd></button>
         <button class="btn" data-m="kart">💳 Kart <kbd class="hide-m">F3</kbd></button>
@@ -312,12 +322,15 @@ tr.cancel td:last-child{text-decoration:none}
         </div>
         <div id="changeBox"></div>
       </div>
+     </div>
+     <div>
       <button class="btn pri" id="completeBtn">✔ Satışı Tamamla <kbd class="hide-m">F9</kbd></button>
       <div class="row" style="margin-top:8px">
         <button class="btn sm" id="clearCartBtn">Sepeti Temizle <kbd class="hide-m">F7</kbd></button>
         <button class="btn sm" id="reprintBtn" disabled>Son Fişi Yazdır</button>
       </div>
       <div id="lastSale"></div>
+     </div>
       <div class="keys"><kbd>Enter</kbd> ekle · <kbd>5*barkod</kbd> 5 adet · <kbd>+25</kbd> muhtelif 25 ₺ · <kbd>F8</kbd> muhtelif · <kbd>Alt+1…4</kbd> müşteri sekmesi · <kbd>↓</kbd> arama sonuçları · <kbd>Esc</kbd> temizle</div>
     </div>
   </div>
