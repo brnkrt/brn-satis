@@ -88,18 +88,18 @@ th.sirali{color:var(--accent)}
 #salesGrid{display:grid;grid-template-columns:1fr 470px;grid-template-areas:"sol hizli" "pay hizli";gap:16px;align-items:start}
 #satisSol{grid-area:sol;min-width:0}
 /* Ödeme paneli: 1 ara toplam · 2 ödeme yöntemi · 3 TOPLAM · 4 Satışı Tamamla · 5 son satış (yeşil kutu) */
-#payCard{grid-area:pay;display:grid;grid-template-columns:.75fr 1.4fr .95fr 1fr 1fr;gap:20px;align-items:start}
+#payCard{grid-area:pay;display:grid;grid-template-columns:minmax(180px,.75fr) minmax(0,1.4fr) auto minmax(0,1fr) minmax(0,1fr);gap:20px;align-items:start}
 /* Son satış kutusu görünmüyorken Satışı Tamamla sağdaki boşluğa da yayılır */
 #payCard:not(:has(> #lastSale[style*="block"])) > div:nth-child(4){grid-column:4 / -1}
 #payCard .methods{grid-template-columns:repeat(auto-fit,minmax(118px,1fr))}
 #payCard .methods .btn{min-width:0;display:flex;flex-direction:column;align-items:center;gap:4px;line-height:1.15}
 #payCard .methods .btn kbd{margin:0}
-#payCard #grandTotal{font-size:clamp(30px,1.85vw,44px);white-space:nowrap}
+#payCard #grandTotal{font-size:clamp(42px,2.8vw,60px);white-space:nowrap}
 #payCard > div{min-width:0}
 #payCard > #lastSale{grid-column:5;grid-row:1;margin-top:0}
 @media (max-width:1799px){
-  #payCard{grid-template-columns:.9fr 1.25fr 1.1fr 1fr}
-  #payCard #grandTotal{font-size:clamp(30px,2.1vw,44px)}
+  #payCard{grid-template-columns:minmax(180px,.8fr) minmax(0,1.2fr) auto minmax(0,1fr)}
+  #payCard #grandTotal{font-size:clamp(42px,3vw,56px)}
   #payCard > div:nth-child(-n+3){grid-row:1 / span 2}
   #payCard > div:nth-child(4){grid-row:1}
   #payCard > #lastSale{grid-column:4;grid-row:2;margin-top:-8px}
@@ -243,7 +243,7 @@ tr.cancel td:last-child{text-decoration:none}
 #toast.bad{background:var(--out);color:#fff}#toast.ok{background:var(--in);color:#fff}
 #printArea{display:none}
 #kamKutu video{width:100%!important;border-radius:8px}
-@media (max-width:1250px){#salesGrid{grid-template-columns:1fr 300px}#hizliGrid{grid-template-columns:repeat(2,minmax(0,1fr))}#payCard{grid-template-columns:1fr 1fr}#payCard > div:nth-child(n){grid-row:auto}#payCard:not(:has(> #lastSale[style*="block"])) > div:nth-child(4){grid-column:auto}#payCard > #lastSale{grid-column:1/-1;grid-row:auto;margin-top:0}#payCard #grandTotal{font-size:44px}#cartBox{height:calc(100vh - 640px)}}
+@media (max-width:1250px){#salesGrid{grid-template-columns:1fr 300px}#hizliGrid{grid-template-columns:repeat(2,minmax(0,1fr))}#payCard{grid-template-columns:1fr 1fr}#payCard > div:nth-child(n){grid-row:auto}#payCard:not(:has(> #lastSale[style*="block"])) > div:nth-child(4){grid-column:auto}#payCard > #lastSale{grid-column:1/-1;grid-row:auto;margin-top:0}#payCard #grandTotal{font-size:54px}#cartBox{height:calc(100vh - 640px)}}
 @media (max-width:820px){
   header{gap:10px;padding:0 12px}
   header h1 small{display:none}
@@ -324,7 +324,7 @@ tr.cancel td:last-child{text-decoration:none}
     </div>
     <div class="card" id="payCard">
      <div>
-      <div class="sumrow muted" style="margin-top:0"><span>Ara toplam</span><span id="subTotal" class="num">0,00 ₺</span></div>
+      <div class="sumrow muted" style="margin-top:0;flex-wrap:wrap;column-gap:8px"><span style="white-space:nowrap">Ara toplam</span><span id="subTotal" class="num" style="white-space:nowrap;margin-left:auto">0,00 ₺</span></div>
       <div class="sumrow"><span class="muted">İndirim (%)</span><input id="discountPct" style="width:120px;text-align:right" placeholder="%0" inputmode="decimal"></div>
       <div class="sumrow"><span class="muted">İndirim (₺)</span><input id="discount" style="width:120px;text-align:right" placeholder="0,00" inputmode="decimal"></div>
      </div>
