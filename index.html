@@ -125,7 +125,8 @@ th.sirali{color:var(--accent)}
 #cartBox tr.last td{background:var(--accent-soft)}
 /* Sepet satırı: ürün adı, barkod, KDV ve stok uyarısı yan yana (sığmazsa alta geçer) */
 .sepetUrun{display:flex;align-items:center;flex-wrap:wrap;column-gap:22px;row-gap:4px}
-.sepetUrun > b{font-size:19px;line-height:1.25}
+.sepetUrun > b{font-size:19px;line-height:1.25;cursor:text}
+.adDuzKutu{font:inherit;font-size:19px;font-weight:700;padding:4px 8px;min-width:min(320px,100%);border:2px solid var(--accent)}
 @media (max-width:820px){.sepetUrun > b{font-size:16px}}
 .sepetBilgi{display:flex;align-items:center;gap:16px;flex-wrap:wrap}
 .sepetBilgi > span:empty{display:none}
@@ -1259,7 +1260,7 @@ function renderCart(){
   else body.innerHTML = cart.map((l, i) => { const p = satirUrun(l); return `
     <tr class="${l.pid === lastPid ? 'last' : ''}">
       <td class="muted hide-m">${i + 1}</td>
-      <td><div class="sepetUrun"><b>${esc(p.ad)}</b><div class="muted sepetBilgi">${l.serbest ? '<span class="tag">muhtelif</span>' : ''}
+      <td><div class="sepetUrun"><b data-adduz="${p.id}" title="Adı düzeltmek için çift tıklayın">${esc(p.ad)}</b><div class="muted sepetBilgi">${l.serbest ? '<span class="tag">muhtelif</span>' : ''}
         ${(() => { const k = l.serbest ? +l.kdv : urunKdv(p), duz = !l.serbest && !yetkili('urunDuzenle');
           return duz ? `<span>KDV %${k}</span>` : `<select data-act="kdv" data-pid="${p.id}" class="kdvSec" title="${l.serbest ? 'Bu satırın KDV oranı' : 'Ürünün KDV oranı (kalıcı olarak değişir)'}">${KDV_ORANLARI.concat(KDV_ORANLARI.includes(k) ? [] : [k]).map(o => `<option value="${o}" ${k === o ? 'selected' : ''}>KDV %${o}</option>`).join('')}</select>`; })()}</div></div></td>
       <td class="r" style="white-space:nowrap">${l.serbest
@@ -1325,6 +1326,38 @@ $('#cartBody').addEventListener('change', e => {
     if(r2(f) === r2(p.satis)){ delete l.fiyat; l.kalici = false; } else l.fiyat = r2(f);
     renderCart(); focusScan();
   }
+});
+// Sepette ürün adına çift tıklayınca ad orada düzeltilir (Enter kaydeder, Esc vazgeçer).
+// Normal ürünün adı kalıcı olarak değişir; muhtelif satırda yalnız bu satış için değişir; varyantlı üründe varyant düzenleme açılır.
+$('#cartBody').addEventListener('dblclick', e => {
+  const b = e.target.closest('[data-adduz]'); if(!b) return;
+  const l = cart.find(x => x.pid === b.dataset.adduz); if(!l) return;
+  const p = satirUrun(l); if(!p) return;
+  if(!l.serbest){
+    if(!yetkili('urunDuzenle')){ toast('Ürün adını değiştirme yetkiniz yok', 'bad'); return; }
+    if(p.grupId){ varyantForm(p.grupId); return; }
+  }
+  const inp = document.createElement('input');
+  inp.className = 'adDuzKutu'; inp.value = p.ad; inp.setAttribute('autocomplete', 'off');
+  b.replaceWith(inp); setTimeout(() => { inp.focus(); inp.select(); }, 0);
+  let bitti = false;
+  const bitir = async kaydetsin => {
+    if(bitti) return; bitti = true;
+    const yeni = inp.value.trim().replace(/\s+/g, ' ');
+    if(kaydetsin && yeni && yeni !== p.ad){
+      if(l.serbest) l.ad = yeni;
+      else{
+        try{ await kaydet('urun', p.id, Object.assign({}, p, {ad: yeni})); toast(`Ürün adı değişti: ${yeni}`, 'ok'); }
+        catch(err){ toast('Kaydedilemedi: ' + err.message, 'bad'); }
+      }
+    }
+    renderCart(); focusScan();
+  };
+  inp.addEventListener('keydown', ev => {
+    if(ev.key === 'Enter'){ ev.preventDefault(); bitir(true); }
+    else if(ev.key === 'Escape'){ ev.preventDefault(); ev.stopPropagation(); bitir(false); }
+  });
+  inp.addEventListener('blur', () => bitir(true));
 });
 $('#cartBody').addEventListener('keydown', e => { if(['qty', 'fiyat', 'isk'].includes(e.target.dataset.act) && e.key === 'Enter') e.target.blur(); });
 $('#cartBody').addEventListener('focusin', e => { if(['fiyat', 'isk'].includes(e.target.dataset.act)) setTimeout(() => e.target.select(), 0); });
