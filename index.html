@@ -87,8 +87,8 @@ th.sirali{color:var(--accent)}
 /* Satış */
 #salesGrid{display:grid;grid-template-columns:1fr 470px;grid-template-areas:"sol hizli" "pay hizli";gap:16px;align-items:start}
 #satisSol{grid-area:sol;min-width:0}
-/* Ödeme paneli: 1 ara toplam · 2 TOPLAM · 3 ödeme yöntemi · 4 Satışı Tamamla · 5 son satış (yeşil kutu) */
-#payCard{grid-area:pay;display:grid;grid-template-columns:.75fr .95fr 1.4fr 1fr 1fr;gap:20px;align-items:start}
+/* Ödeme paneli: 1 ara toplam · 2 ödeme yöntemi · 3 TOPLAM · 4 Satışı Tamamla · 5 son satış (yeşil kutu) */
+#payCard{grid-area:pay;display:grid;grid-template-columns:.75fr 1.4fr .95fr 1fr 1fr;gap:20px;align-items:start}
 /* Son satış kutusu görünmüyorken Satışı Tamamla sağdaki boşluğa da yayılır */
 #payCard:not(:has(> #lastSale[style*="block"])) > div:nth-child(4){grid-column:4 / -1}
 #payCard .methods{grid-template-columns:repeat(auto-fit,minmax(118px,1fr))}
@@ -98,7 +98,7 @@ th.sirali{color:var(--accent)}
 #payCard > div{min-width:0}
 #payCard > #lastSale{grid-column:5;grid-row:1;margin-top:0}
 @media (max-width:1799px){
-  #payCard{grid-template-columns:.9fr 1.1fr 1.25fr 1fr}
+  #payCard{grid-template-columns:.9fr 1.25fr 1.1fr 1fr}
   #payCard #grandTotal{font-size:clamp(30px,2.1vw,44px)}
   #payCard > div:nth-child(-n+3){grid-row:1 / span 2}
   #payCard > div:nth-child(4){grid-row:1}
@@ -329,10 +329,6 @@ tr.cancel td:last-child{text-decoration:none}
       <div class="sumrow"><span class="muted">İndirim (₺)</span><input id="discount" style="width:120px;text-align:right" placeholder="0,00" inputmode="decimal"></div>
      </div>
      <div>
-      <div class="sumrow muted" style="margin-top:0"><span>TOPLAM</span><span id="itemCount"></span></div>
-      <div class="big" id="grandTotal">0,00 ₺</div>
-     </div>
-     <div>
       <div class="methods">
         <button class="btn sel" data-m="nakit">💵 Nakit <kbd class="hide-m">F2</kbd></button>
         <button class="btn" data-m="kart">💳 Kart <kbd class="hide-m">F3</kbd></button>
@@ -351,6 +347,10 @@ tr.cancel td:last-child{text-decoration:none}
         </div>
         <div id="changeBox"></div>
       </div>
+     </div>
+     <div>
+      <div class="sumrow muted" style="margin-top:0"><span>TOPLAM</span><span id="itemCount"></span></div>
+      <div class="big" id="grandTotal">0,00 ₺</div>
      </div>
      <div>
       <button class="btn pri" id="completeBtn">✔ Satışı Tamamla <kbd class="hide-m">F9</kbd></button>
