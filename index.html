@@ -87,24 +87,16 @@ th.sirali{color:var(--accent)}
 /* Satış */
 #salesGrid{display:grid;grid-template-columns:1fr 470px;grid-template-areas:"sol hizli" "pay hizli";gap:16px;align-items:start}
 #satisSol{grid-area:sol;min-width:0}
-/* Ödeme paneli: 1 ara toplam · 2 TOPLAM · 3 ödeme yöntemi · 4 Satışı Tamamla · 5 son satış (yeşil kutu) */
-#payCard{grid-area:pay;display:grid;grid-template-columns:.75fr .95fr 1.4fr 1fr 1fr;gap:20px;align-items:start}
-/* Son satış kutusu görünmüyorken Satışı Tamamla sağdaki boşluğa da yayılır */
-#payCard:not(:has(> #lastSale[style*="block"])) > div:nth-child(4){grid-column:4 / -1}
+/* Ödeme paneli: solda 1 Satışı Tamamla (altında son satış) · sağda 2 ara toplam · 3 TOPLAM · 4 ödeme yöntemi */
+#payCard{grid-area:pay;display:grid;grid-template-columns:1fr .9fr 1.1fr 1.25fr;gap:20px;align-items:start}
 #payCard .methods{grid-template-columns:repeat(auto-fit,minmax(118px,1fr))}
 #payCard .methods .btn{min-width:0;display:flex;flex-direction:column;align-items:center;gap:4px;line-height:1.15}
 #payCard .methods .btn kbd{margin:0}
-#payCard #grandTotal{font-size:clamp(30px,1.85vw,44px);white-space:nowrap}
+#payCard #grandTotal{font-size:clamp(30px,2.1vw,44px);white-space:nowrap}
 #payCard > div{min-width:0}
-#payCard > #lastSale{grid-column:5;grid-row:1;margin-top:0}
-@media (max-width:1799px){
-  #payCard{grid-template-columns:.9fr 1.1fr 1.25fr 1fr}
-  #payCard #grandTotal{font-size:clamp(30px,2.1vw,44px)}
-  #payCard > div:nth-child(-n+3){grid-row:1 / span 2}
-  #payCard > div:nth-child(4){grid-row:1}
-  #payCard > #lastSale{grid-column:4;grid-row:2;margin-top:-8px}
-  #payCard:not(:has(> #lastSale[style*="block"])) > div:nth-child(4){grid-column:4}
-}
+#payCard > div:nth-child(1){grid-column:1;grid-row:1}
+#payCard > div:nth-child(n+2):nth-child(-n+4){grid-row:1 / span 2}
+#payCard > #lastSale{grid-column:1;grid-row:2;margin-top:-8px}
 #payCard .methods{margin-top:0}
 #payCard .keys{grid-column:1/-1;margin-top:0}
 #hizliBolum{grid-area:hizli;position:sticky;top:72px;max-height:calc(100vh - 88px);overflow:auto}
@@ -133,7 +125,9 @@ th.sirali{color:var(--accent)}
 .qty{display:inline-flex;align-items:center;gap:4px}
 .qty input{width:56px;text-align:center;padding:6px;font-family:var(--font-num)}
 .fiyatKutu{display:inline-flex;flex-direction:column;align-items:stretch;gap:5px;min-width:96px}
-.fiyatKutu input{width:96px;text-align:right;padding:7px 8px;font-size:15px}
+.fiyatKutu input{width:110px;text-align:right;padding:7px 8px;font-size:19px;font-weight:600}
+#cartBody td.r .num,#cartBody td.r.num{font-size:19px}
+.fiyatKutu{min-width:110px}
 .fiyatKutu input.degisti{border-color:var(--warn);background:var(--warn-soft);font-weight:600}
 .kaliciBtn{font:inherit;font-size:13px;font-weight:700;padding:7px 8px;border-radius:8px;cursor:pointer;border:2px solid var(--warn);background:var(--warn-soft);color:var(--warn);white-space:nowrap}
 .kaliciBtn:hover{filter:brightness(.97)}
@@ -170,6 +164,7 @@ th.sirali{color:var(--accent)}
 .bills .btn{padding:7px 2px;font-size:13px}
 #changeBox{font-size:28px;font-weight:700;text-align:right;margin:8px 0;font-family:var(--font-num)}
 #completeBtn{width:100%;padding:16px;font-size:19px;margin-top:6px}
+#clearCartBtn{flex:1;padding:12px 16px;font-size:16px;font-weight:600}
 #lastSale{margin-top:12px;display:none;background:var(--in-soft);color:var(--in);border-radius:10px;padding:12px}
 #lastSale .chg{font-size:26px;font-weight:700;font-family:var(--font-num)}
 .keys{margin-top:10px;font-size:12px;color:var(--muted);line-height:1.8}
@@ -203,6 +198,7 @@ th.sirali{color:var(--accent)}
 #pTopluBar{position:sticky;top:0;z-index:3;align-items:center;gap:8px;flex-wrap:wrap;background:var(--accent-soft);border:1px solid var(--accent);border-radius:10px;padding:8px 12px;margin-bottom:8px}
 #pBody tr.secili td{background:var(--accent-soft)}
 .kdvSec{padding:4px 6px;font-size:13px;font-family:var(--font-num);border-color:transparent;background:transparent;cursor:pointer}
+.sepetBilgi .kdvSec,.sepetBilgi .kdvYazi{font-size:17px;font-weight:700;color:var(--out)}
 .kdvSec:hover,.kdvSec:focus{border-color:var(--line);background:var(--surface)}
 .tdForm{display:grid;grid-template-columns:1fr 1fr;gap:12px}
 .tdForm .full{grid-column:1/-1}
@@ -239,7 +235,7 @@ tr.cancel td:last-child{text-decoration:none}
 #toast.bad{background:var(--out);color:#fff}#toast.ok{background:var(--in);color:#fff}
 #printArea{display:none}
 #kamKutu video{width:100%!important;border-radius:8px}
-@media (max-width:1250px){#salesGrid{grid-template-columns:1fr 300px}#hizliGrid{grid-template-columns:repeat(2,minmax(0,1fr))}#payCard{grid-template-columns:1fr 1fr}#payCard > div:nth-child(n){grid-row:auto}#payCard:not(:has(> #lastSale[style*="block"])) > div:nth-child(4){grid-column:auto}#payCard > #lastSale{grid-column:1/-1;grid-row:auto;margin-top:0}#payCard #grandTotal{font-size:44px}#cartBox{height:calc(100vh - 640px)}}
+@media (max-width:1250px){#salesGrid{grid-template-columns:1fr 300px}#hizliGrid{grid-template-columns:repeat(2,minmax(0,1fr))}#payCard{grid-template-columns:1fr 1fr}#payCard > div:nth-child(n){grid-row:auto;grid-column:auto}#payCard > #lastSale{grid-column:1/-1;grid-row:auto;margin-top:0}#payCard #grandTotal{font-size:44px}#cartBox{height:calc(100vh - 640px)}}
 @media (max-width:820px){
   header{gap:10px;padding:0 12px}
   header h1 small{display:none}
@@ -320,6 +316,13 @@ tr.cancel td:last-child{text-decoration:none}
     </div>
     <div class="card" id="payCard">
      <div>
+      <button class="btn pri" id="completeBtn">✔ Satışı Tamamla <kbd class="hide-m">F9</kbd></button>
+      <div class="row" style="margin-top:8px">
+        <button class="btn" id="clearCartBtn">🗑 Sepeti Temizle <kbd class="hide-m">F7</kbd></button>
+        <button class="btn sm" id="reprintBtn" disabled>Son Fişi Yazdır</button>
+      </div>
+     </div>
+     <div>
       <div class="sumrow muted" style="margin-top:0"><span>Ara toplam</span><span id="subTotal" class="num">0,00 ₺</span></div>
       <div class="sumrow"><span class="muted">İndirim (%)</span><input id="discountPct" style="width:120px;text-align:right" placeholder="%0" inputmode="decimal"></div>
       <div class="sumrow"><span class="muted">İndirim (₺)</span><input id="discount" style="width:120px;text-align:right" placeholder="0,00" inputmode="decimal"></div>
@@ -346,13 +349,6 @@ tr.cancel td:last-child{text-decoration:none}
           <button class="btn" data-bill="100">100</button><button class="btn" data-bill="200">200</button><button class="btn" data-bill="500">500</button>
         </div>
         <div id="changeBox"></div>
-      </div>
-     </div>
-     <div>
-      <button class="btn pri" id="completeBtn">✔ Satışı Tamamla <kbd class="hide-m">F9</kbd></button>
-      <div class="row" style="margin-top:8px">
-        <button class="btn sm" id="clearCartBtn">Sepeti Temizle <kbd class="hide-m">F7</kbd></button>
-        <button class="btn sm" id="reprintBtn" disabled>Son Fişi Yazdır</button>
       </div>
      </div>
       <div id="lastSale"></div>
@@ -1262,7 +1258,7 @@ function renderCart(){
       <td class="muted hide-m">${i + 1}</td>
       <td><div class="sepetUrun"><b data-adduz="${p.id}" title="Adı düzeltmek için çift tıklayın">${esc(p.ad)}</b><div class="muted sepetBilgi">${l.serbest ? '<span class="tag">muhtelif</span>' : ''}
         ${(() => { const k = l.serbest ? +l.kdv : urunKdv(p), duz = !l.serbest && !yetkili('urunDuzenle');
-          return duz ? `<span>KDV %${k}</span>` : `<select data-act="kdv" data-pid="${p.id}" class="kdvSec" title="${l.serbest ? 'Bu satırın KDV oranı' : 'Ürünün KDV oranı (kalıcı olarak değişir)'}">${KDV_ORANLARI.concat(KDV_ORANLARI.includes(k) ? [] : [k]).map(o => `<option value="${o}" ${k === o ? 'selected' : ''}>KDV %${o}</option>`).join('')}</select>`; })()}</div></div></td>
+          return duz ? `<span class="kdvYazi">KDV %${k}</span>` : `<select data-act="kdv" data-pid="${p.id}" class="kdvSec" title="${l.serbest ? 'Bu satırın KDV oranı' : 'Ürünün KDV oranı (kalıcı olarak değişir)'}">${KDV_ORANLARI.concat(KDV_ORANLARI.includes(k) ? [] : [k]).map(o => `<option value="${o}" ${k === o ? 'selected' : ''}>KDV %${o}</option>`).join('')}</select>`; })()}</div></div></td>
       <td class="r" style="white-space:nowrap">${l.serbest
         ? `<span class="fiyatKutu"><input data-act="fiyat" data-pid="${p.id}" value="${num2(satirFiyat(l))}" inputmode="decimal" class="num" title="Tutarı değiştirin"></span>`
         : fiyatDegistirebilir()
@@ -2791,7 +2787,8 @@ $('#tdGetir').onclick = () => tdCanliGetir(true);
 
 /* ---------- Canlı tedarikçi fiyatı (Supabase "brn-tedarik" fonksiyonu) ---------- */
 // Fonksiyon tedarikçi sitelerine bayi bilgileriyle giriş yapıp ürünü arar; sonuç burada listelenir.
-const TD_SITE_HOST = {kirtasiyem: 'kirtasiyem', yilmazlar: 'yilmazlar', budak: 'budak'};
+const TD_SITE_HOST = {kirtasiyem: 'kirtasiyem', yilmazlar: 'yilmazlar', budak: 'budak', akkaymak: 'akkaymak'};
+const TD_SITE_AD = {kirtasiyem: 'Kadıoğlu'}; // fonksiyon eski adı gönderse bile ekranda bu ad görünür
 let tdCanliSon = null, tdCanliIstek = 0;
 const tdCanliOnbellek = new Map();
 function tdSiteTedarikci(anahtar){ const h = TD_SITE_HOST[anahtar]; return tedarikciler().find(t => (t.aramaUrl || t.site || '').toLowerCase().includes(h)) || null; }
@@ -2809,6 +2806,7 @@ async function tdCanliGetir(zorla){
     const {data, error} = await sb.functions.invoke('brn-tedarik', {body: {q, firmaId}});
     if(no !== tdCanliIstek) return;
     if(error){ let m = error.message || String(error); try{ const j = await error.context.json(); if(j && j.hata) m = j.hata; }catch(_){} throw new Error(m); }
+    (data.sonuclar || []).forEach(s => { if(TD_SITE_AD[s.anahtar]) s.ad = TD_SITE_AD[s.anahtar]; });
     tdCanliSon = data; tdCanliOnbellek.set(q, {z: Date.now(), v: data}); tdCanliCiz();
   }catch(e){
     if(no !== tdCanliIstek) return;
