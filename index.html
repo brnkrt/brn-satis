@@ -2181,15 +2181,49 @@ function openProductForm(p, preset={}, onSaved){
   if($('#pDel')) $('#pDel').onclick = async () => { if(!confirm(`"${p.ad}" silinsin mi?\n(Geçmiş satış kayıtları korunur.)`)) return; await kaydet('urun', p.id, Object.assign({}, p, {silindi: true})); closeModal(); toast('Ürün silindi'); renderAktif(); };
 }
 
-function openStockIn(){
+/* Hızlı stok girişi: her okutma +1. Aynı oturumda aynı ürünün okutmaları tek kayıtta toplanır (kayıt id'si aynı kalır, miktar artar). */
+let siOturum = new Map();   // urunId -> {id, miktar, tarih}
+function openStockIn(devam){
+  if(!devam) siOturum = new Map();
+  const hizli = cihaz.stokHizli !== false;
   openModal(`
     <h2>📥 Stok Girişi</h2>
-    <p class="muted" style="margin-top:0">Gelen ürünün barkodunu okutun, adedi girip Enter'a basın.</p>
-    <div class="row" style="flex-wrap:nowrap"><input id="siCode" placeholder="Barkod veya ürün adı" style="flex:1" autofocus><button class="btn" id="siCam">📷</button></div>
-    <div class="row" style="margin-top:8px"><label style="margin:0">Adet</label><input id="siQty" type="number" step="1" value="1" style="width:100px" inputmode="numeric"><button class="btn pri" id="siAdd">Ekle</button></div>
+    <div class="methods" id="siMod" style="grid-template-columns:1fr 1fr;margin:0 0 10px">
+      <button type="button" class="btn ${hizli ? 'sel' : ''}" data-simod="hizli">⚡ Hızlı Okutma</button>
+      <button type="button" class="btn ${hizli ? '' : 'sel'}" data-simod="adet">✍ Adet Girerek</button>
+    </div>
+    <p class="muted" style="margin-top:0" id="siIpucu"></p>
+    <div class="row" style="flex-wrap:nowrap"><input id="siCode" placeholder="Barkod veya ürün adı" style="flex:1;font-size:18px" autofocus autocomplete="off"><button class="btn" id="siCam">📷</button></div>
+    <div class="row" style="margin-top:8px" id="siQtyRow"><label style="margin:0">Adet</label><input id="siQty" type="number" step="1" value="1" style="width:100px" inputmode="numeric"><button class="btn pri" id="siAdd">Ekle</button></div>
     <div id="siInfo" class="muted" style="margin:8px 0;min-height:20px"></div>
     <table><tbody id="siLog"></tbody></table>
-    <div class="mfoot"><button class="btn" id="siKapat">Kapat</button></div>`);
+    <div class="mfoot"><span class="muted" id="siToplam" style="margin-right:auto"></span><button class="btn" id="siKapat">Kapat</button></div>`);
+  const hizliMi = () => cihaz.stokHizli !== false;
+  const modAyarla = () => {
+    const h = hizliMi();
+    $$('#siMod [data-simod]').forEach(b => b.classList.toggle('sel', (b.dataset.simod === 'hizli') === h));
+    $('#siQtyRow').style.display = h ? 'none' : '';
+    $('#siIpucu').textContent = h ? 'Ürün kaç adet geldiyse o kadar okutun; her okutmada stok 1 artar.' : 'Gelen ürünün barkodunu okutun, adedi girip Enter\'a basın.';
+  };
+  modAyarla();
+  $('#siMod').addEventListener('click', e => {
+    const b = e.target.closest('[data-simod]'); if(!b) return;
+    cihaz.stokHizli = b.dataset.simod === 'hizli'; lsYaz('brn-cihaz', cihaz); found = null; modAyarla(); $('#siCode').focus();
+  });
+  const toplamYaz = () => { let t = 0; for(const o of siOturum.values()) t += o.miktar; $('#siToplam').textContent = siOturum.size ? `Bu girişte ${siOturum.size} çeşit, ${t} adet` : ''; };
+  const satirYaz = u => {
+    const o = siOturum.get(u.id); const eski = $(`#siLog tr[data-si="${u.id}"]`); if(eski) eski.remove();
+    $('#siLog').insertAdjacentHTML('afterbegin', `<tr data-si="${u.id}"><td>${esc(u.ad)}</td><td class="r num"><b>${o.miktar > 0 ? '+' : ''}${o.miktar}</b></td><td class="r muted">stok: <span class="mono">${stok(u.id)}</span></td></tr>`);
+    toplamYaz();
+  };
+  for(const [uid] of [...siOturum].reverse()){ const u = urunById(uid); if(u) satirYaz(u); }
+  // Aynı ürünün bu oturumdaki kaydını büyüt (yoksa yeni kayıt aç)
+  const oturumaEkle = async (u, q) => {
+    const o = siOturum.get(u.id) || {id: idUret(), miktar: 0, tarih: new Date().toISOString()};
+    o.miktar += q; siOturum.set(u.id, o);
+    await kaydet('stokgiris', o.id, {urunId: u.id, miktar: o.miktar, tip: 'Giriş', tarih: o.tarih, aciklama: 'Stok girişi', kasa: cihaz.kasa});
+    beep(true); satirYaz(u);
+  };
   let found = null;
   const bul = () => {
     const v = $('#siCode').value.trim(); if(!v) return null;
@@ -2202,17 +2236,25 @@ function openStockIn(){
     found = found || bul(); if(!found){ beep(false); return; }
     const q = Math.floor(+$('#siQty').value); if(!q){ toast('Adet girin', 'bad'); return; }
     const u = found; found = null;
-    await kaydet('stokgiris', idUret(), {urunId: u.id, miktar: q, tip: 'Giriş', tarih: new Date().toISOString(), aciklama: 'Stok girişi', kasa: cihaz.kasa});
-    beep(true);
-    $('#siLog').insertAdjacentHTML('afterbegin', `<tr><td>${esc(u.ad)}</td><td class="r num">${q > 0 ? '+' : ''}${q}</td><td class="r muted">yeni stok: <span class="mono">${stok(u.id)}</span></td></tr>`);
+    await oturumaEkle(u, q);
     $('#siCode').value = ''; $('#siQty').value = 1; $('#siInfo').textContent = ''; if(!dokunmatik()) $('#siCode').focus();
   };
   $('#siCode').addEventListener('input', () => { found = null; });
-  $('#siCode').addEventListener('keydown', e => { if(e.key === 'Enter'){ e.preventDefault(); found = bul(); if(found){ $('#siQty').focus(); $('#siQty').select(); } else beep(false); } });
+  $('#siCode').addEventListener('keydown', async e => {
+    if(e.key !== 'Enter') return;
+    e.preventDefault(); found = bul();
+    if(!found){ beep(false); return; }
+    if(hizliMi()){
+      const u = found; found = null; $('#siCode').value = '';
+      try{ await oturumaEkle(u, 1); }catch(err){ toast('Kaydedilemedi: ' + err.message, 'bad'); }
+      $('#siInfo').innerHTML = `<b>${esc(u.ad)}</b> +1 — stok: <b class="mono">${stok(u.id)}</b>`;
+      $('#siCode').focus();
+    } else { $('#siQty').focus(); $('#siQty').select(); }
+  });
   $('#siQty').addEventListener('keydown', e => { if(e.key === 'Enter'){ e.preventDefault(); uygula(); } });
   $('#siAdd').onclick = uygula;
   $('#siKapat').onclick = closeModal;
-  $('#siCam').onclick = () => { closeModal(); kameraAc(kod => { openStockIn(); $('#siCode').value = kod; found = null; setTimeout(() => { const ev = new KeyboardEvent('keydown', {key: 'Enter'}); $('#siCode').dispatchEvent(ev); }, 30); }, {baslik: 'Stok girişi — barkod okut'}); };
+  $('#siCam').onclick = () => { closeModal(); kameraAc(kod => { openStockIn(true); $('#siCode').value = kod; found = null; setTimeout(() => { const ev = new KeyboardEvent('keydown', {key: 'Enter'}); $('#siCode').dispatchEvent(ev); }, 30); }, {baslik: 'Stok girişi — barkod okut'}); };
 }
 
 /* ================= VERESİYE / MÜŞTERİLER ================= */
