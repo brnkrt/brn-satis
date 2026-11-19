@@ -131,6 +131,9 @@ th.sirali{color:var(--accent)}
 .sepetBilgi{display:flex;align-items:center;gap:16px;flex-wrap:wrap}
 .sepetBilgi > span:empty{display:none}
 .qty{display:inline-flex;align-items:center;gap:4px}
+.siFiyat{width:100px;text-align:right;padding:6px 8px;font-family:var(--font-num);font-size:18px;font-weight:700}
+#siLog td{font-size:16px}
+#siLog .sepetUrun > b{font-size:18px}
 .siMiktar{width:76px;text-align:center;padding:6px;font-family:var(--font-num);font-size:18px;font-weight:800}
 #siLog td{padding-top:8px;padding-bottom:8px}
 .qty input{width:60px;text-align:center;padding:6px;font-family:var(--font-num);font-size:19px;font-weight:800}
@@ -2244,11 +2247,12 @@ function openStockIn(devam){
       <button type="button" class="btn ${hizli ? '' : 'sel'}" data-simod="adet">✍ Adet Girerek</button>
     </div>
     <p class="muted" style="margin-top:0" id="siIpucu"></p>
-    <div class="row" style="flex-wrap:nowrap"><input id="siCode" placeholder="Barkod veya ürün adı" style="flex:1;font-size:18px" autofocus autocomplete="off"><button class="btn" id="siCam">📷</button></div>
+    <div class="row" style="flex-wrap:nowrap"><input id="siCode" placeholder="Barkod veya ürün adı" style="flex:1;font-size:20px;padding:12px 14px" autofocus autocomplete="off"><button class="btn" id="siCam">📷</button></div>
     <div class="row" style="margin-top:8px" id="siQtyRow"><label style="margin:0">Adet</label><input id="siQty" type="number" step="1" value="1" style="width:100px" inputmode="numeric"><button class="btn pri" id="siAdd">Ekle</button></div>
     <div id="siInfo" class="muted" style="margin:8px 0;min-height:20px"></div>
     <table><tbody id="siLog"></tbody></table>
     <div class="mfoot"><span class="muted" id="siToplam" style="margin-right:auto"></span><button class="btn" id="siKapat">Kapat</button></div>`);
+  $('#modal').style.width = 'min(1000px,100%)';
   const hizliMi = () => cihaz.stokHizli !== false;
   const modAyarla = () => {
     const h = hizliMi();
@@ -2263,7 +2267,7 @@ function openStockIn(devam){
   });
   const toplamYaz = () => { let t = 0; for(const o of siOturum.values()) t += o.miktar; $('#siToplam').textContent = siOturum.size ? `Bu girişte ${siOturum.size} çeşit, ${t} adet` : ''; };
   // Okutulan ürünün bilgisi: ad, KDV (kırmızı) ve mevcut stok
-  const siBilgi = (p, ek) => `<span style="font-size:17px;color:var(--fg)"><b>${esc(p.ad)}</b>${ek ? ' <b>' + ek + '</b>' : ''}</span> &nbsp; <span class="kdvYazi" style="font-size:17px;font-weight:700;color:var(--out)">KDV %${urunKdv(p)}</span> &nbsp; mevcut stok: <b class="mono" style="color:var(--fg);font-size:17px">${stok(p.id)}</b>`;
+  const siBilgi = (p, ek) => `<span style="font-size:17px;color:var(--fg)"><b>${esc(p.ad)}</b>${ek ? ' <b>' + ek + '</b>' : ''}</span> &nbsp; <span class="kdvYazi" style="font-size:17px;font-weight:700;color:var(--out)">KDV %${urunKdv(p)}</span> &nbsp; fiyat: <b class="mono" style="color:var(--fg);font-size:17px">${tl(p.satis || 0)}</b> &nbsp; mevcut stok: <b class="mono" style="color:var(--fg);font-size:17px">${stok(p.id)}</b>`;
   // Satırda: ad (çift tıkla düzelt), KDV seçimi ve eldeki stok (yazılan sayıya eşitlenir) değiştirilebilir; hepsi kalıcı kaydedilir
   const satirYaz = (u, yerinde) => {
     u = urunById(u.id) || u;
@@ -2272,13 +2276,24 @@ function openStockIn(devam){
     const kdvHtml = duz ? `<select data-sikdv="${u.id}" class="kdvSec siKdv" title="Ürünün KDV oranı (kalıcı olarak değişir)">${KDV_ORANLARI.concat(KDV_ORANLARI.includes(k) ? [] : [k]).map(x => `<option value="${x}" ${k === x ? 'selected' : ''}>KDV %${x}</option>`).join('')}</select>` : `<span class="kdvYazi">KDV %${k}</span>`;
     const html = `<tr data-si="${u.id}"><td><div class="sepetUrun"><b data-siad="${u.id}" ${duz ? 'title="Adı düzeltmek için çift tıklayın" style="cursor:text"' : ''}>${esc(u.ad)}</b><div class="sepetBilgi">${kdvHtml}</div></div></td>
       <td class="r muted" style="white-space:nowrap">bu girişte <b class="mono" style="color:var(--fg)">${o.miktar > 0 ? '+' : ''}${o.miktar}</b></td>
+      <td class="r" style="white-space:nowrap"><span class="muted">satış fiyatı</span> ${duz ? `<input data-sifiyat="${u.id}" class="siFiyat" value="${num2(u.satis || 0)}" inputmode="decimal" title="Satış fiyatını düzeltin (kalıcı)">` : `<b class="mono">${tl(u.satis || 0)}</b>`}</td>
       <td class="r" style="white-space:nowrap"><span class="muted">eldeki stok</span> <input data-simik="${u.id}" class="siMiktar" type="number" step="1" value="${stok(u.id)}" inputmode="numeric" title="Eldeki stoğu yazın; stok bu sayıya eşitlenir (eklenmez)"></td></tr>`;
     if(eski && yerinde){ eski.outerHTML = html; $('#siInfo').textContent = ''; }
     else { if(eski) eski.remove(); $('#siLog').insertAdjacentHTML('afterbegin', html); }
     toplamYaz();
   };
   $('#siLog').addEventListener('change', async e => {
-    const m = e.target.closest('[data-simik]'), kd = e.target.closest('[data-sikdv]');
+    const m = e.target.closest('[data-simik]'), kd = e.target.closest('[data-sikdv]'), fy = e.target.closest('[data-sifiyat]');
+    if(fy){
+      const p = urunById(fy.dataset.sifiyat); if(!p || !yetkili('urunDuzenle')) return;
+      const f = parseNum(fy.value);
+      if(isNaN(f) || f < 0){ toast('Geçerli bir fiyat girin', 'bad'); satirYaz(p, true); return; }
+      if(r2(f) !== r2(p.satis || 0)){
+        try{ await kaydet('urun', p.id, Object.assign({}, p, {satis: r2(f), fiyatDegisim: new Date().toISOString()})); toast(`${p.ad}: satış fiyatı ${tl(r2(f))}`, 'ok'); }
+        catch(err){ toast('Kaydedilemedi: ' + err.message, 'bad'); }
+      }
+      satirYaz(p, true);
+    }
     if(m){
       const u = urunById(m.dataset.simik), o = u && siOturum.get(u.id); if(!o) return;
       // Yazılan sayı eldeki toplam stoktur: stok bu sayıya eşitlenir (fark bu girişin kaydına yansır, ayrıca eklenmez)
@@ -2300,7 +2315,7 @@ function openStockIn(devam){
       satirYaz(p, true);
     }
   });
-  $('#siLog').addEventListener('keydown', e => { if(e.key === 'Enter' && e.target.matches('[data-simik]')){ e.preventDefault(); e.target.blur(); $('#siCode').focus(); } });
+  $('#siLog').addEventListener('keydown', e => { if(e.key === 'Enter' && e.target.matches('[data-simik],[data-sifiyat]')){ e.preventDefault(); e.target.blur(); $('#siCode').focus(); } });
   $('#siLog').addEventListener('dblclick', e => {
     const b = e.target.closest('[data-siad]'); if(!b) return;
     const p = urunById(b.dataset.siad); if(!p) return;
