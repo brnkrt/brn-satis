@@ -131,6 +131,8 @@ th.sirali{color:var(--accent)}
 .sepetBilgi{display:flex;align-items:center;gap:16px;flex-wrap:wrap}
 .sepetBilgi > span:empty{display:none}
 .qty{display:inline-flex;align-items:center;gap:4px}
+.siMiktar{width:76px;text-align:center;padding:6px;font-family:var(--font-num);font-size:18px;font-weight:800}
+#siLog td{padding-top:8px;padding-bottom:8px}
 .qty input{width:60px;text-align:center;padding:6px;font-family:var(--font-num);font-size:19px;font-weight:800}
 .fiyatKutu{display:inline-flex;flex-direction:column;align-items:stretch;gap:5px;min-width:96px}
 .fiyatKutu input{width:110px;text-align:right;padding:7px 8px;font-size:19px;font-weight:600}
@@ -2260,11 +2262,66 @@ function openStockIn(devam){
     cihaz.stokHizli = b.dataset.simod === 'hizli'; lsYaz('brn-cihaz', cihaz); found = null; modAyarla(); $('#siCode').focus();
   });
   const toplamYaz = () => { let t = 0; for(const o of siOturum.values()) t += o.miktar; $('#siToplam').textContent = siOturum.size ? `Bu girişte ${siOturum.size} çeşit, ${t} adet` : ''; };
-  const satirYaz = u => {
-    const o = siOturum.get(u.id); const eski = $(`#siLog tr[data-si="${u.id}"]`); if(eski) eski.remove();
-    $('#siLog').insertAdjacentHTML('afterbegin', `<tr data-si="${u.id}"><td>${esc(u.ad)}</td><td class="r num"><b>${o.miktar > 0 ? '+' : ''}${o.miktar}</b></td><td class="r muted">stok: <span class="mono">${stok(u.id)}</span></td></tr>`);
+  // Okutulan ürünün bilgisi: ad, KDV (kırmızı) ve mevcut stok
+  const siBilgi = (p, ek) => `<span style="font-size:17px;color:var(--fg)"><b>${esc(p.ad)}</b>${ek ? ' <b>' + ek + '</b>' : ''}</span> &nbsp; <span class="kdvYazi" style="font-size:17px;font-weight:700;color:var(--out)">KDV %${urunKdv(p)}</span> &nbsp; mevcut stok: <b class="mono" style="color:var(--fg);font-size:17px">${stok(p.id)}</b>`;
+  // Satırda: ad (çift tıkla düzelt), KDV seçimi ve eldeki stok (yazılan sayıya eşitlenir) değiştirilebilir; hepsi kalıcı kaydedilir
+  const satirYaz = (u, yerinde) => {
+    u = urunById(u.id) || u;
+    const o = siOturum.get(u.id); const eski = $(`#siLog tr[data-si="${u.id}"]`);
+    const duz = yetkili('urunDuzenle'), k = urunKdv(u);
+    const kdvHtml = duz ? `<select data-sikdv="${u.id}" class="kdvSec siKdv" title="Ürünün KDV oranı (kalıcı olarak değişir)">${KDV_ORANLARI.concat(KDV_ORANLARI.includes(k) ? [] : [k]).map(x => `<option value="${x}" ${k === x ? 'selected' : ''}>KDV %${x}</option>`).join('')}</select>` : `<span class="kdvYazi">KDV %${k}</span>`;
+    const html = `<tr data-si="${u.id}"><td><div class="sepetUrun"><b data-siad="${u.id}" ${duz ? 'title="Adı düzeltmek için çift tıklayın" style="cursor:text"' : ''}>${esc(u.ad)}</b><div class="sepetBilgi">${kdvHtml}</div></div></td>
+      <td class="r muted" style="white-space:nowrap">bu girişte <b class="mono" style="color:var(--fg)">${o.miktar > 0 ? '+' : ''}${o.miktar}</b></td>
+      <td class="r" style="white-space:nowrap"><span class="muted">eldeki stok</span> <input data-simik="${u.id}" class="siMiktar" type="number" step="1" value="${stok(u.id)}" inputmode="numeric" title="Eldeki stoğu yazın; stok bu sayıya eşitlenir (eklenmez)"></td></tr>`;
+    if(eski && yerinde){ eski.outerHTML = html; $('#siInfo').textContent = ''; }
+    else { if(eski) eski.remove(); $('#siLog').insertAdjacentHTML('afterbegin', html); }
     toplamYaz();
   };
+  $('#siLog').addEventListener('change', async e => {
+    const m = e.target.closest('[data-simik]'), kd = e.target.closest('[data-sikdv]');
+    if(m){
+      const u = urunById(m.dataset.simik), o = u && siOturum.get(u.id); if(!o) return;
+      // Yazılan sayı eldeki toplam stoktur: stok bu sayıya eşitlenir (fark bu girişin kaydına yansır, ayrıca eklenmez)
+      const hedef = Math.floor(+m.value);
+      if(m.value.trim() === '' || !Number.isFinite(hedef) || hedef < 0){ toast('Geçerli bir stok adedi girin', 'bad'); satirYaz(u, true); return; }
+      const fark = hedef - stok(u.id);
+      if(fark){
+        o.miktar += fark;
+        try{ await kaydet('stokgiris', o.id, {urunId: u.id, miktar: o.miktar, tip: 'Giriş', tarih: o.tarih, aciklama: 'Stok girişi', kasa: cihaz.kasa}); toast(`${u.ad}: eldeki stok ${hedef} olarak kaydedildi`, 'ok'); }
+        catch(err){ o.miktar -= fark; toast('Kaydedilemedi: ' + err.message, 'bad'); }
+      }
+      satirYaz(u, true);
+    }
+    if(kd){
+      const p = urunById(kd.dataset.sikdv); if(!p || !yetkili('urunDuzenle')) return;
+      const kdv = +kd.value, hedef = p.grupId ? varyantlar(p.grupId) : [p];
+      try{ await kaydetCok(hedef.map(x => ['urun', x.id, Object.assign({}, x, {kdv})])); toast(`${p.grupId ? p.grupAd + ' (tüm varyantlar)' : p.ad}: KDV %${kdv}`, 'ok'); }
+      catch(err){ toast('Kaydedilemedi: ' + err.message, 'bad'); }
+      satirYaz(p, true);
+    }
+  });
+  $('#siLog').addEventListener('keydown', e => { if(e.key === 'Enter' && e.target.matches('[data-simik]')){ e.preventDefault(); e.target.blur(); $('#siCode').focus(); } });
+  $('#siLog').addEventListener('dblclick', e => {
+    const b = e.target.closest('[data-siad]'); if(!b) return;
+    const p = urunById(b.dataset.siad); if(!p) return;
+    if(!yetkili('urunDuzenle')){ toast('Ürün adını değiştirme yetkiniz yok', 'bad'); return; }
+    if(p.grupId){ toast('Varyantlı ürünün adını Ürünler bölümünden değiştirin', 'bad'); return; }
+    const inp = document.createElement('input');
+    inp.className = 'adDuzKutu'; inp.value = p.ad; inp.setAttribute('autocomplete', 'off');
+    b.replaceWith(inp); setTimeout(() => { inp.focus(); inp.select(); }, 0);
+    let bitti = false;
+    const bitir = async kaydetsin => {
+      if(bitti) return; bitti = true;
+      const yeni = inp.value.trim().replace(/\s+/g, ' ');
+      if(kaydetsin && yeni && yeni !== p.ad){
+        try{ await kaydet('urun', p.id, Object.assign({}, p, {ad: yeni})); toast(`Ürün adı değişti: ${yeni}`, 'ok'); }
+        catch(err){ toast('Kaydedilemedi: ' + err.message, 'bad'); }
+      }
+      satirYaz(p, true); $('#siCode').focus();
+    };
+    inp.addEventListener('keydown', ev => { if(ev.key === 'Enter'){ ev.preventDefault(); ev.stopPropagation(); bitir(true); } else if(ev.key === 'Escape'){ ev.preventDefault(); ev.stopPropagation(); bitir(false); } });
+    inp.addEventListener('blur', () => bitir(true));
+  });
   for(const [uid] of [...siOturum].reverse()){ const u = urunById(uid); if(u) satirYaz(u); }
   // Aynı ürünün bu oturumdaki kaydını büyüt (yoksa yeni kayıt aç)
   const oturumaEkle = async (u, q) => {
@@ -2278,7 +2335,7 @@ function openStockIn(devam){
     const v = $('#siCode').value.trim(); if(!v) return null;
     let p = urunByBarkod(v);
     if(!p){ const l = searchProducts(v); if(l.length === 1) p = l[0]; else if(l.length > 1){ $('#siInfo').innerHTML = 'Birden fazla eşleşme: ' + l.slice(0, 5).map(x => esc(x.ad)).join(', ') + '…'; return null; } }
-    $('#siInfo').innerHTML = p ? `<b>${esc(p.ad)}</b> — mevcut stok: <b class="mono">${stok(p.id)}</b>` : '<span style="color:var(--out)">Ürün bulunamadı. Önce "Yeni Ürün" ile ekleyin.</span>';
+    $('#siInfo').innerHTML = p ? siBilgi(p) : '<span style="color:var(--out)">Ürün bulunamadı. Önce "Yeni Ürün" ile ekleyin.</span>';
     return p;
   };
   const uygula = async () => {
@@ -2296,7 +2353,7 @@ function openStockIn(devam){
     if(hizliMi()){
       const u = found; found = null; $('#siCode').value = '';
       try{ await oturumaEkle(u, 1); }catch(err){ toast('Kaydedilemedi: ' + err.message, 'bad'); }
-      $('#siInfo').innerHTML = `<b>${esc(u.ad)}</b> +1 — stok: <b class="mono">${stok(u.id)}</b>`;
+      $('#siInfo').innerHTML = siBilgi(u, '+1');
       $('#siCode').focus();
     } else { $('#siQty').focus(); $('#siQty').select(); }
   });
