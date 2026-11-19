@@ -1805,9 +1805,9 @@ function renderProducts(){
       <td>${p.grupId ? `<b>${esc(p.grupAd)}</b> <span class="tag" style="font-family:var(--font-body);background:var(--accent-soft);color:var(--accent)">${p.varyant ? esc(p.varyant) : '🎨 varyant'}</span>` : `<b data-padduz="${p.id}" ${secilebilir ? 'title="Adı düzeltmek için çift tıklayın" style="cursor:text"' : ''}>${esc(p.ad)}</b>`}${p.hizli ? ' <span title="Hızlı ürün">⚡</span>' : ''}</td>
       <td class="hide-m">${p.kategori ? `<span class="tag" style="font-family:var(--font-body)">${esc(p.kategori)}</span>` : ''}</td>
       <td class="r num muted hide-m">${!yetkili('rapor') && !yetkili('urunDuzenle') ? '•••' : p.alis ? tl(p.alis) : '—'}</td>
-      <td class="r num"><b>${tl(p.satis)}</b></td>
+      <td class="r num"><b data-pfiyatduz="${p.id}" ${secilebilir ? 'title="Fiyatı düzeltmek için çift tıklayın" style="cursor:text"' : ''}>${tl(p.satis)}</b></td>
       <td class="r hide-m">${secilebilir ? `<select data-kdvsec="${p.id}" class="kdvSec" title="KDV oranını değiştir">${KDV_ORANLARI.concat(KDV_ORANLARI.includes(urunKdv(p)) ? [] : [urunKdv(p)]).map(o => `<option value="${o}" ${urunKdv(p) === o ? 'selected' : ''}>%${o}</option>`).join('')}</select>` : `<span class="num muted">%${urunKdv(p)}</span>`}</td>
-      <td class="r"><span class="tag ${s <= 0 ? 'bad' : s <= (+p.kritik || 0) ? 'warn' : 'ok'}">${s}</span></td>
+      <td class="r"><span class="tag ${s <= 0 ? 'bad' : s <= (+p.kritik || 0) ? 'warn' : 'ok'}" data-pstokduz="${p.id}" ${yetkili('stokGiris') ? 'title="Eldeki stoğu düzeltmek için çift tıklayın" style="cursor:text"' : ''}>${s}</span></td>
       <td class="r num muted hide-m">${satilan.get(p.id) || 0}</td>
       <td class="r"><button class="btn sm" data-edit="${p.id}">${yetkili('urunDuzenle') ? 'Düzenle' : 'Bilgi'}</button></td>
     </tr>`; }).join('') || '<tr><td colspan="10" class="empty">Eşleşen ürün yok</td></tr>';
@@ -2023,6 +2023,63 @@ $('#pBody').addEventListener('dblclick', e => {
     if(kaydetsin && yeni && yeni !== p.ad){
       try{ await kaydet('urun', p.id, Object.assign({}, urunById(p.id) || p, {ad: yeni})); toast(`Ürün adı değişti: ${yeni}`, 'ok'); }
       catch(err){ toast('Kaydedilemedi: ' + err.message, 'bad'); }
+    }
+    renderProducts();
+  };
+  inp.addEventListener('keydown', ev => {
+    if(ev.key === 'Enter'){ ev.preventDefault(); ev.stopPropagation(); bitir(true); }
+    else if(ev.key === 'Escape'){ ev.preventDefault(); ev.stopPropagation(); bitir(false); }
+  });
+  inp.addEventListener('blur', () => bitir(true));
+});
+// Ürün listesinde stoğa çift tıklayınca eldeki stok yazılır; stok bu sayıya eşitlenir (fark "Sayım" kaydı olur)
+$('#pBody').addEventListener('dblclick', e => {
+  const b = e.target.closest('[data-pstokduz]'); if(!b) return;
+  const p = urunById(b.dataset.pstokduz); if(!p) return;
+  if(!yetkili('stokGiris')){ toast('Stok değiştirme yetkiniz yok', 'bad'); return; }
+  const inp = document.createElement('input');
+  inp.className = 'siMiktar'; inp.type = 'number'; inp.step = '1'; inp.value = stok(p.id); inp.setAttribute('inputmode', 'numeric');
+  b.replaceWith(inp); setTimeout(() => { inp.focus(); inp.select(); }, 0);
+  let bitti = false;
+  const bitir = async kaydetsin => {
+    if(bitti) return; bitti = true;
+    const hedef = Math.floor(+inp.value);
+    if(kaydetsin){
+      if(inp.value.trim() === '' || !Number.isFinite(hedef) || hedef < 0) toast('Geçerli bir stok adedi girin', 'bad');
+      else{
+        const fark = hedef - stok(p.id);
+        if(fark){
+          try{ await kaydet('stokgiris', idUret(), {urunId: p.id, miktar: fark, tip: 'Sayım', tarih: new Date().toISOString(), aciklama: 'Ürün listesinden stok düzeltme', kasa: cihaz.kasa}); toast(`${p.ad}: stok ${hedef} olarak kaydedildi`, 'ok'); }
+          catch(err){ toast('Kaydedilemedi: ' + err.message, 'bad'); }
+        }
+      }
+    }
+    renderProducts();
+  };
+  inp.addEventListener('keydown', ev => {
+    if(ev.key === 'Enter'){ ev.preventDefault(); ev.stopPropagation(); bitir(true); }
+    else if(ev.key === 'Escape'){ ev.preventDefault(); ev.stopPropagation(); bitir(false); }
+  });
+  inp.addEventListener('blur', () => bitir(true));
+});
+// Ürün listesinde satış fiyatına çift tıklayınca fiyat orada düzeltilir; kalıcıdır
+$('#pBody').addEventListener('dblclick', e => {
+  const b = e.target.closest('[data-pfiyatduz]'); if(!b) return;
+  const p = urunById(b.dataset.pfiyatduz); if(!p) return;
+  if(!yetkili('urunDuzenle')){ toast('Fiyat değiştirme yetkiniz yok', 'bad'); return; }
+  const inp = document.createElement('input');
+  inp.className = 'siFiyat'; inp.value = num2(p.satis || 0); inp.setAttribute('inputmode', 'decimal'); inp.setAttribute('autocomplete', 'off');
+  b.replaceWith(inp); setTimeout(() => { inp.focus(); inp.select(); }, 0);
+  let bitti = false;
+  const bitir = async kaydetsin => {
+    if(bitti) return; bitti = true;
+    const f = parseNum(inp.value);
+    if(kaydetsin){
+      if(isNaN(f) || f < 0) toast('Geçerli bir fiyat girin', 'bad');
+      else if(r2(f) !== r2(p.satis || 0)){
+        try{ await kaydet('urun', p.id, Object.assign({}, urunById(p.id) || p, {satis: r2(f), fiyatDegisim: new Date().toISOString()})); toast(`${p.ad}: satış fiyatı ${tl(r2(f))}`, 'ok'); }
+        catch(err){ toast('Kaydedilemedi: ' + err.message, 'bad'); }
+      }
     }
     renderProducts();
   };
