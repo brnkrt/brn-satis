@@ -2237,8 +2237,9 @@ function openProductForm(p, preset={}, onSaved){
 
 /* Hızlı stok girişi: her okutma +1. Aynı oturumda aynı ürünün okutmaları tek kayıtta toplanır (kayıt id'si aynı kalır, miktar artar). */
 let siOturum = new Map();   // urunId -> {id, miktar, tarih}
+// Pencere her açılışta boş başlar; yalnızca kamerayla okutup geri dönünce (devam === true) liste korunur
 function openStockIn(devam){
-  if(!devam) siOturum = new Map();
+  if(devam !== true) siOturum = new Map();
   const hizli = cihaz.stokHizli !== false;
   openModal(`
     <h2>📥 Stok Girişi</h2>
