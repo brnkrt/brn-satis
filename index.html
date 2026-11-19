@@ -172,7 +172,8 @@ th.sirali{color:var(--accent)}
 .bills .btn{padding:7px 2px;font-size:13px}
 #changeBox{font-size:28px;font-weight:700;text-align:right;margin:8px 0;font-family:var(--font-num)}
 #completeBtn{width:100%;padding:16px;font-size:19px;margin-top:6px}
-#clearCartBtn{flex:1;padding:12px 16px;font-size:16px;font-weight:600}
+#clearCartBtn{flex:1;padding:15px 16px;font-size:18px;font-weight:700;background:var(--out);border-color:var(--out);color:#fff}
+#clearCartBtn kbd{background:rgba(255,255,255,.2);color:#fff;border-color:rgba(255,255,255,.4)}
 #lastSale{margin-top:12px;display:none;background:var(--in-soft);color:var(--in);border-radius:10px;padding:12px}
 #lastSale .chg{font-size:26px;font-weight:700;font-family:var(--font-num)}
 .keys{margin-top:10px;font-size:12px;color:var(--muted);line-height:1.8}
@@ -1414,7 +1415,8 @@ $$('.bills .btn').forEach(b => b.onclick = () => { const t = getTotals(); $('#re
 $('#completeBtn').onclick = completeSale;
 $('#clearCartBtn').onclick = clearCart;
 $('#reprintBtn').onclick = () => { if(lastSaleObj) printReceipt(lastSaleObj); };
-function clearCart(){ if(cart.length && !confirm('Sepet temizlensin mi?')) return; cart = []; $('#discount').value = ''; $('#discountPct').value = ''; $('#received').value = ''; renderCart(); focusScan(); }
+// F7 onay sormadan temizler; düğmeye basınca onay sorulur
+function clearCart(onaysiz){ if(cart.length && onaysiz !== true && !confirm('Sepet temizlensin mi?')) return; cart = []; $('#discount').value = ''; $('#discountPct').value = ''; $('#received').value = ''; renderCart(); focusScan(); }
 
 let satisSuruyor = false;
 async function completeSale(){
@@ -1483,7 +1485,7 @@ document.addEventListener('keydown', e => {
   else if(k === 'F3'){ e.preventDefault(); setMethod('kart'); focusScan(); }
   else if(k === 'F4'){ e.preventDefault(); setMethod('nakit'); $('#received').focus(); $('#received').select(); }
   else if(k === 'F6'){ e.preventDefault(); setMethod('veresiye'); if(payMethod === 'veresiye') $('#vAra').focus(); }
-  else if(k === 'F7'){ e.preventDefault(); clearCart(); }
+  else if(k === 'F7'){ e.preventDefault(); clearCart(true); }
   else if(k === 'F9'){ e.preventDefault(); completeSale(); }
   else if(k === 'F8'){ e.preventDefault(); muhtelifPenceresi(); }
   else if(e.altKey && /^[1-4]$/.test(k)){ e.preventDefault(); sepetSec(+k - 1); }
