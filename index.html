@@ -1802,7 +1802,7 @@ function renderProducts(){
     <tr class="${seciliU.has(p.id) ? 'secili' : ''}">
       ${secilebilir ? `<td><input type="checkbox" data-sec="${p.id}" ${seciliU.has(p.id) ? 'checked' : ''} style="width:18px;height:18px"></td>` : ''}
       <td class="muted mono hide-m">${esc(p.barkod || '—')}</td>
-      <td>${p.grupId ? `<b>${esc(p.grupAd)}</b> <span class="tag" style="font-family:var(--font-body);background:var(--accent-soft);color:var(--accent)">${p.varyant ? esc(p.varyant) : '🎨 varyant'}</span>` : `<b>${esc(p.ad)}</b>`}${p.hizli ? ' <span title="Hızlı ürün">⚡</span>' : ''}</td>
+      <td>${p.grupId ? `<b>${esc(p.grupAd)}</b> <span class="tag" style="font-family:var(--font-body);background:var(--accent-soft);color:var(--accent)">${p.varyant ? esc(p.varyant) : '🎨 varyant'}</span>` : `<b data-padduz="${p.id}" ${secilebilir ? 'title="Adı düzeltmek için çift tıklayın" style="cursor:text"' : ''}>${esc(p.ad)}</b>`}${p.hizli ? ' <span title="Hızlı ürün">⚡</span>' : ''}</td>
       <td class="hide-m">${p.kategori ? `<span class="tag" style="font-family:var(--font-body)">${esc(p.kategori)}</span>` : ''}</td>
       <td class="r num muted hide-m">${!yetkili('rapor') && !yetkili('urunDuzenle') ? '•••' : p.alis ? tl(p.alis) : '—'}</td>
       <td class="r num"><b>${tl(p.satis)}</b></td>
@@ -2008,6 +2008,30 @@ function topluDuzenle(){
     closeModal(); toast(`${h.sonuc.length} ürün güncellendi`, 'ok'); renderAktif();
   };
 }
+// Ürün listesinde ada çift tıklayınca ad orada düzeltilir (Enter/dışarı tıklama kaydeder, Esc vazgeçer); kalıcıdır
+$('#pBody').addEventListener('dblclick', e => {
+  const b = e.target.closest('[data-padduz]'); if(!b) return;
+  const p = urunById(b.dataset.padduz); if(!p) return;
+  if(!yetkili('urunDuzenle')){ toast('Ürün adını değiştirme yetkiniz yok', 'bad'); return; }
+  const inp = document.createElement('input');
+  inp.className = 'adDuzKutu'; inp.value = p.ad; inp.setAttribute('autocomplete', 'off');
+  b.replaceWith(inp); setTimeout(() => { inp.focus(); inp.select(); }, 0);
+  let bitti = false;
+  const bitir = async kaydetsin => {
+    if(bitti) return; bitti = true;
+    const yeni = inp.value.trim().replace(/\s+/g, ' ');
+    if(kaydetsin && yeni && yeni !== p.ad){
+      try{ await kaydet('urun', p.id, Object.assign({}, urunById(p.id) || p, {ad: yeni})); toast(`Ürün adı değişti: ${yeni}`, 'ok'); }
+      catch(err){ toast('Kaydedilemedi: ' + err.message, 'bad'); }
+    }
+    renderProducts();
+  };
+  inp.addEventListener('keydown', ev => {
+    if(ev.key === 'Enter'){ ev.preventDefault(); ev.stopPropagation(); bitir(true); }
+    else if(ev.key === 'Escape'){ ev.preventDefault(); ev.stopPropagation(); bitir(false); }
+  });
+  inp.addEventListener('blur', () => bitir(true));
+});
 $('#pBody').addEventListener('click', e => {
   const ed = e.target.closest('[data-edit]'); if(!ed) return;
   const p = urunById(ed.dataset.edit); if(!p) return;
