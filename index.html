@@ -131,7 +131,7 @@ th.sirali{color:var(--accent)}
 .sepetBilgi{display:flex;align-items:center;gap:16px;flex-wrap:wrap}
 .sepetBilgi > span:empty{display:none}
 .qty{display:inline-flex;align-items:center;gap:4px}
-.qty input{width:56px;text-align:center;padding:6px;font-family:var(--font-num)}
+.qty input{width:60px;text-align:center;padding:6px;font-family:var(--font-num);font-size:19px;font-weight:800}
 .fiyatKutu{display:inline-flex;flex-direction:column;align-items:stretch;gap:5px;min-width:96px}
 .fiyatKutu input{width:110px;text-align:right;padding:7px 8px;font-size:19px;font-weight:600}
 #cartBody td.r .num,#cartBody td.r.num{font-size:19px}
@@ -173,6 +173,8 @@ th.sirali{color:var(--accent)}
 #changeBox{font-size:28px;font-weight:700;text-align:right;margin:8px 0;font-family:var(--font-num)}
 #completeBtn{width:100%;padding:16px;font-size:19px;margin-top:6px}
 #clearCartBtn{flex:1;padding:15px 16px;font-size:18px;font-weight:700;background:var(--out);border-color:var(--out);color:#fff}
+#reprintBtn{padding:15px 14px;font-size:17px;font-weight:700;background:var(--in);border-color:var(--in);color:#fff}
+#reprintBtn:disabled{background:var(--surface-2);border-color:var(--line);color:var(--muted);font-weight:600}
 #clearCartBtn kbd{background:rgba(255,255,255,.2);color:#fff;border-color:rgba(255,255,255,.4)}
 #lastSale{margin-top:12px;display:none;background:var(--in-soft);color:var(--in);border-radius:10px;padding:12px}
 #lastSale .chg{font-size:26px;font-weight:700;font-family:var(--font-num)}
@@ -357,7 +359,7 @@ tr.cancel td:last-child{text-decoration:none}
       <button class="btn pri" id="completeBtn">✔ Satışı Tamamla <kbd class="hide-m">F9</kbd></button>
       <div class="row" style="margin-top:8px">
         <button class="btn" id="clearCartBtn">🗑 Sepeti Temizle <kbd class="hide-m">F7</kbd></button>
-        <button class="btn sm" id="reprintBtn" disabled>Son Fişi Yazdır</button>
+        <button class="btn" id="reprintBtn" disabled>🖨 Son Fişi Yazdır</button>
       </div>
      </div>
       <div id="lastSale"></div>
@@ -1415,8 +1417,8 @@ $$('.bills .btn').forEach(b => b.onclick = () => { const t = getTotals(); $('#re
 $('#completeBtn').onclick = completeSale;
 $('#clearCartBtn').onclick = clearCart;
 $('#reprintBtn').onclick = () => { if(lastSaleObj) printReceipt(lastSaleObj); };
-// F7 onay sormadan temizler; düğmeye basınca onay sorulur
-function clearCart(onaysiz){ if(cart.length && onaysiz !== true && !confirm('Sepet temizlensin mi?')) return; cart = []; $('#discount').value = ''; $('#discountPct').value = ''; $('#received').value = ''; renderCart(); focusScan(); }
+// Sepeti onay sormadan temizler (F7 ve düğme)
+function clearCart(){ cart = []; $('#discount').value = ''; $('#discountPct').value = ''; $('#received').value = ''; renderCart(); focusScan(); }
 
 let satisSuruyor = false;
 async function completeSale(){
@@ -1485,7 +1487,7 @@ document.addEventListener('keydown', e => {
   else if(k === 'F3'){ e.preventDefault(); setMethod('kart'); focusScan(); }
   else if(k === 'F4'){ e.preventDefault(); setMethod('nakit'); $('#received').focus(); $('#received').select(); }
   else if(k === 'F6'){ e.preventDefault(); setMethod('veresiye'); if(payMethod === 'veresiye') $('#vAra').focus(); }
-  else if(k === 'F7'){ e.preventDefault(); clearCart(true); }
+  else if(k === 'F7'){ e.preventDefault(); clearCart(); }
   else if(k === 'F9'){ e.preventDefault(); completeSale(); }
   else if(k === 'F8'){ e.preventDefault(); muhtelifPenceresi(); }
   else if(e.altKey && /^[1-4]$/.test(k)){ e.preventDefault(); sepetSec(+k - 1); }
